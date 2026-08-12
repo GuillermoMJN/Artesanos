@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Reglas para la colección de artesanos
+    match /artisans/{artisanId} {
+      
+      // 1. LECTURA PÚBLICA (Cualquiera puede consultar el directorio)
+      allow read: if true;
+
+      // 2. INSCRIPCIÓN SEGURA CON VALIDACIÓN ESTRICTA DE CAMPOS
+      // Solo se permite crear si contiene los datos necesarios y cumplen el formato correcto
+      allow create: if request.resource.data.keys().hasAll([
+                        'name', 'trade', 'category', 'location', 
+                        'address', 'phone', 'email', 'description'
+                      ])
+                    && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 100
+                    && request.resource.data.trade is string && request.resource.data.trade.size() >= 2 && request.resource.data.trade.size() <= 150
+                    && request.resource.data.category in ['ceramica', 'tejido', 'herreria', 'tatuaje', 'comida']
+                    && request.resource.data.location is string && request.resource.data.location.size() >= 2 && request.resource.data.location.size() <= 100
+                    && request.resource.data.address is string && request.resource.data.address.size() >= 3 && request.resource.data.address.size() <= 200
+                    && request.resource.data.phone is string && request.resource.data.phone.size() >= 6 && request.resource.data.phone.size() <= 25
+                    && request.resource.data.email is string && request.resource.data.email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+                    && request.resource.data.description is string && request.resource.data.description.size() >= 10 && request.resource.data.description.size() <= 2000;
+
+      // 3. SEGURIDAD TOTAL: BLOQUEO DE MODIFICACIÓN Y BORRADO PÚBLICO
+      // Nadie en internet puede borrar ni alterar perfiles de artesanos ya publicados
+      allow update, delete: if false;
+    }
+  }
+}
