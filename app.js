@@ -357,63 +357,6 @@ function openArtisanModal(id) {
 
   modalContainer.classList.add('active');
 }
-  const directoryGrid = document.getElementById('directoryGrid');
-  const resultsCounter = document.getElementById('resultsCount');
-  if (!directoryGrid) return;
-
-  // Filtrado combinado (Categoría + Búsqueda)
-  const filtered = artisans.filter(item => {
-    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
-    const matchesSearch = searchQuery === '' || 
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.trade.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-
-  if (resultsCounter) {
-    resultsCounter.textContent = `Mostrando ${filtered.length} artesano(s)`;
-  }
-
-  if (filtered.length === 0) {
-    directoryGrid.innerHTML = `
-      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-        <i class="fa-solid fa-compass" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-        <h3 style="margin-bottom: 0.5rem; color: var(--primary-dark);">No encontramos artesanos con esa búsqueda</h3>
-        <p style="color: var(--text-secondary);">Prueba con otra palabra clave o selecciona otra categoría.</p>
-      </div>
-    `;
-    return;
-  }
-
-  directoryGrid.innerHTML = filtered.map(artisan => `
-    <div class="artisan-card">
-      <div class="artisan-img-wrapper">
-        <img src="${artisan.image}" alt="${artisan.name}" class="artisan-img" loading="lazy">
-        <span class="artisan-badge">${artisan.categoryLabel}</span>
-        <div class="artisan-rating">
-          <i class="fa-solid fa-star"></i>
-          <span>${artisan.rating}</span>
-        </div>
-      </div>
-      <div class="artisan-body">
-        <h3 class="artisan-name">${artisan.name}</h3>
-        <div class="artisan-trade">${artisan.trade}</div>
-        <p class="artisan-desc">${artisan.description}</p>
-        <div class="artisan-meta">
-          <span><i class="fa-solid fa-location-dot"></i> ${artisan.location}</span>
-          <span><i class="fa-solid fa-certificate"></i> ${artisan.experience}</span>
-        </div>
-        <div class="artisan-footer">
-          <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="openArtisanModal(${artisan.id})">
-            Ver Negocio & Contacto <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
 
 // Búsqueda en tiempo real
 function setupEventListeners() {
