@@ -1,4 +1,13 @@
-// Datos iniciales de artesanos (Prototipo)
+// Configuración de Supabase (Sustituye con las llaves de tu proyecto en supabase.com)
+const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+let supabaseClient = null;
+if (typeof supabase !== 'undefined' && SUPABASE_URL.includes('https://') && !SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+// Datos iniciales de artesanos (Fallback y semilla inicial)
 const initialArtisans = [
   {
     id: 1,
@@ -103,12 +112,51 @@ let activeCategory = 'all';
 let searchQuery = '';
 
 // Elementos DOM
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  if (supabaseClient) {
+    await fetchArtisansFromSupabase();
+  }
   renderCategories();
   renderArtisans();
   setupEventListeners();
   setupHeaderScroll();
 });
+
+// Cargar artesanos desde Supabase
+async function fetchArtisansFromSupabase() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('artisans')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (data && data.length > 0) {
+      artisans = data.map(item => ({
+        id: item.id,
+        name: item.name,
+        trade: item.trade,
+        category: item.category,
+        categoryLabel: item.category_label || item.category,
+        rating: item.rating || 5.0,
+        reviewsCount: item.reviews_count || 1,
+        experience: item.experience || 'Artesano verificado',
+        location: item.location,
+        address: item.address,
+        phone: item.phone,
+        email: item.email,
+        image: item.image || 'images/ceramics_artisan_1786534790567.png',
+        description: item.description,
+        fullStory: item.full_story || item.description,
+        hours: item.hours || 'Consultar al artesano',
+        tags: item.tags || ['Artesanal', 'Hecho a mano']
+      }));
+    }
+  } catch (err) {
+    console.warn('Error al cargar de Supabase, usando datos locales:', err.message);
+  }
+}
 
 // Renderizar Categorías
 function renderCategories() {
@@ -313,7 +361,7 @@ function closeModal(modalId) {
 }
 
 // Procesar formulario de nuevo artesano
-function handleNewArtisanSubmit(e) {
+async function handleNewArtisanSubmit(e) {
   e.preventDefault();
 
   const name = document.getElementById('inputName').value;
@@ -361,6 +409,29 @@ function handleNewArtisanSubmit(e) {
     hours: 'Consultar al artesano',
     tags: ['Artesanal', 'Local', 'Hecho a Mano']
   };
+
+  // Si Supabase está configurado, guardar en la base de datos remota
+  if (supabaseClient) {
+    try {
+      const { error } = await supabaseClient.from('artisans').insert([{
+        name: newArtisan.name,
+        trade: newArtisan.trade,
+        category: newArtisan.category,
+        category_label: newArtisan.categoryLabel,
+        location: newArtisan.location,
+        address: newArtisan.address,
+        phone: newArtisan.phone,
+        email: newArtisan.email,
+        description: newArtisan.description,
+        full_story: newArtisan.fullStory,
+        image: newArtisan.image
+      }]);
+
+      if (error) console.error('Error insertando en Supabase:', error.message);
+    } catch (err) {
+      console.error('Error al conectar con Supabase:', err);
+    }
+  }
 
   artisans.unshift(newArtisan);
   renderCategories();
