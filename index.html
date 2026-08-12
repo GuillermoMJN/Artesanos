@@ -18,35 +18,8 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
-  <!-- Firebase SDK v10 (Firestore & Auth) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    // Configuración de Firebase
-    const firebaseConfig = {
-      apiKey: "AIzaSyCUGHYFtVmXweGGK7tNfUIhmE_hFr4J_QA",
-      authDomain: "artesanos-2a706.firebaseapp.com",
-      projectId: "artesanos-2a706",
-      storageBucket: "artesanos-2a706.firebasestorage.app",
-      messagingSenderId: "514399575895",
-      appId: "1:514399575895:web:7f59c0d5b23005b4a7e812",
-      measurementId: "G-RXEYMVJBC0"
-    };
-
-    // Inicializar Firebase
-    window.db = null;
-    window.auth = null;
-    window.firestoreModules = { collection, getDocs, addDoc, doc, updateDoc, query, orderBy };
-    window.authModules = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification };
-
-    if (firebaseConfig.apiKey) {
-      const app = initializeApp(firebaseConfig);
-      window.db = getFirestore(app);
-      window.auth = getAuth(app);
-    }
-  </script>
+  <!-- Módulo Principal de la Aplicación (Clean Architecture) -->
+  <script type="module" src="src/main.js"></script>
 
   <!-- Estilos CSS -->
   <link rel="stylesheet" href="index.css">
@@ -480,9 +453,6 @@
 
   <!-- Contenedor para Toast Notifications -->
   <div class="toast-container" id="toastContainer"></div>
-
-  <!-- Scripts -->
-  <script src="app.js"></script>
 </body>
 
 </html>
