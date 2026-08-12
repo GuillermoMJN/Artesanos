@@ -18,12 +18,13 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
-  <!-- Firebase SDK v10 -->
+  <!-- Firebase SDK v10 (Firestore & Auth) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuración de Firebase (Sustituye con tus credenciales de Firebase Console)
+    // Configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCUGHYFtVmXweGGK7tNfUIhmE_hFr4J_QA",
       authDomain: "artesanos-2a706.firebaseapp.com",
@@ -36,11 +37,14 @@
 
     // Inicializar Firebase
     window.db = null;
-    window.firestoreModules = { collection, getDocs, addDoc, query, orderBy };
+    window.auth = null;
+    window.firestoreModules = { collection, getDocs, addDoc, doc, updateDoc, query, orderBy };
+    window.authModules = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification };
 
-    if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+    if (firebaseConfig.apiKey) {
       const app = initializeApp(firebaseConfig);
       window.db = getFirestore(app);
+      window.auth = getAuth(app);
     }
   </script>
 
@@ -65,9 +69,12 @@
         </ul>
       </nav>
 
-      <div class="nav-actions">
-        <button class="btn btn-primary" onclick="openRegisterModal()">
-          <i class="fa-solid fa-plus"></i> Publicar mi Negocio
+      <div class="nav-actions" id="navAuthActions">
+        <button class="btn btn-secondary" onclick="openLoginModal()" id="btnLoginNav">
+          <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+        </button>
+        <button class="btn btn-primary" onclick="openRegisterModal()" id="btnRegisterNav">
+          <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
         </button>
       </div>
     </div>
@@ -246,7 +253,37 @@
     </div>
   </div>
 
-  <!-- Modal Formulario "Publicar mi Negocio" -->
+  <!-- Modal Iniciar Sesión Artesano -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-card" style="max-width: 480px;">
+      <button class="modal-close" onclick="closeModal('loginModal')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <span class="hero-badge"><i class="fa-solid fa-user-lock"></i> Área de Artesanos</span>
+          <h2 style="font-size: 2rem; margin-top: 0.5rem;">Iniciar Sesión</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">Accede para gestionar tu taller, promociones y productos.</p>
+        </div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label">Correo Electrónico *</label>
+            <input type="email" id="loginEmail" class="form-input" placeholder="tu@email.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contraseña *</label>
+            <input type="password" id="loginPassword" class="form-input" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
+            <i class="fa-solid fa-right-to-bracket"></i> Entrar a mi Tienda
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Formulario "Publicar mi Negocio / Registro con Auth" -->
   <div class="modal-overlay" id="registerModal">
     <div class="modal-card">
       <button class="modal-close" onclick="closeModal('registerModal')">
@@ -255,12 +292,24 @@
       <div class="modal-body">
         <div style="text-align: center; margin-bottom: 2rem;">
           <span class="hero-badge"><i class="fa-solid fa-store"></i> Unirme a la red</span>
-          <h2 style="font-size: 2rem; margin-top: 0.5rem;">Publica tu Negocio Artesanal</h2>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">Completa tus datos para formar parte de nuestro
-            directorio y conectar con nuevos clientes.</p>
+          <h2 style="font-size: 2rem; margin-top: 0.5rem;">Crear Cuenta de Artesano</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Crea tu cuenta verificada para publicar y gestionar tu negocio en la plataforma.</p>
         </div>
 
         <form id="registerForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico (Login) *</label>
+              <input type="email" id="inputAuthEmail" class="form-input" placeholder="tu@email.com" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contraseña de acceso *</label>
+              <input type="password" id="inputAuthPassword" class="form-input" placeholder="Mínimo 6 caracteres" minlength="6" required>
+            </div>
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Nombre del Artesano o Taller *</label>
@@ -281,8 +330,7 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Especialidad u Oficio *</label>
-              <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno"
-                required>
+              <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno" required>
             </div>
             <div class="form-group">
               <label class="form-label">Ciudad / Provincia *</label>
@@ -292,8 +340,7 @@
 
           <div class="form-group">
             <label class="form-label">Dirección Completa del Taller *</label>
-            <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejon del Aire 14, Albaicín"
-              required>
+            <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejon del Aire 14, Albaicín" required>
           </div>
 
           <div class="form-row">
@@ -302,27 +349,131 @@
               <input type="tel" id="inputPhone" class="form-input" placeholder="ej. +34 600 000 000" required>
             </div>
             <div class="form-group">
-              <label class="form-label">Correo Electrónico *</label>
-              <input type="email" id="inputEmail" class="form-input" placeholder="ej. contacto@mitaller.com" required>
+              <label class="form-label">Sitio Web / Red Social (Opcional)</label>
+              <input type="url" id="inputWebsite" class="form-input" placeholder="https://mitaller.com">
             </div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Descripción de tu trabajo e Historia *</label>
-            <textarea id="inputDescription" class="form-textarea" rows="4"
-              placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..."
-              required></textarea>
+            <textarea id="inputDescription" class="form-textarea" rows="4" placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..." required></textarea>
           </div>
 
           <div style="display: flex; gap: 1rem; margin-top: 2rem;">
             <button type="submit" class="btn btn-primary" style="flex: 1;">
-              <i class="fa-solid fa-check"></i> Publicar mi Perfil Gratis
+              <i class="fa-solid fa-check"></i> Registrarme & Verificar Cuenta
             </button>
             <button type="button" class="btn btn-secondary" onclick="closeModal('registerModal')">
               Cancelar
             </button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Panel "Gestionar Mi Tienda" -->
+  <div class="modal-overlay" id="shopManageModal">
+    <div class="modal-card" style="max-width: 850px;">
+      <button class="modal-close" onclick="closeModal('shopManageModal')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <span class="hero-badge"><i class="fa-solid fa-sliders"></i> Panel de Administración</span>
+            <h2 style="font-size: 2rem; margin-top: 0.3rem;" id="shopManageTitle">Gestionar Mi Tienda</h2>
+          </div>
+          <span id="verificationStatusBadge" class="hero-badge" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; border-color: rgba(76, 175, 80, 0.2);">
+            <i class="fa-solid fa-circle-check"></i> Cuenta Verificada
+          </span>
+        </div>
+
+        <!-- Pestañas del Panel -->
+        <div style="display: flex; gap: 0.8rem; border-bottom: 2px solid var(--border-color); margin-bottom: 2rem; overflow-x: auto;">
+          <button class="tab-btn active" onclick="switchShopTab('tabGeneral')" id="btnTabGeneral">
+            <i class="fa-solid fa-store"></i> General & Web
+          </button>
+          <button class="tab-btn" onclick="switchShopTab('tabPromos')" id="btnTabPromos">
+            <i class="fa-solid fa-tags"></i> Promociones & Descuentos
+          </button>
+          <button class="tab-btn" onclick="switchShopTab('tabGallery')" id="btnTabGallery">
+            <i class="fa-solid fa-images"></i> Galería de Trabajos
+          </button>
+        </div>
+
+        <!-- Tab 1: General & Web -->
+        <div id="tabGeneral" class="shop-tab-content">
+          <form id="editShopForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nombre del Taller</label>
+                <input type="text" id="editName" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Especialidad</label>
+                <input type="text" id="editTrade" class="form-input" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Teléfono / WhatsApp</label>
+                <input type="tel" id="editPhone" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sitio Web / Tienda Online</label>
+                <input type="url" id="editWebsite" class="form-input" placeholder="https://mi-tienda.com">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Dirección Completa</label>
+              <input type="text" id="editAddress" class="form-input" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Descripción & Historia del Taller</label>
+              <textarea id="editDescription" class="form-textarea" rows="4" required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios de la Tienda
+            </button>
+          </form>
+        </div>
+
+        <!-- Tab 2: Promociones -->
+        <div id="tabPromos" class="shop-tab-content" style="display: none;">
+          <form id="promoForm">
+            <div class="form-group">
+              <label class="form-label">Título de la Promoción (ej. 15% Descuento con código ARTESANO15)</label>
+              <input type="text" id="promoTitle" class="form-input" placeholder="ej. 2x1 en talleres de cerámica los viernes" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Detalles / Condiciones de la oferta</label>
+              <textarea id="promoDetails" class="form-textarea" rows="2" placeholder="Válido mostrando este perfil en el taller o introduciendo el código en la web."></textarea>
+            </div>
+            <button type="submit" class="btn btn-gold" style="width: 100%;">
+              <i class="fa-solid fa-plus"></i> Publicar Promoción Destacada
+            </button>
+          </form>
+        </div>
+
+        <!-- Tab 3: Galería de Trabajos -->
+        <div id="tabGallery" class="shop-tab-content" style="display: none;">
+          <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Añade enlaces de fotos de tus mejores productos o procesos de fabricación.</p>
+          <form id="galleryForm" style="display: flex; gap: 0.8rem; margin-bottom: 1.5rem;">
+            <input type="url" id="galleryImageUrl" class="form-input" placeholder="https://ejemplo.com/foto-producto.jpg" required>
+            <button type="submit" class="btn btn-secondary" style="white-space: nowrap;">
+              <i class="fa-solid fa-upload"></i> Añadir Foto
+            </button>
+          </form>
+          <div id="galleryPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem;">
+            <!-- Minis de fotos -->
+          </div>
+        </div>
+
       </div>
     </div>
   </div>

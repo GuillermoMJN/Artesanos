@@ -204,6 +204,163 @@ function renderArtisans() {
   const resultsCounter = document.getElementById('resultsCount');
   if (!directoryGrid) return;
 
+  const filtered = artisans.filter(item => {
+    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+    const matchesSearch = searchQuery === '' || 
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.trade.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  if (resultsCounter) {
+    resultsCounter.textContent = `Mostrando ${filtered.length} artesano(s)`;
+  }
+
+  if (filtered.length === 0) {
+    directoryGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+        <i class="fa-solid fa-compass" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+        <h3 style="margin-bottom: 0.5rem; color: var(--primary-dark);">No encontramos artesanos con esa búsqueda</h3>
+        <p style="color: var(--text-secondary);">Prueba con otra palabra clave o selecciona otra categoría.</p>
+      </div>
+    `;
+    return;
+  }
+
+  directoryGrid.innerHTML = filtered.map(artisan => `
+    <div class="artisan-card">
+      <div class="artisan-img-wrapper">
+        <img src="${artisan.image}" alt="${artisan.name}" class="artisan-img" loading="lazy">
+        <span class="artisan-badge">${artisan.categoryLabel}</span>
+        <div class="artisan-rating">
+          <i class="fa-solid fa-star"></i>
+          <span>${artisan.rating}</span>
+        </div>
+        ${artisan.promo && artisan.promo.active ? `
+          <div class="promo-badge">
+            <i class="fa-solid fa-tag"></i> ${artisan.promo.title}
+          </div>
+        ` : ''}
+      </div>
+      <div class="artisan-body">
+        <h3 class="artisan-name">${artisan.name}</h3>
+        <div class="artisan-trade">${artisan.trade}</div>
+        <p class="artisan-desc">${artisan.description}</p>
+        <div class="artisan-meta">
+          <span><i class="fa-solid fa-location-dot"></i> ${artisan.location}</span>
+          <span><i class="fa-solid fa-certificate"></i> ${artisan.experience}</span>
+        </div>
+        <div class="artisan-footer">
+          <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="openArtisanModal('${artisan.id}')">
+            Ver Negocio & Ofertas <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Abrir modal de detalles de artesano
+function openArtisanModal(id) {
+  const artisan = artisans.find(a => String(a.id) === String(id));
+  if (!artisan) return;
+
+  const modalContainer = document.getElementById('detailModal');
+  const modalContent = document.getElementById('detailModalContent');
+
+  modalContent.innerHTML = `
+    <div class="modal-header-hero">
+      <img src="${artisan.image}" alt="${artisan.name}">
+      <div class="modal-header-overlay">
+        <h2>${artisan.name}</h2>
+        <p style="color: var(--beige-medium); font-weight: 500;">${artisan.trade}</p>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        ${artisan.tags.map(t => `<span class="hero-badge" style="margin: 0; font-size: 0.8rem;">#${t}</span>`).join('')}
+      </div>
+
+      ${artisan.promo && artisan.promo.active ? `
+        <div style="background: rgba(197, 160, 89, 0.12); border: 1px solid var(--warm-gold); padding: 1.2rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+          <div style="color: var(--warm-gold-hover); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.3rem;">
+            <i class="fa-solid fa-gift"></i> Oferta Especial Activa: ${artisan.promo.title}
+          </div>
+          <p style="color: var(--text-primary); font-size: 0.95rem;">${artisan.promo.details || ''}</p>
+        </div>
+      ` : ''}
+
+      <h4 style="margin-bottom: 0.5rem; font-size: 1.2rem;">Sobre nuestro taller</h4>
+      <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.7;">${artisan.fullStory || artisan.description}</p>
+
+      ${artisan.gallery && artisan.gallery.length > 0 ? `
+        <h4 style="margin-bottom: 0.8rem; font-size: 1.1rem;">Muestra de nuestros trabajos</h4>
+        <div class="artisan-gallery-grid">
+          ${artisan.gallery.map(imgUrl => `
+            <div class="artisan-gallery-item">
+              <img src="${imgUrl}" alt="Trabajo artesanal">
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      <div class="contact-info-box">
+        <div class="contact-item">
+          <i class="fa-solid fa-phone"></i>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Teléfono / WhatsApp</div>
+            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.phone}</strong>
+          </div>
+        </div>
+        <div class="contact-item">
+          <i class="fa-solid fa-envelope"></i>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Correo Electrónico</div>
+            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.email}</strong>
+          </div>
+        </div>
+        ${artisan.website ? `
+          <div class="contact-item">
+            <i class="fa-solid fa-globe"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Sitio Web / Tienda</div>
+              <a href="${artisan.website}" target="_blank" style="color: var(--terracotta); font-weight: 700; font-size: 0.95rem; text-decoration: underline;">
+                Visitar Web Oficial <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 0.8rem;"></i>
+              </a>
+            </div>
+          </div>
+        ` : ''}
+        <div class="contact-item">
+          <i class="fa-solid fa-location-dot"></i>
+          <div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Dirección</div>
+            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.address} (${artisan.location})</strong>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+        <a href="https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="flex: 1;">
+          <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
+        </a>
+        ${artisan.website ? `
+          <a href="${artisan.website}" target="_blank" class="btn btn-gold" style="flex: 1;">
+            <i class="fa-solid fa-bag-shopping"></i> Comprar en su Web
+          </a>
+        ` : ''}
+        <button class="btn btn-secondary" onclick="closeModal('detailModal')">Cerrar</button>
+      </div>
+    </div>
+  `;
+
+  modalContainer.classList.add('active');
+}
+  const directoryGrid = document.getElementById('directoryGrid');
+  const resultsCounter = document.getElementById('resultsCount');
+  if (!directoryGrid) return;
+
   // Filtrado combinado (Categoría + Búsqueda)
   const filtered = artisans.filter(item => {
     const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
@@ -364,8 +521,240 @@ function closeModal(modalId) {
   document.getElementById(modalId).classList.remove('active');
 }
 
-// Procesar formulario de nuevo artesano
-async function handleNewArtisanSubmit(e) {
+// Estado de usuario autenticado
+let currentUser = null;
+let currentArtisanProfile = null;
+
+// Observador del estado de Autenticación de Firebase
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.auth && window.authModules) {
+    const { onAuthStateChanged } = window.authModules;
+    onAuthStateChanged(window.auth, async (user) => {
+      currentUser = user;
+      updateAuthUI(user);
+      if (user) {
+        await loadCurrentUserArtisanProfile(user.uid);
+      } else {
+        currentArtisanProfile = null;
+      }
+    });
+  }
+
+  // Formularios de Auth
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
+
+  const editShopForm = document.getElementById('editShopForm');
+  if (editShopForm) editShopForm.addEventListener('submit', handleEditShopSubmit);
+
+  const promoForm = document.getElementById('promoForm');
+  if (promoForm) promoForm.addEventListener('submit', handlePromoSubmit);
+
+  const galleryForm = document.getElementById('galleryForm');
+  if (galleryForm) galleryForm.addEventListener('submit', handleGallerySubmit);
+});
+
+// Actualizar botones del Header según Auth
+function updateAuthUI(user) {
+  const navActions = document.getElementById('navAuthActions');
+  if (!navActions) return;
+
+  if (user) {
+    navActions.innerHTML = `
+      <button class="btn btn-primary" onclick="openShopManageModal()">
+        <i class="fa-solid fa-store"></i> Mi Tienda
+      </button>
+      <button class="btn btn-secondary" onclick="handleLogout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
+    `;
+  } else {
+    navActions.innerHTML = `
+      <button class="btn btn-secondary" onclick="openLoginModal()">
+        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+      </button>
+      <button class="btn btn-primary" onclick="openRegisterModal()">
+        <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
+      </button>
+    `;
+  }
+}
+
+// Cargar perfil del artesano autenticado
+async function loadCurrentUserArtisanProfile(uid) {
+  if (!window.db || !window.firestoreModules) return;
+  try {
+    const { collection, getDocs, query } = window.firestoreModules;
+    const q = query(collection(window.db, "artisans"));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.ownerId === uid) {
+        currentArtisanProfile = { docId: docSnap.id, ...data };
+      }
+    });
+  } catch (err) {
+    console.error('Error al cargar perfil del usuario:', err);
+  }
+}
+
+// Abrir Modales de Auth
+function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
+function openRegisterModal() { document.getElementById('registerModal').classList.add('active'); }
+
+// Iniciar Sesión
+async function handleLoginSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+
+  if (!window.auth || !window.authModules) return;
+  const { signInWithEmailAndPassword } = window.authModules;
+
+  try {
+    const userCredential = await signInWithEmailAndPassword(window.auth, email, password);
+    closeModal('loginModal');
+    showToast(`¡Bienvenido de nuevo, ${userCredential.user.email}!`);
+  } catch (err) {
+    alert(`Error al iniciar sesión: ${err.message}`);
+  }
+}
+
+// Cerrar Sesión
+async function handleLogout() {
+  if (!window.auth || !window.authModules) return;
+  const { signOut } = window.authModules;
+  await signOut(window.auth);
+  showToast('Has cerrado sesión correctamente.');
+}
+
+// Abrir Modal de Gestión "Mi Tienda"
+function openShopManageModal() {
+  if (!currentUser) {
+    openLoginModal();
+    return;
+  }
+
+  if (currentArtisanProfile) {
+    document.getElementById('editName').value = currentArtisanProfile.name || '';
+    document.getElementById('editTrade').value = currentArtisanProfile.trade || '';
+    document.getElementById('editPhone').value = currentArtisanProfile.phone || '';
+    document.getElementById('editWebsite').value = currentArtisanProfile.website || '';
+    document.getElementById('editAddress').value = currentArtisanProfile.address || '';
+    document.getElementById('editDescription').value = currentArtisanProfile.description || '';
+
+    // Renderizar Galería actual
+    renderGalleryPreviewGrid(currentArtisanProfile.gallery || []);
+  }
+
+  document.getElementById('shopManageModal').classList.add('active');
+}
+
+// Cambiar Pestañas del Panel
+function switchShopTab(tabId) {
+  document.querySelectorAll('.shop-tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(tabId).style.display = 'block';
+  if (tabId === 'tabGeneral') document.getElementById('btnTabGeneral').classList.add('active');
+  if (tabId === 'tabPromos') document.getElementById('btnTabPromos').classList.add('active');
+  if (tabId === 'tabGallery') document.getElementById('btnTabGallery').classList.add('active');
+}
+
+// Guardar Cambios de la Tienda (General & Web)
+async function handleEditShopSubmit(e) {
+  e.preventDefault();
+  if (!currentUser || !currentArtisanProfile) return;
+
+  const updatedData = {
+    name: document.getElementById('editName').value,
+    trade: document.getElementById('editTrade').value,
+    phone: document.getElementById('editPhone').value,
+    website: document.getElementById('editWebsite').value,
+    address: document.getElementById('editAddress').value,
+    description: document.getElementById('editDescription').value,
+  };
+
+  if (window.db && window.firestoreModules && currentArtisanProfile.docId) {
+    try {
+      const { doc, updateDoc } = window.firestoreModules;
+      const ref = doc(window.db, "artisans", currentArtisanProfile.docId);
+      await updateDoc(ref, updatedData);
+
+      currentArtisanProfile = { ...currentArtisanProfile, ...updatedData };
+      await fetchArtisansFromFirebase();
+      renderArtisans();
+      closeModal('shopManageModal');
+      showToast('¡Los datos de tu tienda han sido actualizados!');
+    } catch (err) {
+      alert(`Error guardando en Firestore: ${err.message}`);
+    }
+  }
+}
+
+  const promoData = {
+    promo: {
+      title: promoTitle,
+      details: promoDetails,
+      active: true
+    }
+  };
+
+  if (window.db && window.firestoreModules && currentArtisanProfile.docId) {
+    try {
+      const { doc, updateDoc } = window.firestoreModules;
+      const ref = doc(window.db, "artisans", currentArtisanProfile.docId);
+      await updateDoc(ref, promoData);
+
+      currentArtisanProfile.promo = promoData.promo;
+      await fetchArtisansFromFirebase();
+      renderArtisans();
+      closeModal('shopManageModal');
+      showToast('¡Promoción publicada con éxito en tu ficha de artesano!');
+    } catch (err) {
+      alert(`Error al guardar la oferta: ${err.message}`);
+    }
+  }
+}
+
+// Añadir Foto a la Galería
+async function handleGallerySubmit(e) {
+  e.preventDefault();
+  if (!currentUser || !currentArtisanProfile) return;
+
+  const imageUrl = document.getElementById('galleryImageUrl').value;
+  const gallery = currentArtisanProfile.gallery || [];
+  gallery.push(imageUrl);
+
+  if (window.db && window.firestoreModules && currentArtisanProfile.docId) {
+    try {
+      const { doc, updateDoc } = window.firestoreModules;
+      const ref = doc(window.db, "artisans", currentArtisanProfile.docId);
+      await updateDoc(ref, { gallery });
+
+      currentArtisanProfile.gallery = gallery;
+      renderGalleryPreviewGrid(gallery);
+      await fetchArtisansFromFirebase();
+      renderArtisans();
+      document.getElementById('galleryImageUrl').value = '';
+      showToast('¡Imagen añadida a la galería de tu taller!');
+    } catch (err) {
+      alert(`Error al añadir la imagen: ${err.message}`);
+    }
+  }
+}
+
+function renderGalleryPreviewGrid(gallery) {
+  const container = document.getElementById('galleryPreviewGrid');
+  if (!container) return;
+
+  container.innerHTML = gallery.map(url => `
+    <div class="artisan-gallery-item">
+      <img src="${url}" alt="Trabajo artesanal">
+    </div>
+  `).join('');
+}
   e.preventDefault();
 
   const name = document.getElementById('inputName').value;

@@ -826,6 +826,80 @@ h1, h2, h3, h4 {
   color: var(--text-muted);
 }
 
+/* Pestañas del Panel de la Tienda */
+.tab-btn {
+  background: transparent;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-btn:hover {
+  color: var(--terracotta);
+}
+
+.tab-btn.active {
+  color: var(--terracotta);
+  border-bottom-color: var(--terracotta);
+}
+
+/* Promo Badge en Tarjetas de Artesano */
+.promo-badge {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, var(--warm-gold) 0%, #B08B45 100%);
+  color: #FFF;
+  padding: 0.4rem 0.9rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  animation: pulseGold 2s infinite;
+}
+
+@keyframes pulseGold {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+
+/* Galería de Trabajos */
+.artisan-gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 0.8rem;
+  margin: 1.5rem 0;
+}
+
+.artisan-gallery-item {
+  height: 110px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.artisan-gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.artisan-gallery-item img:hover {
+  transform: scale(1.1);
+}
+
 /* Toast Notifications */
 .toast-container {
   position: fixed;
