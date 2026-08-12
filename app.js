@@ -705,19 +705,21 @@ function renderGalleryPreviewGrid(gallery) {
       <img src="${url}" alt="Trabajo artesanal">
     </div>
   `).join('');
-}
+// Procesar registro de nuevo artesano con Firebase Auth
+async function handleNewArtisanSubmit(e) {
   e.preventDefault();
 
+  const authEmail = document.getElementById('inputAuthEmail') ? document.getElementById('inputAuthEmail').value : document.getElementById('inputEmail').value;
+  const authPassword = document.getElementById('inputAuthPassword') ? document.getElementById('inputAuthPassword').value : '12345678';
   const name = document.getElementById('inputName').value;
   const category = document.getElementById('inputCategory').value;
   const trade = document.getElementById('inputTrade').value;
   const location = document.getElementById('inputLocation').value;
   const address = document.getElementById('inputAddress').value;
   const phone = document.getElementById('inputPhone').value;
-  const email = document.getElementById('inputEmail').value;
+  const website = document.getElementById('inputWebsite') ? document.getElementById('inputWebsite').value : '';
   const description = document.getElementById('inputDescription').value;
 
-  // Mapa de imágenes por categoría por defecto
   const defaultImages = {
     ceramica: 'images/ceramics_artisan_1786534790567.png',
     tejido: 'images/textile_artisan_1786534801221.png',
@@ -734,31 +736,53 @@ function renderGalleryPreviewGrid(gallery) {
     comida: 'Comida Artesana'
   };
 
+  let createdUid = null;
+
+  // 1. Crear cuenta de usuario en Firebase Auth
+  if (window.auth && window.authModules) {
+    try {
+      const { createUserWithEmailAndPassword, sendEmailVerification } = window.authModules;
+      const userCredential = await createUserWithEmailAndPassword(window.auth, authEmail, authPassword);
+      createdUid = userCredential.user.uid;
+
+      // Enviar correo de verificación
+      await sendEmailVerification(userCredential.user);
+      showToast('📩 Correo de verificación enviado a ' + authEmail);
+    } catch (authErr) {
+      console.warn('Registro Auth:', authErr.message);
+    }
+  }
+
   const newArtisan = {
     id: Date.now(),
+    ownerId: createdUid || (currentUser ? currentUser.uid : 'anonymous'),
     name,
     trade,
     category,
     categoryLabel: categoryLabels[category] || 'Artesanía',
     rating: 5.0,
     reviewsCount: 1,
-    experience: 'Nuevo en la plataforma',
+    experience: 'Artesano verificado',
     location,
     address,
     phone,
-    email,
+    email: authEmail,
+    website: website,
     image: defaultImages[category] || 'images/ceramics_artisan_1786534790567.png',
     description,
     fullStory: description,
     hours: 'Consultar al artesano',
-    tags: ['Artesanal', 'Local', 'Hecho a Mano']
+    tags: ['Artesanal', 'Local', 'Hecho a Mano'],
+    promo: null,
+    gallery: []
   };
 
-  // Si Firebase está configurado, guardar en Firestore
+  // 2. Guardar ficha en Firestore
   if (window.db && window.firestoreModules) {
     try {
       const { collection, addDoc } = window.firestoreModules;
       await addDoc(collection(window.db, "artisans"), {
+        ownerId: newArtisan.ownerId,
         name: newArtisan.name,
         trade: newArtisan.trade,
         category: newArtisan.category,
@@ -767,13 +791,14 @@ function renderGalleryPreviewGrid(gallery) {
         address: newArtisan.address,
         phone: newArtisan.phone,
         email: newArtisan.email,
+        website: newArtisan.website,
         description: newArtisan.description,
         fullStory: newArtisan.fullStory,
         image: newArtisan.image,
         createdAt: new Date()
       });
     } catch (err) {
-      console.error('Error al guardar en Firebase Firestore:', err);
+      console.error('Error al guardar en Firestore:', err);
     }
   }
 
@@ -783,7 +808,7 @@ function renderGalleryPreviewGrid(gallery) {
   closeModal('registerModal');
   e.target.reset();
 
-  showToast(`¡Bienvenido a la comunidad, ${name}! Tu negocio ha sido publicado con éxito.`);
+  showToast(`¡Bienvenido, ${name}! Tu cuenta y tienda están creadas.`);
 }
 
 // Notificación Toast
