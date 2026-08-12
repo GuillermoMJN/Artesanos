@@ -111,52 +111,56 @@ let artisans = [...initialArtisans];
 let activeCategory = 'all';
 let searchQuery = '';
 
+// Configuración e Integración con Firebase Firestore
+async function fetchArtisansFromFirebase() {
+  if (!window.db || !window.firestoreModules) return;
+
+  try {
+    const { collection, getDocs, query, orderBy } = window.firestoreModules;
+    const q = query(collection(window.db, "artisans"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const dbArtisans = [];
+      querySnapshot.forEach((doc) => {
+        const item = doc.data();
+        dbArtisans.push({
+          id: doc.id,
+          name: item.name,
+          trade: item.trade,
+          category: item.category,
+          categoryLabel: item.categoryLabel || item.category,
+          rating: item.rating || 5.0,
+          reviewsCount: item.reviewsCount || 1,
+          experience: item.experience || 'Artesano verificado',
+          location: item.location,
+          address: item.address,
+          phone: item.phone,
+          email: item.email,
+          image: item.image || 'images/ceramics_artisan_1786534790567.png',
+          description: item.description,
+          fullStory: item.fullStory || item.description,
+          hours: item.hours || 'Consultar al artesano',
+          tags: item.tags || ['Artesanal', 'Hecho a mano']
+        });
+      });
+      artisans = dbArtisans;
+    }
+  } catch (err) {
+    console.warn('Error al cargar datos de Firebase Firestore:', err.message);
+  }
+}
+
 // Elementos DOM
 document.addEventListener('DOMContentLoaded', async () => {
-  if (supabaseClient) {
-    await fetchArtisansFromSupabase();
+  if (window.db) {
+    await fetchArtisansFromFirebase();
   }
   renderCategories();
   renderArtisans();
   setupEventListeners();
   setupHeaderScroll();
 });
-
-// Cargar artesanos desde Supabase
-async function fetchArtisansFromSupabase() {
-  try {
-    const { data, error } = await supabaseClient
-      .from('artisans')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    if (data && data.length > 0) {
-      artisans = data.map(item => ({
-        id: item.id,
-        name: item.name,
-        trade: item.trade,
-        category: item.category,
-        categoryLabel: item.category_label || item.category,
-        rating: item.rating || 5.0,
-        reviewsCount: item.reviews_count || 1,
-        experience: item.experience || 'Artesano verificado',
-        location: item.location,
-        address: item.address,
-        phone: item.phone,
-        email: item.email,
-        image: item.image || 'images/ceramics_artisan_1786534790567.png',
-        description: item.description,
-        fullStory: item.full_story || item.description,
-        hours: item.hours || 'Consultar al artesano',
-        tags: item.tags || ['Artesanal', 'Hecho a mano']
-      }));
-    }
-  } catch (err) {
-    console.warn('Error al cargar de Supabase, usando datos locales:', err.message);
-  }
-}
 
 // Renderizar Categorías
 function renderCategories() {
@@ -410,26 +414,26 @@ async function handleNewArtisanSubmit(e) {
     tags: ['Artesanal', 'Local', 'Hecho a Mano']
   };
 
-  // Si Supabase está configurado, guardar en la base de datos remota
-  if (supabaseClient) {
+  // Si Firebase está configurado, guardar en Firestore
+  if (window.db && window.firestoreModules) {
     try {
-      const { error } = await supabaseClient.from('artisans').insert([{
+      const { collection, addDoc } = window.firestoreModules;
+      await addDoc(collection(window.db, "artisans"), {
         name: newArtisan.name,
         trade: newArtisan.trade,
         category: newArtisan.category,
-        category_label: newArtisan.categoryLabel,
+        categoryLabel: newArtisan.categoryLabel,
         location: newArtisan.location,
         address: newArtisan.address,
         phone: newArtisan.phone,
         email: newArtisan.email,
         description: newArtisan.description,
-        full_story: newArtisan.fullStory,
-        image: newArtisan.image
-      }]);
-
-      if (error) console.error('Error insertando en Supabase:', error.message);
+        fullStory: newArtisan.fullStory,
+        image: newArtisan.image,
+        createdAt: new Date()
+      });
     } catch (err) {
-      console.error('Error al conectar con Supabase:', err);
+      console.error('Error al guardar en Firebase Firestore:', err);
     }
   }
 
