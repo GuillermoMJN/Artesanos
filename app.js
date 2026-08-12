@@ -636,6 +636,14 @@ async function handleEditShopSubmit(e) {
   }
 }
 
+// Publicar Promoción
+async function handlePromoSubmit(e) {
+  e.preventDefault();
+  if (!currentUser || !currentArtisanProfile) return;
+
+  const promoTitle = document.getElementById('promoTitle').value;
+  const promoDetails = document.getElementById('promoDetails').value;
+
   const promoData = {
     promo: {
       title: promoTitle,
