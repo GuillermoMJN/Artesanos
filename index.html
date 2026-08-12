@@ -1,19 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Artesanos | Plataforma de Oficios & Creadores Locales</title>
-  <meta name="description" content="Descubre y apoya a artesanos locales: cerámica, tejido, herrería, tatuajes artísticos, comida de autor y mucho más. Hecho a mano con pasión.">
-  
+  <meta name="description"
+    content="Descubre y apoya a artesanos locales: cerámica, tejido, herrería, tatuajes artísticos, comida de autor y mucho más. Hecho a mano con pasión.">
+
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
+
   <!-- Google Fonts (Playfair Display & Plus Jakarta Sans) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
   <!-- Firebase SDK v10 -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -21,12 +25,13 @@
 
     // Configuración de Firebase (Sustituye con tus credenciales de Firebase Console)
     const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyCUGHYFtVmXweGGK7tNfUIhmE_hFr4J_QA",
+      authDomain: "artesanos-2a706.firebaseapp.com",
+      projectId: "artesanos-2a706",
+      storageBucket: "artesanos-2a706.firebasestorage.app",
+      messagingSenderId: "514399575895",
+      appId: "1:514399575895:web:7f59c0d5b23005b4a7e812",
+      measurementId: "G-RXEYMVJBC0"
     };
 
     // Inicializar Firebase
@@ -42,6 +47,7 @@
   <!-- Estilos CSS -->
   <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
 
   <!-- Header / Navigation -->
@@ -79,13 +85,16 @@
           El alma de lo <span>hecho a mano</span>, cerca de ti.
         </h1>
         <p class="hero-description">
-          Conecta directamente con cerámicos, tejedores, herreros, tatuadores de trazo fino y obradores artesanales. Descubre sus historias y apoya el talento local.
+          Conecta directamente con cerámicos, tejedores, herreros, tatuadores de trazo fino y obradores artesanales.
+          Descubre sus historias y apoya el talento local.
         </p>
 
         <!-- Barra de búsqueda -->
         <div class="hero-search-box">
-          <i class="fa-solid fa-magnifying-glass" style="margin-left: 1.2rem; color: var(--terracotta); font-size: 1.2rem;"></i>
-          <input type="text" id="searchInput" class="hero-search-input" placeholder="Busca por oficio, nombre o ciudad (ej. Cerámica, Madrid, Toledo)...">
+          <i class="fa-solid fa-magnifying-glass"
+            style="margin-left: 1.2rem; color: var(--terracotta); font-size: 1.2rem;"></i>
+          <input type="text" id="searchInput" class="hero-search-input"
+            placeholder="Busca por oficio, nombre o ciudad (ej. Cerámica, Madrid, Toledo)...">
           <button class="btn btn-gold" style="padding: 0.8rem 1.4rem;">
             Buscar
           </button>
@@ -117,7 +126,8 @@
       <div class="text-center">
         <span class="section-tag"><i class="fa-solid fa-shapes"></i> Oficios Tradicionales</span>
         <h2 class="section-title">Explora por Categoría</h2>
-        <p class="section-subtitle mx-auto">Selecciona la disciplina que deseas descubrir para filtrar nuestro directorio de artesanos.</p>
+        <p class="section-subtitle mx-auto">Selecciona la disciplina que deseas descubrir para filtrar nuestro
+          directorio de artesanos.</p>
       </div>
 
       <div class="category-grid" id="categoryGrid">
@@ -148,8 +158,10 @@
         <div class="join-banner-bg"></div>
         <div class="join-banner-content">
           <h2>¿Eres artesano o tienes un taller tradicional?</h2>
-          <p>Únete a nuestra plataforma de forma gratuita. Publica tu negocio, muestra tus trabajos, comparte tu dirección y recibe visitas o pedidos directamente en tu taller.</p>
-          <button class="btn btn-primary" onclick="openRegisterModal()" style="font-size: 1.05rem; padding: 1rem 2.2rem;">
+          <p>Únete a nuestra plataforma de forma gratuita. Publica tu negocio, muestra tus trabajos, comparte tu
+            dirección y recibe visitas o pedidos directamente en tu taller.</p>
+          <button class="btn btn-primary" onclick="openRegisterModal()"
+            style="font-size: 1.05rem; padding: 1rem 2.2rem;">
             <i class="fa-solid fa-paper-plane"></i> Publicar mi Negocio Ahora
           </button>
         </div>
@@ -159,13 +171,16 @@
   </section>
 
   <!-- Sección Nuestra Filosofía -->
-  <section class="categories-section" id="nosotros" style="background: var(--beige-light); border-top: 1px solid var(--border-color); padding: 6rem 0;">
+  <section class="categories-section" id="nosotros"
+    style="background: var(--beige-light); border-top: 1px solid var(--border-color); padding: 6rem 0;">
     <div class="container">
       <div class="text-center" style="max-width: 800px; margin: 0 auto;">
         <span class="section-tag"><i class="fa-solid fa-heart"></i> Nuestra Filosofía</span>
         <h2 class="section-title">Valorar el tiempo, la materia y las manos</h2>
         <p style="font-size: 1.15rem; color: var(--text-secondary); line-height: 1.8; margin-top: 1.5rem;">
-          En un mundo dominado por la producción en masa, "Artesanos" nace para visibilizar a quienes dedican su vida a perfeccionar una técnica con paciencia. Creemos en el consumo consciente, en el valor del objeto único y en la cercanía de conocer a la persona que crea lo que llevamos a nuestro hogar.
+          En un mundo dominado por la producción en masa, "Artesanos" nace para visibilizar a quienes dedican su vida a
+          perfeccionar una técnica con paciencia. Creemos en el consumo consciente, en el valor del objeto único y en la
+          cercanía de conocer a la persona que crea lo que llevamos a nuestro hogar.
         </p>
       </div>
     </div>
@@ -177,7 +192,8 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <h3><i class="fa-solid fa-hands-holding" style="color: var(--terracotta);"></i> Artesanos</h3>
-          <p>Plataforma para el descubrimiento, preservación y conexión con creadores y talleres artesanales locales.</p>
+          <p>Plataforma para el descubrimiento, preservación y conexión con creadores y talleres artesanales locales.
+          </p>
         </div>
         <div>
           <h4 class="footer-title">Categorías</h4>
@@ -240,7 +256,8 @@
         <div style="text-align: center; margin-bottom: 2rem;">
           <span class="hero-badge"><i class="fa-solid fa-store"></i> Unirme a la red</span>
           <h2 style="font-size: 2rem; margin-top: 0.5rem;">Publica tu Negocio Artesanal</h2>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">Completa tus datos para formar parte de nuestro directorio y conectar con nuevos clientes.</p>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Completa tus datos para formar parte de nuestro
+            directorio y conectar con nuevos clientes.</p>
         </div>
 
         <form id="registerForm">
@@ -264,7 +281,8 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Especialidad u Oficio *</label>
-              <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno" required>
+              <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno"
+                required>
             </div>
             <div class="form-group">
               <label class="form-label">Ciudad / Provincia *</label>
@@ -274,7 +292,8 @@
 
           <div class="form-group">
             <label class="form-label">Dirección Completa del Taller *</label>
-            <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejon del Aire 14, Albaicín" required>
+            <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejon del Aire 14, Albaicín"
+              required>
           </div>
 
           <div class="form-row">
@@ -290,7 +309,9 @@
 
           <div class="form-group">
             <label class="form-label">Descripción de tu trabajo e Historia *</label>
-            <textarea id="inputDescription" class="form-textarea" rows="4" placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..." required></textarea>
+            <textarea id="inputDescription" class="form-textarea" rows="4"
+              placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..."
+              required></textarea>
           </div>
 
           <div style="display: flex; gap: 1rem; margin-top: 2rem;">
@@ -312,4 +333,5 @@
   <!-- Scripts -->
   <script src="app.js"></script>
 </body>
+
 </html>
