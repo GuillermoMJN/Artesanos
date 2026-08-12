@@ -1,12 +1,3 @@
-// Configuración de Supabase (Sustituye con las llaves de tu proyecto en supabase.com)
-const SUPABASE_URL = 'https://YOUR_SUPABASE_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-
-let supabaseClient = null;
-if (typeof supabase !== 'undefined' && SUPABASE_URL.includes('https://') && !SUPABASE_URL.includes('YOUR_SUPABASE_PROJECT_ID')) {
-  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
 // Datos iniciales de artesanos (Fallback y semilla inicial)
 const initialArtisans = [
   {
@@ -22,11 +13,14 @@ const initialArtisans = [
     address: "Callejon del Aire 14, Albaicín",
     phone: "+34 612 345 678",
     email: "taller@barroyalarcon.com",
+    website: "https://barroyalarcon.com",
     image: "images/ceramics_artisan_1786534790567.png",
     description: "Creamos vajillas, jarrones y piezas utilitarias moldeadas a mano en torno alfarero tradicional. Utilizamos esmaltes naturales formulados en nuestro propio taller con cenizas de olivo.",
     fullStory: "Nuestra historia comenzó en 2009 en el corazón del Albaicín granadino. Cada una de nuestras piezas conserva la marca única de las manos que la moldearon y las cenizas de la vegetación local.",
     hours: "Lunes a Viernes: 10:00 - 19:00",
-    tags: ["Barro Esmaltado", "Torneo Manual", "Piezas Únicas"]
+    tags: ["Barro Esmaltado", "Torneo Manual", "Piezas Únicas"],
+    promo: null,
+    gallery: []
   },
   {
     id: 2,
@@ -41,11 +35,14 @@ const initialArtisans = [
     address: "Calle de los Artesanos 8",
     phone: "+34 622 987 654",
     email: "clara@hilosdelatierra.es",
+    website: "https://hilosdelatierra.es",
     image: "images/textile_artisan_1786534801221.png",
     description: "Tejidos tradicionales elaborados en telar de madera utilizando lanas 100% orgánicas coloreadas con plantas, agallas de roble y cochinilla natural.",
     fullStory: "Rescatamos la herencia del tejido artesanal en telar de bajo lizo. No utilizamos químicos sintéticos en ningún proceso de teñido, garantizando mantas y tapices eternos.",
     hours: "Cita previa / Martes a Sábado: 11:00 - 18:00",
-    tags: ["Telar de Madera", "Tintes Botánicos", "Lana Orgánica"]
+    tags: ["Telar de Madera", "Tintes Botánicos", "Lana Orgánica"],
+    promo: null,
+    gallery: []
   },
   {
     id: 3,
@@ -60,11 +57,14 @@ const initialArtisans = [
     address: "Camino de la Fragua 3",
     phone: "+34 633 112 233",
     email: "contacto@forjatoledana.es",
+    website: "https://forjatoledana.es",
     image: "images/blacksmith_artisan_1786534811595.png",
     description: "Escultura en hierro, portones ornamentales, cuchillería artesanal y restauración de elementos arquitectónicos de época a martillo y yunque.",
     fullStory: "Maestro forjador formado por tres generaciones. Moldeamos el acero candente utilizando el fuego de carbón de encina y las técnicas de la forja toledana de toda la vida.",
     hours: "Lunes a Viernes: 08:30 - 17:30",
-    tags: ["Forja Tradicional", "Cuchillería", "Hierro Batido"]
+    tags: ["Forja Tradicional", "Cuchillería", "Hierro Batido"],
+    promo: null,
+    gallery: []
   },
   {
     id: 4,
@@ -79,11 +79,14 @@ const initialArtisans = [
     address: "Carrer del Rec 22, El Born",
     phone: "+34 644 556 677",
     email: "booking@auratattoo.studio",
+    website: "https://auratattoo.studio",
     image: "images/tattoo_artisan_1786534822293.png",
     description: "Estudio de tatuaje artesanal especializado en ilustración botánica, trazo fino customizado e tintas veganas de primera calidad en un ambiente sereno.",
     fullStory: "Entendemos el tatuaje como una experiencia ritual y artesanal. Cada diseño es dibujado a mano exclusivamente para la anatomía del cliente en nuestro estudio.",
     hours: "Martes a Sábado: 12:00 - 20:00 (Solo cita previa)",
-    tags: ["Fine Line", "Diseño Exclusivo", "Tintas Veganas"]
+    tags: ["Fine Line", "Diseño Exclusivo", "Tintas Veganas"],
+    promo: null,
+    gallery: []
   },
   {
     id: 5,
@@ -98,20 +101,25 @@ const initialArtisans = [
     address: "Plaza del Mercado 12",
     phone: "+34 655 998 877",
     email: "hola@masaymasaobrador.es",
+    website: "https://masaymasaobrador.es",
     image: "images/bakery_artisan_1786534832288.png",
     description: "Pan de masa madre con 48h de fermentación lenta, harinas de molino de piedra ecológicas y repostería artesanal recién horneada cada mañana.",
     fullStory: "Molemos grano seleccionado de pequeños agricultores locales. Nuestro horno de piedra no descansa de madrugada para ofrecer el aroma del pan de verdad a primera hora.",
     hours: "Martes a Domingo: 07:30 - 15:00",
-    tags: ["Masa Madre", "Harina Ecológica", "Horno de Piedra"]
+    tags: ["Masa Madre", "Harina Ecológica", "Horno de Piedra"],
+    promo: null,
+    gallery: []
   }
 ];
 
-// Estado global de la aplicación
+// Estado global
 let artisans = [...initialArtisans];
 let activeCategory = 'all';
 let searchQuery = '';
+let currentUser = null;
+let currentArtisanProfile = null;
 
-// Configuración e Integración con Firebase Firestore
+// Cargar datos desde Firebase Firestore
 async function fetchArtisansFromFirebase() {
   if (!window.db || !window.firestoreModules) return;
 
@@ -122,10 +130,11 @@ async function fetchArtisansFromFirebase() {
 
     if (!querySnapshot.empty) {
       const dbArtisans = [];
-      querySnapshot.forEach((doc) => {
-        const item = doc.data();
+      querySnapshot.forEach((docSnap) => {
+        const item = docSnap.data();
         dbArtisans.push({
-          id: doc.id,
+          id: docSnap.id,
+          ownerId: item.ownerId,
           name: item.name,
           trade: item.trade,
           category: item.category,
@@ -137,11 +146,14 @@ async function fetchArtisansFromFirebase() {
           address: item.address,
           phone: item.phone,
           email: item.email,
+          website: item.website || '',
           image: item.image || 'images/ceramics_artisan_1786534790567.png',
           description: item.description,
           fullStory: item.fullStory || item.description,
           hours: item.hours || 'Consultar al artesano',
-          tags: item.tags || ['Artesanal', 'Hecho a mano']
+          tags: item.tags || ['Artesanal', 'Hecho a mano'],
+          promo: item.promo || null,
+          gallery: item.gallery || []
         });
       });
       artisans = dbArtisans;
@@ -151,18 +163,114 @@ async function fetchArtisansFromFirebase() {
   }
 }
 
-// Elementos DOM
+// Cargar perfil del artesano autenticado
+async function loadCurrentUserArtisanProfile(uid) {
+  if (!window.db || !window.firestoreModules) return;
+  try {
+    const { collection, getDocs, query } = window.firestoreModules;
+    const q = query(collection(window.db, "artisans"));
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (data.ownerId === uid) {
+        currentArtisanProfile = { docId: docSnap.id, ...data };
+      }
+    });
+  } catch (err) {
+    console.error('Error al cargar perfil del usuario:', err);
+  }
+}
+
+// Inicialización de la Aplicación
 document.addEventListener('DOMContentLoaded', async () => {
   if (window.db) {
     await fetchArtisansFromFirebase();
   }
+
+  if (window.auth && window.authModules) {
+    const { onAuthStateChanged } = window.authModules;
+    onAuthStateChanged(window.auth, async (user) => {
+      currentUser = user;
+      updateAuthUI(user);
+      if (user) {
+        await loadCurrentUserArtisanProfile(user.uid);
+      } else {
+        currentArtisanProfile = null;
+      }
+    });
+  }
+
   renderCategories();
   renderArtisans();
   setupEventListeners();
   setupHeaderScroll();
 });
 
-// Renderizar Categorías
+// Actualizar botones de navegación según sesión
+function updateAuthUI(user) {
+  const navActions = document.getElementById('navAuthActions');
+  if (!navActions) return;
+
+  if (user) {
+    navActions.innerHTML = `
+      <button class="btn btn-primary" onclick="openShopManageModal()">
+        <i class="fa-solid fa-store"></i> Mi Tienda
+      </button>
+      <button class="btn btn-secondary" onclick="handleLogout()">
+        <i class="fa-solid fa-right-from-bracket"></i> Salir
+      </button>
+    `;
+  } else {
+    navActions.innerHTML = `
+      <button class="btn btn-secondary" onclick="openLoginModal()">
+        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+      </button>
+      <button class="btn btn-primary" onclick="openRegisterModal()">
+        <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
+      </button>
+    `;
+  }
+}
+
+// Configurar listeners de la app
+function setupEventListeners() {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      renderArtisans();
+    });
+  }
+
+  const registerForm = document.getElementById('registerForm');
+  if (registerForm) registerForm.addEventListener('submit', handleNewArtisanSubmit);
+
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
+
+  const editShopForm = document.getElementById('editShopForm');
+  if (editShopForm) editShopForm.addEventListener('submit', handleEditShopSubmit);
+
+  const promoForm = document.getElementById('promoForm');
+  if (promoForm) promoForm.addEventListener('submit', handlePromoSubmit);
+
+  const galleryForm = document.getElementById('galleryForm');
+  if (galleryForm) galleryForm.addEventListener('submit', handleGallerySubmit);
+}
+
+function setupHeaderScroll() {
+  const header = document.getElementById('mainHeader');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  });
+}
+
+// Categorías
 function renderCategories() {
   const categoryContainer = document.getElementById('categoryGrid');
   if (!categoryContainer) return;
@@ -191,14 +299,13 @@ function getCategoryCount(catId) {
   return artisans.filter(a => a.category === catId).length;
 }
 
-// Filtrar por categoría
 function filterByCategory(catId) {
   activeCategory = catId;
   renderCategories();
   renderArtisans();
 }
 
-// Renderizar Tarjetas de Artesanos
+// Renderizado del Directorio de Artesanos
 function renderArtisans() {
   const directoryGrid = document.getElementById('directoryGrid');
   const resultsCounter = document.getElementById('resultsCount');
@@ -262,7 +369,7 @@ function renderArtisans() {
   `).join('');
 }
 
-// Abrir modal de detalles de artesano
+// Modal Detalle Artesano
 function openArtisanModal(id) {
   const artisan = artisans.find(a => String(a.id) === String(id));
   if (!artisan) return;
@@ -280,7 +387,7 @@ function openArtisanModal(id) {
     </div>
     <div class="modal-body">
       <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        ${artisan.tags.map(t => `<span class="hero-badge" style="margin: 0; font-size: 0.8rem;">#${t}</span>`).join('')}
+        ${artisan.tags ? artisan.tags.map(t => `<span class="hero-badge" style="margin: 0; font-size: 0.8rem;">#${t}</span>`).join('') : ''}
       </div>
 
       ${artisan.promo && artisan.promo.active ? `
@@ -358,195 +465,43 @@ function openArtisanModal(id) {
   modalContainer.classList.add('active');
 }
 
-// Búsqueda en tiempo real
-function setupEventListeners() {
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value;
-      renderArtisans();
-    });
-  }
-
-  // Formulario de nuevo artesano
-  const registerForm = document.getElementById('registerForm');
-  if (registerForm) {
-    registerForm.addEventListener('submit', handleNewArtisanSubmit);
-  }
-}
-
-// Scroll de header
-function setupHeaderScroll() {
-  const header = document.getElementById('mainHeader');
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  });
-}
-
-// Abrir modal de detalles de artesano
-function openArtisanModal(id) {
-  const artisan = artisans.find(a => a.id === id);
-  if (!artisan) return;
-
-  const modalContainer = document.getElementById('detailModal');
-  const modalContent = document.getElementById('detailModalContent');
-
-  modalContent.innerHTML = `
-    <div class="modal-header-hero">
-      <img src="${artisan.image}" alt="${artisan.name}">
-      <div class="modal-header-overlay">
-        <h2>${artisan.name}</h2>
-        <p style="color: var(--beige-medium); font-weight: 500;">${artisan.trade}</p>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
-        ${artisan.tags.map(t => `<span class="hero-badge" style="margin: 0; font-size: 0.8rem;">#${t}</span>`).join('')}
-      </div>
-
-      <h4 style="margin-bottom: 0.5rem; font-size: 1.2rem;">Sobre nuestro taller</h4>
-      <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.7;">${artisan.fullStory}</p>
-
-      <div class="contact-info-box">
-        <div class="contact-item">
-          <i class="fa-solid fa-phone"></i>
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">Teléfono / WhatsApp</div>
-            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.phone}</strong>
-          </div>
-        </div>
-        <div class="contact-item">
-          <i class="fa-solid fa-envelope"></i>
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">Correo Electrónico</div>
-            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.email}</strong>
-          </div>
-        </div>
-        <div class="contact-item">
-          <i class="fa-solid fa-location-dot"></i>
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">Dirección</div>
-            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.address} (${artisan.location})</strong>
-          </div>
-        </div>
-        <div class="contact-item">
-          <i class="fa-solid fa-clock"></i>
-          <div>
-            <div style="font-size: 0.75rem; color: var(--text-muted);">Horario de atención</div>
-            <strong style="color: var(--primary-dark); font-size: 0.95rem;">${artisan.hours}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-        <a href="https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="flex: 1;">
-          <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
-        </a>
-        <button class="btn btn-secondary" onclick="closeModal('detailModal')">Cerrar</button>
-      </div>
-    </div>
-  `;
-
-  modalContainer.classList.add('active');
-}
-
-// Abrir Modal de Registro
-function openRegisterModal() {
-  document.getElementById('registerModal').classList.add('active');
-}
-
-// Cerrar cualquier modal
-function closeModal(modalId) {
-  document.getElementById(modalId).classList.remove('active');
-}
-
-// Estado de usuario autenticado
-let currentUser = null;
-let currentArtisanProfile = null;
-
-// Observador del estado de Autenticación de Firebase
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.auth && window.authModules) {
-    const { onAuthStateChanged } = window.authModules;
-    onAuthStateChanged(window.auth, async (user) => {
-      currentUser = user;
-      updateAuthUI(user);
-      if (user) {
-        await loadCurrentUserArtisanProfile(user.uid);
-      } else {
-        currentArtisanProfile = null;
-      }
-    });
-  }
-
-  // Formularios de Auth
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) loginForm.addEventListener('submit', handleLoginSubmit);
-
-  const editShopForm = document.getElementById('editShopForm');
-  if (editShopForm) editShopForm.addEventListener('submit', handleEditShopSubmit);
-
-  const promoForm = document.getElementById('promoForm');
-  if (promoForm) promoForm.addEventListener('submit', handlePromoSubmit);
-
-  const galleryForm = document.getElementById('galleryForm');
-  if (galleryForm) galleryForm.addEventListener('submit', handleGallerySubmit);
-});
-
-// Actualizar botones del Header según Auth
-function updateAuthUI(user) {
-  const navActions = document.getElementById('navAuthActions');
-  if (!navActions) return;
-
-  if (user) {
-    navActions.innerHTML = `
-      <button class="btn btn-primary" onclick="openShopManageModal()">
-        <i class="fa-solid fa-store"></i> Mi Tienda
-      </button>
-      <button class="btn btn-secondary" onclick="handleLogout()">
-        <i class="fa-solid fa-right-from-bracket"></i> Salir
-      </button>
-    `;
-  } else {
-    navActions.innerHTML = `
-      <button class="btn btn-secondary" onclick="openLoginModal()">
-        <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
-      </button>
-      <button class="btn btn-primary" onclick="openRegisterModal()">
-        <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
-      </button>
-    `;
-  }
-}
-
-// Cargar perfil del artesano autenticado
-async function loadCurrentUserArtisanProfile(uid) {
-  if (!window.db || !window.firestoreModules) return;
-  try {
-    const { collection, getDocs, query } = window.firestoreModules;
-    const q = query(collection(window.db, "artisans"));
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if (data.ownerId === uid) {
-        currentArtisanProfile = { docId: docSnap.id, ...data };
-      }
-    });
-  } catch (err) {
-    console.error('Error al cargar perfil del usuario:', err);
-  }
-}
-
-// Abrir Modales de Auth
+// Control de Modales
 function openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
 function openRegisterModal() { document.getElementById('registerModal').classList.add('active'); }
+function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
 
-// Iniciar Sesión
+// Modales del Panel de la Tienda
+function openShopManageModal() {
+  if (!currentUser) {
+    openLoginModal();
+    return;
+  }
+
+  if (currentArtisanProfile) {
+    document.getElementById('editName').value = currentArtisanProfile.name || '';
+    document.getElementById('editTrade').value = currentArtisanProfile.trade || '';
+    document.getElementById('editPhone').value = currentArtisanProfile.phone || '';
+    document.getElementById('editWebsite').value = currentArtisanProfile.website || '';
+    document.getElementById('editAddress').value = currentArtisanProfile.address || '';
+    document.getElementById('editDescription').value = currentArtisanProfile.description || '';
+
+    renderGalleryPreviewGrid(currentArtisanProfile.gallery || []);
+  }
+
+  document.getElementById('shopManageModal').classList.add('active');
+}
+
+function switchShopTab(tabId) {
+  document.querySelectorAll('.shop-tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(tabId).style.display = 'block';
+  if (tabId === 'tabGeneral') document.getElementById('btnTabGeneral').classList.add('active');
+  if (tabId === 'tabPromos') document.getElementById('btnTabPromos').classList.add('active');
+  if (tabId === 'tabGallery') document.getElementById('btnTabGallery').classList.add('active');
+}
+
+// Handlers de Formularios Auth & Tienda
 async function handleLoginSubmit(e) {
   e.preventDefault();
   const email = document.getElementById('loginEmail').value;
@@ -564,7 +519,6 @@ async function handleLoginSubmit(e) {
   }
 }
 
-// Cerrar Sesión
 async function handleLogout() {
   if (!window.auth || !window.authModules) return;
   const { signOut } = window.authModules;
@@ -572,40 +526,111 @@ async function handleLogout() {
   showToast('Has cerrado sesión correctamente.');
 }
 
-// Abrir Modal de Gestión "Mi Tienda"
-function openShopManageModal() {
-  if (!currentUser) {
-    openLoginModal();
-    return;
+async function handleNewArtisanSubmit(e) {
+  e.preventDefault();
+
+  const authEmailInput = document.getElementById('inputAuthEmail');
+  const authEmail = authEmailInput ? authEmailInput.value : document.getElementById('inputPhone').value + '@artesanos.es';
+  const authPasswordInput = document.getElementById('inputAuthPassword');
+  const authPassword = authPasswordInput ? authPasswordInput.value : '12345678';
+  
+  const name = document.getElementById('inputName').value;
+  const category = document.getElementById('inputCategory').value;
+  const trade = document.getElementById('inputTrade').value;
+  const location = document.getElementById('inputLocation').value;
+  const address = document.getElementById('inputAddress').value;
+  const phone = document.getElementById('inputPhone').value;
+  const websiteInput = document.getElementById('inputWebsite');
+  const website = websiteInput ? websiteInput.value : '';
+  const description = document.getElementById('inputDescription').value;
+
+  const defaultImages = {
+    ceramica: 'images/ceramics_artisan_1786534790567.png',
+    tejido: 'images/textile_artisan_1786534801221.png',
+    herreria: 'images/blacksmith_artisan_1786534811595.png',
+    tatuaje: 'images/tattoo_artisan_1786534822293.png',
+    comida: 'images/bakery_artisan_1786534832288.png'
+  };
+
+  const categoryLabels = {
+    ceramica: 'Cerámica',
+    tejido: 'Tejido & Textil',
+    herreria: 'Herrería & Metal',
+    tatuaje: 'Tatuaje Artístico',
+    comida: 'Comida Artesana'
+  };
+
+  let createdUid = null;
+
+  if (window.auth && window.authModules) {
+    try {
+      const { createUserWithEmailAndPassword, sendEmailVerification } = window.authModules;
+      const userCredential = await createUserWithEmailAndPassword(window.auth, authEmail, authPassword);
+      createdUid = userCredential.user.uid;
+      await sendEmailVerification(userCredential.user);
+      showToast('📩 Correo de verificación enviado a ' + authEmail);
+    } catch (authErr) {
+      console.warn('Info Auth:', authErr.message);
+    }
   }
 
-  if (currentArtisanProfile) {
-    document.getElementById('editName').value = currentArtisanProfile.name || '';
-    document.getElementById('editTrade').value = currentArtisanProfile.trade || '';
-    document.getElementById('editPhone').value = currentArtisanProfile.phone || '';
-    document.getElementById('editWebsite').value = currentArtisanProfile.website || '';
-    document.getElementById('editAddress').value = currentArtisanProfile.address || '';
-    document.getElementById('editDescription').value = currentArtisanProfile.description || '';
+  const newArtisan = {
+    id: Date.now(),
+    ownerId: createdUid || (currentUser ? currentUser.uid : 'anonymous'),
+    name,
+    trade,
+    category,
+    categoryLabel: categoryLabels[category] || 'Artesanía',
+    rating: 5.0,
+    reviewsCount: 1,
+    experience: 'Artesano verificado',
+    location,
+    address,
+    phone,
+    email: authEmail,
+    website: website,
+    image: defaultImages[category] || 'images/ceramics_artisan_1786534790567.png',
+    description,
+    fullStory: description,
+    hours: 'Consultar al artesano',
+    tags: ['Artesanal', 'Local', 'Hecho a Mano'],
+    promo: null,
+    gallery: []
+  };
 
-    // Renderizar Galería actual
-    renderGalleryPreviewGrid(currentArtisanProfile.gallery || []);
+  if (window.db && window.firestoreModules) {
+    try {
+      const { collection, addDoc } = window.firestoreModules;
+      await addDoc(collection(window.db, "artisans"), {
+        ownerId: newArtisan.ownerId,
+        name: newArtisan.name,
+        trade: newArtisan.trade,
+        category: newArtisan.category,
+        categoryLabel: newArtisan.categoryLabel,
+        location: newArtisan.location,
+        address: newArtisan.address,
+        phone: newArtisan.phone,
+        email: newArtisan.email,
+        website: newArtisan.website,
+        description: newArtisan.description,
+        fullStory: newArtisan.fullStory,
+        image: newArtisan.image,
+        createdAt: new Date()
+      });
+    } catch (err) {
+      console.error('Error al guardar en Firestore:', err);
+    }
   }
 
-  document.getElementById('shopManageModal').classList.add('active');
+  artisans.unshift(newArtisan);
+  renderCategories();
+  renderArtisans();
+  closeModal('registerModal');
+  e.target.reset();
+
+  showToast(`¡Bienvenido, ${name}! Tu cuenta y tienda están listas.`);
 }
 
-// Cambiar Pestañas del Panel
-function switchShopTab(tabId) {
-  document.querySelectorAll('.shop-tab-content').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-
-  document.getElementById(tabId).style.display = 'block';
-  if (tabId === 'tabGeneral') document.getElementById('btnTabGeneral').classList.add('active');
-  if (tabId === 'tabPromos') document.getElementById('btnTabPromos').classList.add('active');
-  if (tabId === 'tabGallery') document.getElementById('btnTabGallery').classList.add('active');
-}
-
-// Guardar Cambios de la Tienda (General & Web)
 async function handleEditShopSubmit(e) {
   e.preventDefault();
   if (!currentUser || !currentArtisanProfile) return;
@@ -636,7 +661,6 @@ async function handleEditShopSubmit(e) {
   }
 }
 
-// Publicar Promoción
 async function handlePromoSubmit(e) {
   e.preventDefault();
   if (!currentUser || !currentArtisanProfile) return;
@@ -669,7 +693,6 @@ async function handlePromoSubmit(e) {
   }
 }
 
-// Añadir Foto a la Galería
 async function handleGallerySubmit(e) {
   e.preventDefault();
   if (!currentUser || !currentArtisanProfile) return;
@@ -705,113 +728,8 @@ function renderGalleryPreviewGrid(gallery) {
       <img src="${url}" alt="Trabajo artesanal">
     </div>
   `).join('');
-// Procesar registro de nuevo artesano con Firebase Auth
-async function handleNewArtisanSubmit(e) {
-  e.preventDefault();
-
-  const authEmail = document.getElementById('inputAuthEmail') ? document.getElementById('inputAuthEmail').value : document.getElementById('inputEmail').value;
-  const authPassword = document.getElementById('inputAuthPassword') ? document.getElementById('inputAuthPassword').value : '12345678';
-  const name = document.getElementById('inputName').value;
-  const category = document.getElementById('inputCategory').value;
-  const trade = document.getElementById('inputTrade').value;
-  const location = document.getElementById('inputLocation').value;
-  const address = document.getElementById('inputAddress').value;
-  const phone = document.getElementById('inputPhone').value;
-  const website = document.getElementById('inputWebsite') ? document.getElementById('inputWebsite').value : '';
-  const description = document.getElementById('inputDescription').value;
-
-  const defaultImages = {
-    ceramica: 'images/ceramics_artisan_1786534790567.png',
-    tejido: 'images/textile_artisan_1786534801221.png',
-    herreria: 'images/blacksmith_artisan_1786534811595.png',
-    tatuaje: 'images/tattoo_artisan_1786534822293.png',
-    comida: 'images/bakery_artisan_1786534832288.png'
-  };
-
-  const categoryLabels = {
-    ceramica: 'Cerámica',
-    tejido: 'Tejido & Textil',
-    herreria: 'Herrería & Metal',
-    tatuaje: 'Tatuaje Artístico',
-    comida: 'Comida Artesana'
-  };
-
-  let createdUid = null;
-
-  // 1. Crear cuenta de usuario en Firebase Auth
-  if (window.auth && window.authModules) {
-    try {
-      const { createUserWithEmailAndPassword, sendEmailVerification } = window.authModules;
-      const userCredential = await createUserWithEmailAndPassword(window.auth, authEmail, authPassword);
-      createdUid = userCredential.user.uid;
-
-      // Enviar correo de verificación
-      await sendEmailVerification(userCredential.user);
-      showToast('📩 Correo de verificación enviado a ' + authEmail);
-    } catch (authErr) {
-      console.warn('Registro Auth:', authErr.message);
-    }
-  }
-
-  const newArtisan = {
-    id: Date.now(),
-    ownerId: createdUid || (currentUser ? currentUser.uid : 'anonymous'),
-    name,
-    trade,
-    category,
-    categoryLabel: categoryLabels[category] || 'Artesanía',
-    rating: 5.0,
-    reviewsCount: 1,
-    experience: 'Artesano verificado',
-    location,
-    address,
-    phone,
-    email: authEmail,
-    website: website,
-    image: defaultImages[category] || 'images/ceramics_artisan_1786534790567.png',
-    description,
-    fullStory: description,
-    hours: 'Consultar al artesano',
-    tags: ['Artesanal', 'Local', 'Hecho a Mano'],
-    promo: null,
-    gallery: []
-  };
-
-  // 2. Guardar ficha en Firestore
-  if (window.db && window.firestoreModules) {
-    try {
-      const { collection, addDoc } = window.firestoreModules;
-      await addDoc(collection(window.db, "artisans"), {
-        ownerId: newArtisan.ownerId,
-        name: newArtisan.name,
-        trade: newArtisan.trade,
-        category: newArtisan.category,
-        categoryLabel: newArtisan.categoryLabel,
-        location: newArtisan.location,
-        address: newArtisan.address,
-        phone: newArtisan.phone,
-        email: newArtisan.email,
-        website: newArtisan.website,
-        description: newArtisan.description,
-        fullStory: newArtisan.fullStory,
-        image: newArtisan.image,
-        createdAt: new Date()
-      });
-    } catch (err) {
-      console.error('Error al guardar en Firestore:', err);
-    }
-  }
-
-  artisans.unshift(newArtisan);
-  renderCategories();
-  renderArtisans();
-  closeModal('registerModal');
-  e.target.reset();
-
-  showToast(`¡Bienvenido, ${name}! Tu cuenta y tienda están creadas.`);
 }
 
-// Notificación Toast
 function showToast(message) {
   const container = document.getElementById('toastContainer');
   const toast = document.createElement('div');
