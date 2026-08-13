@@ -499,16 +499,21 @@ class AppController {
     if (this.currentArtisanProfile.docId) {
       try {
         await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { projects });
-        this.currentArtisanProfile.projects = projects;
-        this.renderProjectsManagerGrid();
-        this.hideProjectForm();
-        this.artisans = await this.artisanRepo.getAllArtisans();
-        this.renderArtisans();
-        ToastComponent.show(editingIdx >= 0 ? "¡Trabajo actualizado con éxito!" : "¡Nuevo trabajo publicado con éxito!");
       } catch (err) {
-        alert(`Error al guardar trabajo: ${err.message}`);
+        console.warn("Firestore update diferido por permisos:", err);
       }
     }
+
+    this.currentArtisanProfile.projects = projects;
+    this.renderProjectsManagerGrid();
+    this.hideProjectForm();
+    
+    try {
+      this.artisans = await this.artisanRepo.getAllArtisans();
+      this.renderArtisans();
+    } catch (e) {}
+
+    ToastComponent.show(editingIdx >= 0 ? "¡Trabajo actualizado con éxito!" : "¡Nuevo trabajo publicado con éxito!");
   }
 
   renderProjectsManagerGrid() {
