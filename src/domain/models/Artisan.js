@@ -24,7 +24,8 @@ export class Artisan {
     hours = 'Consultar al artesano',
     tags = ['Artesanal', 'Hecho a mano'],
     promo = null,
-    gallery = []
+    gallery = [],
+    projects = []
   }) {
     this.id = id;
     this.ownerId = ownerId;
@@ -47,6 +48,7 @@ export class Artisan {
     this.tags = tags;
     this.promo = promo;
     this.gallery = gallery;
+    this.projects = projects;
   }
 
   getCategoryLabel(cat) {

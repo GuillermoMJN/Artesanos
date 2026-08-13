@@ -31,14 +31,14 @@ export class FirebaseArtisanRepository {
     });
   }
   async getAllArtisans() {
-    if (!db) return initialArtisansSeed.map(item => new Artisan(item));
+    if (!db) return [];
 
     try {
       const q = query(collection(db, "artisans"), orderBy("createdAt", "desc"));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        return initialArtisansSeed.map(item => new Artisan(item));
+        return [];
       }
 
       const artisans = [];
@@ -65,16 +65,15 @@ export class FirebaseArtisanRepository {
           hours: item.hours,
           tags: item.tags,
           promo: item.promo,
-          gallery: item.gallery
+          gallery: item.gallery,
+          projects: item.projects || []
         }));
       });
 
-      // Incluir también los datos semilla para que haya ejemplos visibles en todas las categorías
-      const seedArtisans = initialArtisansSeed.map(item => new Artisan(item));
-      return [...artisans, ...seedArtisans];
+      return artisans;
     } catch (err) {
-      console.warn('Fallback a datos locales:', err.message);
-      return initialArtisansSeed.map(item => new Artisan(item));
+      console.warn('Error cargando artesanos desde Firestore:', err.message);
+      return [];
     }
   }
 
@@ -115,6 +114,7 @@ export class FirebaseArtisanRepository {
           description: newArtisan.description,
           fullStory: newArtisan.fullStory,
           image: newArtisan.image,
+          projects: newArtisan.projects || [],
           createdAt: new Date()
         });
         newArtisan.id = docRef.id;
