@@ -18,6 +18,34 @@ export const initialArtisansSeed = [
     fullStory: "Nuestra historia comenzó en 2009 en el corazón del Albaicín granadino.",
     hours: "Lunes a Viernes: 10:00 - 19:00",
     tags: ["Barro Esmaltado", "Torneo Manual", "Piezas Únicas"],
+    projects: [
+      {
+        id: "p101",
+        title: "Vajilla Completa Albaicín",
+        category: "Cerámica & Barro",
+        date: "Julio 2026",
+        mainImage: "images/ceramics_artisan_1786534790567.png",
+        desc: "Proceso completo de diseño, torneado y esmaltado de una vajilla artesanal de 24 piezas inspirada en los colores del atardecer en la Alhambra.",
+        steps: [
+          { title: "1. Selección y Amasado del Barro", img: "images/ceramics_artisan_1786534790567.png", desc: "Preparación y desairado del barro rojo autóctono para evitar burbujas durante la cocción." },
+          { title: "2. Torneado Individual", img: "images/hero_bg_1786534843103.png", desc: "Modelado pieza a pieza en torno de pie alfarero tradicional para dar forma a los platos y cuencos." },
+          { title: "3. Retorneado y Secado Lento", img: "images/ceramics_artisan_1786534790567.png", desc: "Perfilado de bases en estado de cuero y secado en ambiente controlado durante 7 días." },
+          { title: "4. Primera Cocción (Bizcochado) y Esmaltado", img: "images/hero_bg_1786534843103.png", desc: "Horneado a 980°C, aplicación de esmaltes minerales formulados en el propio taller y segunda cocción a 1.250°C." }
+        ]
+      },
+      {
+        id: "p102",
+        title: "Jarrón Escultórico 'Raíces'",
+        category: "Escultura en Barro",
+        date: "Mayo 2026",
+        mainImage: "images/hero_bg_1786534843103.png",
+        desc: "Pieza única realizada mediante técnica de urdido por churros y textura orgánica rascada a mano.",
+        steps: [
+          { title: "1. Urdido a Mano", img: "images/hero_bg_1786534843103.png", desc: "Construcción por capas de barro chamotado sin molde." },
+          { title: "2. Texturizado Manual", img: "images/ceramics_artisan_1786534790567.png", desc: "Incisiones con herramientas de madera y vaciado interior." }
+        ]
+      }
+    ],
     gallery: [
       { type: "image", url: "images/ceramics_artisan_1786534790567.png", title: "Torneado en vivo de vajilla artesana", desc: "Modelado manual con torno de pie tradicional y barro autóctono." },
       { type: "image", url: "images/hero_bg_1786534843103.png", title: "Colección de Jarrones Albaicín", desc: "Piezas horneadas a 1.250°C con esmaltes minerales sin plomo." }
