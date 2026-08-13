@@ -160,7 +160,7 @@ class AppController {
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
-          overlay.classList.remove('active');
+          this.closeModal(overlay.id); // usa closeModal para restaurar body scroll
         }
       });
     });
@@ -169,7 +169,7 @@ class AppController {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-          modal.classList.remove('active');
+          this.closeModal(modal.id); // usa closeModal para restaurar body scroll
         });
       }
     });
