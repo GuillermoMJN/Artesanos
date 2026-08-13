@@ -39,9 +39,9 @@ export class FirebaseArtisanRepository {
           trade: item.trade,
           category: item.category,
           categoryLabel: item.categoryLabel,
-          rating: item.rating,
-          reviewsCount: item.reviewsCount,
-          experience: item.experience,
+          rating: item.rating || 5.0,
+          reviewsCount: item.reviewsCount || 12,
+          experience: item.experience || 'Artesano verificado',
           location: item.location,
           address: item.address,
           phone: item.phone,
@@ -56,7 +56,10 @@ export class FirebaseArtisanRepository {
           gallery: item.gallery
         }));
       });
-      return artisans;
+
+      // Incluir también los datos semilla para que haya ejemplos visibles en todas las categorías
+      const seedArtisans = initialArtisansSeed.map(item => new Artisan(item));
+      return [...artisans, ...seedArtisans];
     } catch (err) {
       console.warn('Fallback a datos locales:', err.message);
       return initialArtisansSeed.map(item => new Artisan(item));
