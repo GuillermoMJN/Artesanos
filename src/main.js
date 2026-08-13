@@ -150,7 +150,7 @@ class AppController {
 
     let filtered = this.artisans.filter(item => {
       const matchesCategory = this.activeCategory === 'all' || item.category === this.activeCategory;
-      const matchesSearch = this.searchQuery === '' || 
+      const matchesSearch = this.searchQuery === '' ||
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.trade.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -415,7 +415,7 @@ class AppController {
       try {
         const fileUrl = await this.artisanRepo.uploadFile(file, artisanUid, projectUid);
         const isVideo = file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mov');
-        
+
         this.tempProjectFiles.push({
           url: fileUrl,
           type: isVideo ? 'video' : 'image',
@@ -520,11 +520,11 @@ class AppController {
     this.currentArtisanProfile.projects = projects;
     this.renderProjectsManagerGrid();
     this.hideProjectForm();
-    
+
     try {
       this.artisans = await this.artisanRepo.getAllArtisans();
       this.renderArtisans();
-    } catch (e) {}
+    } catch (e) { }
 
     ToastComponent.show(editingIdx >= 0 ? "¡Trabajo actualizado con éxito!" : "¡Nuevo trabajo publicado con éxito!");
   }
@@ -611,11 +611,11 @@ class AppController {
     projects.splice(idx, 1);
     this.currentArtisanProfile.projects = projects;
     this.renderProjectsManagerGrid();
-    
+
     try {
       this.artisans = await this.artisanRepo.getAllArtisans();
       this.renderArtisans();
-    } catch (e) {}
+    } catch (e) { }
 
     ToastComponent.show("Trabajo eliminado de tu catálogo.");
   }
@@ -656,7 +656,7 @@ class AppController {
     const authEmail = authEmailInput ? authEmailInput.value : document.getElementById('inputPhone').value + '@arteysanos.es';
     const authPasswordInput = document.getElementById('inputAuthPassword');
     const authPassword = authPasswordInput ? authPasswordInput.value : '12345678';
-    
+
     const name = document.getElementById('inputName').value;
     const category = document.getElementById('inputCategory').value;
     const trade = document.getElementById('inputTrade').value;
