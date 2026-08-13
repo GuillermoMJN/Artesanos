@@ -47,12 +47,22 @@ class AppController {
     // Marcar como visitado en esta sesión
     sessionStorage.setItem('arteysanos_visited', 'true');
 
-    // 1. Esperar a que la línea vertical marrón termine de bajar al centro (700ms)
+    // 1. Esperar a que la línea vertical marrón termine de bajar (700ms)
     setTimeout(() => {
-      // 2. Abrir las cortinas hacia los lados
+      const introLine = introOverlay.querySelector('.intro-line');
+
+      // Quitar la animación para que el transition de CSS pueda actuar
+      if (introLine) {
+        introLine.style.animation = 'none';    // libera el control del keyframe
+        introLine.style.transition = 'opacity 0.25s ease-out';
+        introLine.style.opacity = '0';         // fade rápido a transparente
+      }
+
+      // 2. Abrir las cortinas inmediatamente en paralelo
       introOverlay.classList.add('open');
       document.body.classList.remove('intro-active');
-      // 3. Ocultar el overlay tras finalizar la transición (1200ms después)
+
+      // 3. Ocultar el overlay al finalizar las transiciones
       setTimeout(() => {
         introOverlay.style.display = 'none';
       }, 1200);
