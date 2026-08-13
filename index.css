@@ -58,6 +58,107 @@ body {
   overflow-x: hidden;
 }
 
+/* ── Animación de Entrada Teatral (Primera Visita) ── */
+body.intro-active {
+  overflow: hidden !important;
+}
+
+.intro-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Cortinas laterales blancas de la animación */
+.intro-curtain {
+  position: absolute;
+  top: 0;
+  width: 50vw;
+  height: 100vh;
+  background: #FFFFFF;
+  z-index: 9997;
+  transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.intro-left {
+  left: 0;
+  transform-origin: left center;
+}
+
+.intro-right {
+  right: 0;
+  transform-origin: right center;
+}
+
+/* Línea vertical marrón que baja al centro */
+.intro-line {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 3px;
+  height: 0;
+  background: var(--primary-brown, #5C4033);
+  z-index: 9998;
+  transform: translateX(-50%);
+  box-shadow: 0 0 10px rgba(92, 64, 51, 0.4);
+  animation: lineGrow 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* Animación de crecimiento de la línea vertical */
+@keyframes lineGrow {
+  0% {
+    height: 0%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    height: 100vh;
+    opacity: 1;
+  }
+}
+
+/* Cuando se activa la apertura */
+.intro-overlay.open .intro-left {
+  transform: translateX(-100%);
+}
+
+.intro-overlay.open .intro-right {
+  transform: translateX(100%);
+}
+
+.intro-overlay.open .intro-line {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* Animación de la página principal (Fade In de blanco + Zoom In suave) */
+.page-anim-ready {
+  animation: pageZoomIn 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: center center;
+}
+
+@keyframes pageZoomIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.96);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}
+
 img {
   max-width: 100%;
   height: auto;

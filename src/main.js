@@ -15,6 +15,7 @@ class AppController {
   }
 
   async init() {
+    this.playFirstTimeIntro();
     this.artisans = await this.artisanRepo.getAllArtisans();
     this.renderCategories();
     this.renderArtisans();
@@ -30,6 +31,32 @@ class AppController {
         this.currentArtisanProfile = null;
       }
     });
+  }
+
+  playFirstTimeIntro() {
+    const hasVisited = sessionStorage.getItem('arteysanos_visited');
+    const introOverlay = document.getElementById('introOverlay');
+
+    if (hasVisited || !introOverlay) {
+      // Si ya visitó la página en esta sesión, desactivar inmediatamente la animación
+      document.body.classList.remove('intro-active');
+      if (introOverlay) introOverlay.style.display = 'none';
+      return;
+    }
+
+    // Marcar como visitado en esta sesión
+    sessionStorage.setItem('arteysanos_visited', 'true');
+
+    // 1. Esperar a que la línea vertical marrón termine de bajar al centro (700ms)
+    setTimeout(() => {
+      // 2. Abrir las cortinas hacia los lados
+      introOverlay.classList.add('open');
+      document.body.classList.remove('intro-active');
+      // 3. Ocultar el overlay tras finalizar la transición (1200ms después)
+      setTimeout(() => {
+        introOverlay.style.display = 'none';
+      }, 1200);
+    }, 700);
   }
 
   updateAuthUI(user) {
