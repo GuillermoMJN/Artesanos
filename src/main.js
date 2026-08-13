@@ -293,18 +293,32 @@ class AppController {
       </div>
     `;
 
+    document.body.style.overflow = 'hidden';
     modalContainer.classList.add('active');
   }
 
-  openLoginModal() { document.getElementById('loginModal').classList.add('active'); }
-  openRegisterModal() { document.getElementById('registerModal').classList.add('active'); }
-  closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+  openLoginModal() {
+    document.body.style.overflow = 'hidden';
+    document.getElementById('loginModal').classList.add('active');
+  }
+  openRegisterModal() {
+    document.body.style.overflow = 'hidden';
+    document.getElementById('registerModal').classList.add('active');
+  }
+  closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+    // Restaurar el scroll del body sólo si no queda ningún modal abierto
+    const anyOpen = document.querySelector('.modal-overlay.active');
+    if (!anyOpen) document.body.style.overflow = '';
+  }
 
   openShopManageModal() {
     if (!this.currentUser) {
       this.openLoginModal();
       return;
     }
+
+    document.body.style.overflow = 'hidden';
 
     if (this.currentArtisanProfile) {
       document.getElementById('editName').value = this.currentArtisanProfile.name || '';
