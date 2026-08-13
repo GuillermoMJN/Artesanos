@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perfil de Artesano | Arte y Sanos</title>
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="index.css">
+  <style>
+    .profile-hero {
+      position: relative;
+      background: var(--primary-dark);
+      color: var(--white);
+      padding: 4rem 0 3rem;
+      overflow: hidden;
+    }
+    .profile-hero-bg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      opacity: 0.15;
+      background-size: cover;
+      background-position: center;
+      filter: blur(8px);
+    }
+    .profile-header-card {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .profile-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--warm-gold);
+      box-shadow: var(--shadow-lg);
+    }
+    .profile-info h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      color: var(--beige-light);
+      margin-bottom: 0.3rem;
+    }
+    .profile-trade {
+      color: var(--warm-gold);
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.8rem;
+    }
+    .profile-meta-chips {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 0.8rem;
+    }
+    .profile-chip {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(5px);
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .project-card {
+      background: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .project-media {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+    }
+    .project-body {
+      padding: 1.2rem;
+    }
+    .project-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 0.4rem;
+    }
+    .project-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+
+<body style="background: var(--beige-light);">
+
+  <!-- Header / Navigation -->
+  <header class="header scrolled" id="mainHeader">
+    <div class="container nav-wrapper">
+      <a href="index.html" class="logo">
+        <i class="fa-solid fa-hands-holding"></i> Arte y Sanos
+      </a>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="index.html#directorio" class="nav-link">← Volver al Directorio</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Profile Hero Section -->
+  <section class="profile-hero">
+    <div class="profile-hero-bg" id="profileBg"></div>
+    <div class="container">
+      <div class="profile-header-card">
+        <img id="profileAvatar" src="" alt="Artesano" class="profile-avatar">
+        <div class="profile-info" style="flex: 1;">
+          <span class="hero-badge" id="profileCategory">Categoría</span>
+          <h1 id="profileName">Nombre del Artesano</h1>
+          <div class="profile-trade" id="profileTrade">Especialidad</div>
+          <p id="profileDesc" style="max-width: 650px; color: rgba(255,255,255,0.85); line-height: 1.6;"></p>
+          
+          <div class="profile-meta-chips">
+            <span class="profile-chip" id="profileLocation"><i class="fa-solid fa-location-dot"></i> Ubicación</span>
+            <span class="profile-chip" id="profileRating"><i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> 5.0</span>
+            <span class="profile-chip" id="profileExperience"><i class="fa-solid fa-certificate"></i> Experiencia</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; min-width: 200px;">
+          <a id="btnWhatsapp" href="#" target="_blank" class="btn btn-primary" style="text-align: center;">
+            <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
+          </a>
+          <a id="btnWebsite" href="#" target="_blank" class="btn btn-gold" style="text-align: center; display: none;">
+            <i class="fa-solid fa-globe"></i> Visitar Web Oficial
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Profile Content -->
+  <main class="container" style="padding: 3rem 1.5rem;">
+    
+    <!-- Active Promo Banner if any -->
+    <div id="promoBannerContainer" style="display: none; margin-bottom: 2.5rem;"></div>
+
+    <!-- Gallery / Projects Showcase Section -->
+    <section style="margin-bottom: 3.5rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="section-tag"><i class="fa-solid fa-photo-film"></i> Catálogo Visual</span>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 2rem; color: var(--primary-dark);">Proyectos & Galería de Trabajos</h2>
+        </div>
+      </div>
+
+      <div class="directory-grid" id="projectsGrid">
+        <!-- Renderizado dinámicamente con JS -->
+      </div>
+    </section>
+
+    <!-- Bio & Details Section -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; flex-wrap: wrap;">
+      <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-dark);">
+          <i class="fa-solid fa-book-open" style="color: var(--terracotta);"></i> Historia del Taller
+        </h3>
+        <p id="profileFullStory" style="color: var(--text-secondary); line-height: 1.8; font-size: 1.05rem;"></p>
+        
+        <h4 style="margin-top: 1.8rem; margin-bottom: 0.8rem; font-size: 1.1rem; color: var(--primary-dark);">Técnicas y Materiales Destacados</h4>
+        <div id="profileTags" style="display: flex; gap: 0.6rem; flex-wrap: wrap;"></div>
+      </div>
+
+      <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); height: fit-content;">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 1.2rem; color: var(--primary-dark);">
+          <i class="fa-solid fa-address-card" style="color: var(--terracotta);"></i> Información de Contacto
+        </h3>
+        <div class="contact-info-box" style="background: transparent; padding: 0;">
+          <div class="contact-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Teléfono / WhatsApp</div>
+              <strong id="contactPhone" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Email</div>
+              <strong id="contactEmail" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Dirección física</div>
+              <strong id="contactAddress" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Horario del taller</div>
+              <strong id="contactHours" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container text-center">
+      <div>© 2026 Arte y Sanos. Todos los derechos reservados.</div>
+    </div>
+  </footer>
+
+  <!-- Script para Cargar Datos del Perfil -->
+  <script type="module">
+    import { FirebaseArtisanRepository } from './src/data/firebase/FirebaseArtisanRepository.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const artisanId = urlParams.get('id');
+
+      if (!artisanId) {
+        alert('No se especificó ningún artesano.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const repo = new FirebaseArtisanRepository();
+      const artisans = await repo.getAllArtisans();
+      const artisan = artisans.find(a => String(a.id) === String(artisanId));
+
+      if (!artisan) {
+        alert('Artesano no encontrado.');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Rellenar cabecera y hero
+      document.title = `${artisan.name} | Perfil de Artesano`;
+      document.getElementById('profileAvatar').src = artisan.image;
+      document.getElementById('profileBg').style.backgroundImage = `url('${artisan.image}')`;
+      document.getElementById('profileName').textContent = artisan.name;
+      document.getElementById('profileTrade').textContent = artisan.trade;
+      document.getElementById('profileCategory').textContent = artisan.categoryLabel;
+      document.getElementById('profileDesc').textContent = artisan.description;
+      document.getElementById('profileLocation').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${artisan.location}`;
+      document.getElementById('profileRating').innerHTML = `<i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> ${artisan.rating} (${artisan.reviewsCount} opiniones)`;
+      document.getElementById('profileExperience').innerHTML = `<i class="fa-solid fa-certificate"></i> ${artisan.experience}`;
+
+      // Botones contacto
+      document.getElementById('btnWhatsapp').href = `https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}`;
+      if (artisan.website) {
+        const btnWeb = document.getElementById('btnWebsite');
+        btnWeb.href = artisan.website;
+        btnWeb.style.display = 'inline-block';
+      }
+
+      // Oferta activa
+      if (artisan.promo && artisan.promo.active) {
+        const promoBox = document.getElementById('promoBannerContainer');
+        promoBox.style.display = 'block';
+        promoBox.innerHTML = `
+          <div style="background: rgba(197, 160, 89, 0.15); border: 1px solid var(--warm-gold); padding: 1.5rem; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div style="color: var(--warm-gold-hover); font-weight: 700; font-size: 1.2rem; display: flex; align-items: center; gap: 0.6rem;">
+                <i class="fa-solid fa-tag"></i> Promoción Activa: ${artisan.promo.title}
+              </div>
+              <p style="color: var(--text-primary); font-size: 1rem; margin-top: 0.3rem;">${artisan.promo.details || ''}</p>
+            </div>
+            <a href="https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}?text=Hola,%20quisiera%20aprovechar%20la%20oferta:%20${encodeURIComponent(artisan.promo.title)}" target="_blank" class="btn btn-gold">
+              Reclamar Oferta por WhatsApp
+            </a>
+          </div>
+        `;
+      }
+
+      // Galería y Proyectos
+      const projectsGrid = document.getElementById('projectsGrid');
+      const gallery = artisan.gallery && artisan.gallery.length > 0 ? artisan.gallery : [
+        { type: 'image', url: artisan.image, title: 'Proceso de elaboración artesanal', desc: 'Trabajo minucioso hecho a mano en taller.' },
+        { type: 'image', url: 'images/hero_bg_1786534843103.png', title: 'Exposición de piezas finalizadas', desc: 'Acabados naturales de alta durabilidad.' }
+      ];
+
+      projectsGrid.innerHTML = gallery.map((item, idx) => {
+        const isObj = typeof item === 'object';
+        const imgUrl = isObj ? item.url : item;
+        const title = isObj ? item.title : `Proyecto #${idx + 1}`;
+        const desc = isObj ? item.desc : 'Fotografía original del taller y piezas elaboradas.';
+        const isVideo = isObj && item.type === 'video';
+
+        return `
+          <div class="project-card">
+            ${isVideo ? `
+              <video class="project-media" controls poster="${artisan.image}">
+                <source src="${imgUrl}" type="video/mp4">
+                Tu navegador no soporta videos HTML5.
+              </video>
+            ` : `
+              <img src="${imgUrl}" alt="${title}" class="project-media" loading="lazy">
+            `}
+            <div class="project-body">
+              <h3 class="project-title">${title}</h3>
+              <p class="project-desc">${desc}</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Bio & Info
+      document.getElementById('profileFullStory').textContent = artisan.fullStory || artisan.description;
+      document.getElementById('contactPhone').textContent = artisan.phone;
+      document.getElementById('contactEmail').textContent = artisan.email;
+      document.getElementById('contactAddress').textContent = `${artisan.address} (${artisan.location})`;
+      document.getElementById('contactHours').textContent = artisan.hours;
+
+      if (artisan.tags) {
+        document.getElementById('profileTags').innerHTML = artisan.tags.map(t => `<span class="hero-badge" style="margin:0;">#${t}</span>`).join('');
+      }
+    });
+  </script>
+</body>
+</html>

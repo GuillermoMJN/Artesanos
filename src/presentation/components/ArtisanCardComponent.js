@@ -1,7 +1,7 @@
 export class ArtisanCardComponent {
   static render(artisan) {
     return `
-      <div class="artisan-card">
+      <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${artisan.id}', '_blank')">
         <div class="artisan-img-wrapper">
           <img src="${artisan.image}" alt="${artisan.name}" class="artisan-img" loading="lazy">
           <span class="artisan-badge">${artisan.categoryLabel}</span>
@@ -24,9 +24,9 @@ export class ArtisanCardComponent {
             <span><i class="fa-solid fa-certificate"></i> ${artisan.experience}</span>
           </div>
           <div class="artisan-footer">
-            <button class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;" onclick="window.appUI.openArtisanModal('${artisan.id}')">
-              Ver Negocio & Ofertas <i class="fa-solid fa-arrow-right"></i>
-            </button>
+            <a href="perfil.html?id=${artisan.id}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; text-decoration: none; text-align: center; display: block;" onclick="event.stopPropagation();">
+              Ver Perfil Completo & Proyectos <i class="fa-solid fa-arrow-right"></i>
+            </a>
           </div>
         </div>
       </div>

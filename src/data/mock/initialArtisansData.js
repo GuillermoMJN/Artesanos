@@ -17,7 +17,11 @@ export const initialArtisansSeed = [
     description: "Creamos vajillas, jarrones y piezas utilitarias moldeadas a mano en torno alfarero tradicional.",
     fullStory: "Nuestra historia comenzó en 2009 en el corazón del Albaicín granadino.",
     hours: "Lunes a Viernes: 10:00 - 19:00",
-    tags: ["Barro Esmaltado", "Torneo Manual", "Piezas Únicas"]
+    tags: ["Barro Esmaltado", "Torneo Manual", "Piezas Únicas"],
+    gallery: [
+      { type: "image", url: "images/ceramics_artisan_1786534790567.png", title: "Torneado en vivo de vajilla artesana", desc: "Modelado manual con torno de pie tradicional y barro autóctono." },
+      { type: "image", url: "images/hero_bg_1786534843103.png", title: "Colección de Jarrones Albaicín", desc: "Piezas horneadas a 1.250°C con esmaltes minerales sin plomo." }
+    ]
   },
   {
     id: "2",
@@ -37,7 +41,10 @@ export const initialArtisansSeed = [
     description: "Tejidos tradicionales elaborados en telar de madera utilizando lanas 100% orgánicas.",
     fullStory: "Rescatamos la herencia del tejido artesanal en telar de bajo lizo.",
     hours: "Cita previa / Martes a Sábado: 11:00 - 18:00",
-    tags: ["Telar de Madera", "Tintes Botánicos", "Lana Orgánica"]
+    tags: ["Telar de Madera", "Tintes Botánicos", "Lana Orgánica"],
+    gallery: [
+      { type: "image", url: "images/textile_artisan_1786534801221.png", title: "Tejido en telar de madera de roble", desc: "Urdimbre tejida mano a mano con fibras de pastoreo ético." }
+    ]
   },
   {
     id: "3",
@@ -57,7 +64,10 @@ export const initialArtisansSeed = [
     description: "Escultura en hierro, portones ornamentales, cuchillería artesanal y restauración.",
     fullStory: "Maestro forjador formado por tres generaciones.",
     hours: "Lunes a Viernes: 08:30 - 17:30",
-    tags: ["Forja Tradicional", "Cuchillería", "Hierro Batido"]
+    tags: ["Forja Tradicional", "Cuchillería", "Hierro Batido"],
+    gallery: [
+      { type: "image", url: "images/blacksmith_artisan_1786534811595.png", title: "Trabajo en yunque al rojo vivo", desc: "Modelado a golpe de martillo de rejas y escultura en hierro baldeado." }
+    ]
   },
   {
     id: "4",
@@ -77,7 +87,10 @@ export const initialArtisansSeed = [
     description: "Estudio de tatuaje artesanal especializado en ilustración botánica y trazo fino.",
     fullStory: "Entendemos el tatuaje como una experiencia ritual y artesanal.",
     hours: "Martes a Sábado: 12:00 - 20:00 (Solo cita previa)",
-    tags: ["Fine Line", "Diseño Exclusivo", "Tintas Veganas"]
+    tags: ["Fine Line", "Diseño Exclusivo", "Tintas Veganas"],
+    gallery: [
+      { type: "image", url: "images/tattoo_artisan_1786534822293.png", title: "Ilustración botánica personalizada", desc: "Trazos de aguja 3RL con pigmentación orgánica certificada." }
+    ]
   },
   {
     id: "5",
@@ -97,7 +110,10 @@ export const initialArtisansSeed = [
     description: "Pan de masa madre con 48h de fermentación lenta y harinas ecológicas.",
     fullStory: "Molemos grano seleccionado de pequeños agricultores locales.",
     hours: "Martes a Domingo: 07:30 - 15:00",
-    tags: ["Masa Madre", "Harina Ecológica", "Horno de Piedra"]
+    tags: ["Masa Madre", "Harina Ecológica", "Horno de Piedra"],
+    gallery: [
+      { type: "image", url: "images/bakery_artisan_1786534832288.png", title: "Horneado en solera de piedra", desc: "Hogazas de masa madre salvaje con corteza crujiente y miga alveolada." }
+    ]
   },
   {
     id: "6",
@@ -117,7 +133,10 @@ export const initialArtisansSeed = [
     description: "Muebles a medida fabricados con maderas macizas sostenibles y ensambles tradicionales.",
     fullStory: "Creamos piezas únicas que perduran por generaciones.",
     hours: "Lunes a Viernes: 09:00 - 18:00",
-    tags: ["Madera Maciza", "Ensamble Tradicional", "Diseño a Medida"]
+    tags: ["Madera Maciza", "Ensamble Tradicional", "Diseño a Medida"],
+    gallery: [
+      { type: "image", url: "images/blacksmith_artisan_1786534811595.png", title: "Mesa de nogal macizo ensamblado a mano", desc: "Acabados en aceites vegetales orgánicos que resaltan la veta de la madera." }
+    ]
   },
   {
     id: "7",
@@ -137,7 +156,10 @@ export const initialArtisansSeed = [
     description: "Bolsos, mochilas y carteras cosidos totalmente a mano con hilo encerado y curtido vegetal.",
     fullStory: "Respetamos el curtido vegetal de máxima calidad libre de cromo.",
     hours: "Lunes a Sábado: 10:00 - 20:00",
-    tags: ["Curtido Vegetal", "Cosido a Mano", "Piel Auténtica"]
+    tags: ["Curtido Vegetal", "Cosido a Mano", "Piel Auténtica"],
+    gallery: [
+      { type: "image", url: "images/textile_artisan_1786534801221.png", title: "Bolso bandolera de piel de Ubrique", desc: "Cosido con técnica tradicional de dos agujas e hilo encerado." }
+    ]
   },
   {
     id: "8",
@@ -157,6 +179,9 @@ export const initialArtisansSeed = [
     description: "Anillos, pendientes y talismanes moldeados con textura orgánica y piedras naturales.",
     fullStory: "Fundimos metales reciclados inspirándonos en la botánica mediterránea.",
     hours: "Martes a Sábado: 10:30 - 14:00 / 17:00 - 20:00",
-    tags: ["Plata Reciclada", "Piedras Naturales", "Modelado a Mano"]
+    tags: ["Plata Reciclada", "Piedras Naturales", "Modelado a Mano"],
+    gallery: [
+      { type: "image", url: "images/ceramics_artisan_1786534790567.png", title: "Colección de anillos de plata reciclada", desc: "Modelado a la cera perdida con engaste manual de piedras." }
+    ]
   }
 ];
