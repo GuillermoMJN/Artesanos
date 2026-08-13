@@ -9,6 +9,7 @@ class AppController {
     this.artisans = [];
     this.activeCategory = 'all';
     this.searchQuery = '';
+    this.sortBy = 'featured';
     this.currentUser = null;
     this.currentArtisanProfile = null;
   }
@@ -89,6 +90,11 @@ class AppController {
     this.activeCategory = catId;
     this.renderCategories();
     this.renderArtisans();
+
+    const directorySection = document.getElementById('directorio');
+    if (directorySection) {
+      directorySection.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   renderArtisans() {
@@ -96,7 +102,7 @@ class AppController {
     const resultsCounter = document.getElementById('resultsCount');
     if (!directoryGrid) return;
 
-    const filtered = this.artisans.filter(item => {
+    let filtered = this.artisans.filter(item => {
       const matchesCategory = this.activeCategory === 'all' || item.category === this.activeCategory;
       const matchesSearch = this.searchQuery === '' || 
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
@@ -105,6 +111,15 @@ class AppController {
         item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
+
+    // Lógica de ordenación
+    if (this.sortBy === 'rating') {
+      filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (this.sortBy === 'reviews') {
+      filtered.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+    } else if (this.sortBy === 'newest') {
+      filtered.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+    }
 
     if (resultsCounter) {
       resultsCounter.textContent = `Mostrando ${filtered.length} artesano(s)`;
@@ -129,6 +144,14 @@ class AppController {
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
         this.searchQuery = e.target.value;
+        this.renderArtisans();
+      });
+    }
+
+    const sortBySelect = document.getElementById('sortBySelect');
+    if (sortBySelect) {
+      sortBySelect.addEventListener('change', (e) => {
+        this.sortBy = e.target.value;
         this.renderArtisans();
       });
     }

@@ -119,13 +119,24 @@
   <!-- Sección Directorio de Artesanos -->
   <section class="directory-section" id="directorio">
     <div class="container">
-      <div style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
           <span class="section-tag"><i class="fa-solid fa-store"></i> Directorio Activo</span>
           <h2 class="section-title">Artesanos Destacados</h2>
         </div>
-        <div id="resultsCount" style="color: var(--text-muted); font-weight: 500;">
-          Cargando artesanos...
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="sortBySelect" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);"><i class="fa-solid fa-sort"></i> Ordenar por:</label>
+            <select id="sortBySelect" style="padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit; font-size: 0.9rem; color: var(--primary-dark); cursor: pointer;">
+              <option value="featured">Destacados</option>
+              <option value="rating">Mejor valorados (Valoraciones)</option>
+              <option value="reviews">Más opiniones</option>
+              <option value="newest">Más recientes</option>
+            </select>
+          </div>
+          <div id="resultsCount" style="color: var(--text-muted); font-weight: 500; font-size: 0.9rem;">
+            Cargando artesanos...
+          </div>
         </div>
       </div>
 
