@@ -43,10 +43,10 @@
       </nav>
 
       <div class="nav-actions" id="navAuthActions">
-        <button class="btn btn-secondary" onclick="openLoginModal()" id="btnLoginNav">
+        <button class="btn btn-secondary" onclick="window.appUI.openLoginModal()" id="btnLoginNav">
           <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
         </button>
-        <button class="btn btn-primary" onclick="openRegisterModal()" id="btnRegisterNav">
+        <button class="btn btn-primary" onclick="window.appUI.openRegisterModal()" id="btnRegisterNav">
           <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
         </button>
       </div>
@@ -140,7 +140,7 @@
           <h2>¿Eres artesano o tienes un taller tradicional?</h2>
           <p>Únete a nuestra plataforma de forma gratuita. Publica tu negocio, muestra tus trabajos, comparte tu
             dirección y recibe visitas o pedidos directamente en tu taller.</p>
-          <button class="btn btn-primary" onclick="openRegisterModal()"
+          <button class="btn btn-primary" onclick="window.appUI.openRegisterModal()"
             style="font-size: 1.05rem; padding: 1rem 2.2rem;">
             <i class="fa-solid fa-paper-plane"></i> Publicar mi Negocio Ahora
           </button>
@@ -178,18 +178,18 @@
         <div>
           <h4 class="footer-title">Categorías</h4>
           <ul class="footer-links">
-            <li><a href="#" onclick="filterByCategory('ceramica')">Cerámica & Alfarería</a></li>
-            <li><a href="#" onclick="filterByCategory('tejido')">Tejido & Telar</a></li>
-            <li><a href="#" onclick="filterByCategory('herreria')">Herrería & Forja</a></li>
-            <li><a href="#" onclick="filterByCategory('tatuaje')">Tatuaje Botánico</a></li>
-            <li><a href="#" onclick="filterByCategory('comida')">Panadería & Alimentos</a></li>
+            <li><a href="#" onclick="window.appUI.filterByCategory('ceramica')">Cerámica & Alfarería</a></li>
+            <li><a href="#" onclick="window.appUI.filterByCategory('tejido')">Tejido & Telar</a></li>
+            <li><a href="#" onclick="window.appUI.filterByCategory('herreria')">Herrería & Forja</a></li>
+            <li><a href="#" onclick="window.appUI.filterByCategory('tatuaje')">Tatuaje Botánico</a></li>
+            <li><a href="#" onclick="window.appUI.filterByCategory('comida')">Panadería & Alimentos</a></li>
           </ul>
         </div>
         <div>
           <h4 class="footer-title">Plataforma</h4>
           <ul class="footer-links">
             <li><a href="#directorio">Directorio</a></li>
-            <li><a href="#" onclick="openRegisterModal()">Publicar Negocio</a></li>
+            <li><a href="#" onclick="window.appUI.openRegisterModal()">Publicar Negocio</a></li>
             <li><a href="#nosotros">Sobre Nosotros</a></li>
             <li><a href="#">Guía de Artesanos</a></li>
           </ul>
@@ -217,7 +217,7 @@
   <!-- Modal Detalle Artesano -->
   <div class="modal-overlay" id="detailModal">
     <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('detailModal')">
+      <button class="modal-close" onclick="window.appUI.closeModal('detailModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div id="detailModalContent">
@@ -229,7 +229,7 @@
   <!-- Modal Iniciar Sesión Artesano -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-card" style="max-width: 480px;">
-      <button class="modal-close" onclick="closeModal('loginModal')">
+      <button class="modal-close" onclick="window.appUI.closeModal('loginModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="modal-body">

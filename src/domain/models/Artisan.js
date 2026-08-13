@@ -51,11 +51,14 @@ export class Artisan {
 
   getCategoryLabel(cat) {
     const labels = {
-      ceramica: 'Cerámica',
-      tejido: 'Tejido & Textil',
-      herreria: 'Herrería & Metal',
+      ceramica: 'Cerámica & Barro',
+      tejido: 'Textil & Telar',
+      herreria: 'Herrería & Forja',
+      madera: 'Ebanistería & Madera',
+      cuero: 'Marroquinería & Cuero',
+      joyeria: 'Joyería & Orfebrería',
       tatuaje: 'Tatuaje Artístico',
-      comida: 'Comida Artesana'
+      comida: 'Comida & Obrador'
     };
     return labels[cat] || 'Artesanía';
   }

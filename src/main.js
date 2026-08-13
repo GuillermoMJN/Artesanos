@@ -62,11 +62,14 @@ class AppController {
 
     const categories = [
       { id: 'all', name: 'Todas', icon: 'fa-solid fa-border-all', count: this.artisans.length },
-      { id: 'ceramica', name: 'Cerámica', icon: 'fa-solid fa-whiskey-glass', count: this.getCategoryCount('ceramica') },
-      { id: 'tejido', name: 'Tejido & Textil', icon: 'fa-solid fa-scroll', count: this.getCategoryCount('tejido') },
-      { id: 'herreria', name: 'Herrería & Metal', icon: 'fa-solid fa-hammer', count: this.getCategoryCount('herreria') },
+      { id: 'ceramica', name: 'Cerámica & Barro', icon: 'fa-solid fa-whiskey-glass', count: this.getCategoryCount('ceramica') },
+      { id: 'tejido', name: 'Textil & Telar', icon: 'fa-solid fa-scroll', count: this.getCategoryCount('tejido') },
+      { id: 'herreria', name: 'Herrería & Forja', icon: 'fa-solid fa-hammer', count: this.getCategoryCount('herreria') },
+      { id: 'madera', name: 'Ebanistería & Madera', icon: 'fa-solid fa-tree', count: this.getCategoryCount('madera') },
+      { id: 'cuero', name: 'Marroquinería & Cuero', icon: 'fa-solid fa-bag-shopping', count: this.getCategoryCount('cuero') },
+      { id: 'joyeria', name: 'Joyería & Orfebrería', icon: 'fa-solid fa-gem', count: this.getCategoryCount('joyeria') },
       { id: 'tatuaje', name: 'Tatuaje Artístico', icon: 'fa-solid fa-pen-nib', count: this.getCategoryCount('tatuaje') },
-      { id: 'comida', name: 'Comida Artesana', icon: 'fa-solid fa-wheat-awn', count: this.getCategoryCount('comida') }
+      { id: 'comida', name: 'Comida & Obrador', icon: 'fa-solid fa-wheat-awn', count: this.getCategoryCount('comida') }
     ];
 
     categoryContainer.innerHTML = categories.map(cat => `
