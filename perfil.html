@@ -185,9 +185,11 @@
       <div class="profile-header-card">
         <img id="profileAvatar" src="" alt="Artesano" class="profile-avatar">
         <div class="profile-info" style="flex: 1;">
-          <span class="hero-badge" id="profileCategory">Categoría</span>
           <h1 id="profileName">Nombre del Artesano</h1>
-          <div class="profile-trade" id="profileTrade">Especialidad</div>
+          <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.8rem;">
+            <span class="hero-badge" id="profileCategory" style="margin: 0; background: var(--terracotta); color: #FFF; font-weight: 600;"><i class="fa-solid fa-tag"></i> Categoría</span>
+            <div class="profile-trade" id="profileTrade" style="margin: 0;">Especialidad</div>
+          </div>
           <p id="profileDesc" style="max-width: 650px; color: rgba(255,255,255,0.85); line-height: 1.6;"></p>
           
           <div class="profile-meta-chips">

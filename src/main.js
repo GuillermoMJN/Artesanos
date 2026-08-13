@@ -17,6 +17,7 @@ class AppController {
   async init() {
     this.playFirstTimeIntro();
     this.artisans = await this.artisanRepo.getAllArtisans();
+    this.updateStatsCount();
     this.renderCategories();
     this.renderArtisans();
     this.setupEventListeners();
@@ -31,6 +32,14 @@ class AppController {
         this.currentArtisanProfile = null;
       }
     });
+  }
+
+  updateStatsCount() {
+    const el = document.getElementById('statArtisansCount');
+    if (el) {
+      const count = this.artisans.length;
+      el.textContent = `+${count}`;
+    }
   }
 
   playFirstTimeIntro() {
