@@ -642,6 +642,7 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border-color);
   cursor: default;
   overflow: hidden;
+  padding: 8px; /* Crea un marco interno para alejar el scrollbar del borde */
 }
 
 .modal-overlay.active .modal-card {
@@ -651,8 +652,8 @@ h1, h2, h3, h4 {
 /* ── Botón cerrar: área fija NO scrollable ── */
 .modal-close {
   position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
+  top: 1.2rem;
+  right: 1.5rem;
   width: 38px;
   height: 38px;
   border-radius: 50%;
@@ -676,16 +677,15 @@ h1, h2, h3, h4 {
 
 /* ── Cuerpo scrollable del modal — la scrollbar queda DENTRO del recuadro ── */
 .modal-body {
-  padding: 2.5rem 1.8rem 2.5rem 2.5rem;
+  padding: 2.5rem 1.5rem 2.5rem 2.5rem;
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  margin-right: 4px;
-  margin-block: 8px;
+  border-radius: var(--radius-md);
 
   /* Firefox */
   scrollbar-width: thin;
-  scrollbar-color: #5C4033 #F4EFE6;
+  scrollbar-color: #5C4033 #F7F3EB;
 }
 
 /* Chrome / Edge / Safari */
@@ -694,14 +694,13 @@ h1, h2, h3, h4 {
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: #F4EFE6;
-  border-radius: 8px;
+  background: #F7F3EB;
+  border-radius: 10px;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
   background: #5C4033;   /* --primary-brown corporativo */
-  border-radius: 8px;
-  border: 1px solid #F4EFE6;
+  border-radius: 10px;
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
