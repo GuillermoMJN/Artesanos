@@ -406,9 +406,14 @@ class AppController {
 
     statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo ${files.length} archivo(s) a Firebase Storage...`;
 
+    const artisanUid = (this.currentUser ? this.currentUser.uid : null) || (this.currentArtisanProfile ? this.currentArtisanProfile.ownerId : 'anon');
+    const editingIdx = parseInt(document.getElementById('editingProjectIdx').value, 10);
+    const projects = (this.currentArtisanProfile && this.currentArtisanProfile.projects) ? this.currentArtisanProfile.projects : [];
+    const projectUid = (editingIdx >= 0 && projects[editingIdx]) ? projects[editingIdx].id : `proj_${Date.now()}`;
+
     for (const file of files) {
       try {
-        const fileUrl = await this.artisanRepo.uploadFile(file, 'projects');
+        const fileUrl = await this.artisanRepo.uploadFile(file, artisanUid, projectUid);
         const isVideo = file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mov');
         
         this.tempProjectFiles.push({

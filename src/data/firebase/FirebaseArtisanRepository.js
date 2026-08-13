@@ -22,7 +22,23 @@ import { Artisan } from '../../domain/models/Artisan.js';
 import { initialArtisansSeed } from '../mock/initialArtisansData.js';
 
 export class FirebaseArtisanRepository {
-  async uploadFile(file, folder = 'projects') {
+  async uploadFile(file, artisanUid = 'anon', projectUid = 'default') {
+    const safeArtisan = (artisanUid || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeProject = (projectUid || 'default').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const storagePath = `artesanos/${safeArtisan}/projects/${safeProject}/${safeFileName}`;
+
+    if (storage) {
+      try {
+        const storageRef = ref(storage, storagePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(snapshot.ref);
+        return downloadUrl;
+      } catch (err) {
+        console.warn("Subida Firebase Storage diferida, usando DataURL:", err);
+      }
+    }
+
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
