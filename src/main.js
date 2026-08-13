@@ -156,6 +156,24 @@ class AppController {
       });
     }
 
+    // Cerrar modales al hacer clic fuera (en el overlay)
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+        }
+      });
+    });
+
+    // Cerrar modales al pulsar Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+          modal.classList.remove('active');
+        });
+      }
+    });
+
     const registerForm = document.getElementById('registerForm');
     if (registerForm) registerForm.addEventListener('submit', (e) => this.handleNewArtisanSubmit(e));
 

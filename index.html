@@ -270,7 +270,7 @@
   <!-- Modal Formulario "Publicar mi Negocio / Registro con Auth" -->
   <div class="modal-overlay" id="registerModal">
     <div class="modal-card">
-      <button class="modal-close" onclick="closeModal('registerModal')">
+      <button class="modal-close" onclick="window.appUI.closeModal('registerModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="modal-body">
@@ -347,7 +347,7 @@
             <button type="submit" class="btn btn-primary" style="flex: 1;">
               <i class="fa-solid fa-check"></i> Registrarme & Verificar Cuenta
             </button>
-            <button type="button" class="btn btn-secondary" onclick="closeModal('registerModal')">
+            <button type="button" class="btn btn-secondary" onclick="window.appUI.closeModal('registerModal')">
               Cancelar
             </button>
           </div>
@@ -359,7 +359,7 @@
   <!-- Modal Panel "Gestionar Mi Tienda" -->
   <div class="modal-overlay" id="shopManageModal">
     <div class="modal-card" style="max-width: 850px;">
-      <button class="modal-close" onclick="closeModal('shopManageModal')">
+      <button class="modal-close" onclick="window.appUI.closeModal('shopManageModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="modal-body">
@@ -375,13 +375,13 @@
 
         <!-- Pestañas del Panel -->
         <div style="display: flex; gap: 0.8rem; border-bottom: 2px solid var(--border-color); margin-bottom: 2rem; overflow-x: auto;">
-          <button class="tab-btn active" onclick="switchShopTab('tabGeneral')" id="btnTabGeneral">
+          <button class="tab-btn active" onclick="window.appUI.switchShopTab('tabGeneral')" id="btnTabGeneral">
             <i class="fa-solid fa-store"></i> General & Web
           </button>
-          <button class="tab-btn" onclick="switchShopTab('tabPromos')" id="btnTabPromos">
+          <button class="tab-btn" onclick="window.appUI.switchShopTab('tabPromos')" id="btnTabPromos">
             <i class="fa-solid fa-tags"></i> Promociones & Descuentos
           </button>
-          <button class="tab-btn" onclick="switchShopTab('tabGallery')" id="btnTabGallery">
+          <button class="tab-btn" onclick="window.appUI.switchShopTab('tabGallery')" id="btnTabGallery">
             <i class="fa-solid fa-images"></i> Galería de Trabajos
           </button>
         </div>
