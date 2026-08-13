@@ -54,7 +54,7 @@ class AppController {
       // Quitar la animación para que el transition de CSS pueda actuar
       if (introLine) {
         introLine.style.animation = 'none';    // libera el control del keyframe
-        introLine.style.transition = 'opacity 0.25s ease-out';
+        introLine.style.transition = 'opacity 1s ease-out';
         introLine.style.opacity = '0';         // fade rápido a transparente
       }
 
