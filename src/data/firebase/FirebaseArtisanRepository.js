@@ -7,9 +7,13 @@ import {
   getDownloadURL,
   collection, 
   getDocs, 
+  getDoc,
   addDoc, 
   doc, 
   updateDoc, 
+  deleteDoc,
+  arrayUnion,
+  arrayRemove,
   query, 
   orderBy,
   createUserWithEmailAndPassword,
@@ -58,8 +62,29 @@ export class FirebaseArtisanRepository {
       }
 
       const artisans = [];
-      querySnapshot.forEach((docSnap) => {
+      for (const docSnap of querySnapshot.docs) {
         const item = docSnap.data();
+        let loadedProjects = [];
+
+        // Si el documento del artesano contiene array de referencias a proyectos (projectRefs o projectIds)
+        const refList = item.projectRefs || item.projectIds || [];
+        if (Array.isArray(refList) && refList.length > 0) {
+          for (const projId of refList) {
+            try {
+              const pRef = doc(db, "projects", projId);
+              const pSnap = await getDoc(pRef);
+              if (pSnap.exists()) {
+                loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
+              }
+            } catch (pErr) {
+              console.warn("Error leyendo proyecto referenciado:", projId, pErr);
+            }
+          }
+        } else if (item.projects && Array.isArray(item.projects)) {
+          // Soporte de compatibilidad
+          loadedProjects = item.projects;
+        }
+
         artisans.push(new Artisan({
           id: docSnap.id,
           ownerId: item.ownerId,
@@ -82,9 +107,10 @@ export class FirebaseArtisanRepository {
           tags: item.tags,
           promo: item.promo,
           gallery: item.gallery,
-          projects: item.projects || []
+          projectRefs: refList,
+          projects: loadedProjects
         }));
-      });
+      }
 
       return artisans;
     } catch (err) {
@@ -99,12 +125,32 @@ export class FirebaseArtisanRepository {
       const q = query(collection(db, "artisans"));
       const querySnapshot = await getDocs(q);
       let found = null;
-      querySnapshot.forEach((docSnap) => {
+
+      for (const docSnap of querySnapshot.docs) {
         const data = docSnap.data();
         if (data.ownerId === uid) {
-          found = { docId: docSnap.id, ...data };
+          let loadedProjects = [];
+          const refList = data.projectRefs || data.projectIds || [];
+
+          if (Array.isArray(refList) && refList.length > 0) {
+            for (const projId of refList) {
+              try {
+                const pRef = doc(db, "projects", projId);
+                const pSnap = await getDoc(pRef);
+                if (pSnap.exists()) {
+                  loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
+                }
+              } catch (e) {}
+            }
+          } else if (data.projects && Array.isArray(data.projects)) {
+            loadedProjects = data.projects;
+          }
+
+          found = { docId: docSnap.id, ...data, projects: loadedProjects, projectRefs: refList };
+          break;
         }
-      });
+      }
+
       return found;
     } catch (err) {
       console.error('Error buscando artesano por ownerId:', err);
@@ -130,7 +176,7 @@ export class FirebaseArtisanRepository {
           description: newArtisan.description,
           fullStory: newArtisan.fullStory,
           image: newArtisan.image,
-          projects: newArtisan.projects || [],
+          projectRefs: [],
           createdAt: new Date()
         });
         newArtisan.id = docRef.id;
@@ -145,6 +191,77 @@ export class FirebaseArtisanRepository {
     if (!db) return;
     const ref = doc(db, "artisans", docId);
     await updateDoc(ref, updatedData);
+  }
+
+  // --- MÉTODOS PARA LA COLECCIÓN INDEPENDIENTE 'projects' ---
+
+  async createProject(artisanDocId, projectData) {
+    if (!db) return null;
+
+    try {
+      // 1. Crear documento en la colección independiente 'projects'
+      const projDocRef = await addDoc(collection(db, "projects"), {
+        artisanDocId: artisanDocId,
+        title: projectData.title,
+        desc: projectData.desc || '',
+        category: projectData.category || 'Artesanía',
+        date: projectData.date || 'Reciente',
+        mainImage: projectData.mainImage || '',
+        steps: projectData.steps || [],
+        createdAt: new Date()
+      });
+
+      const newProjectId = projDocRef.id;
+
+      // 2. Añadir la referencia (ID) del proyecto al array 'projectRefs' en el documento del artesano
+      const artisanRef = doc(db, "artisans", artisanDocId);
+      await updateDoc(artisanRef, {
+        projectRefs: arrayUnion(newProjectId)
+      });
+
+      return { id: newProjectId, ...projectData };
+    } catch (err) {
+      console.error("Error creando documento en colección 'projects':", err);
+      throw err;
+    }
+  }
+
+  async updateProject(projectId, projectData) {
+    if (!db) return;
+
+    try {
+      const projRef = doc(db, "projects", projectId);
+      await updateDoc(projRef, {
+        title: projectData.title,
+        desc: projectData.desc || '',
+        category: projectData.category || 'Artesanía',
+        mainImage: projectData.mainImage || '',
+        steps: projectData.steps || [],
+        updatedAt: new Date()
+      });
+    } catch (err) {
+      console.error("Error actualizando documento en colección 'projects':", err);
+      throw err;
+    }
+  }
+
+  async deleteProject(artisanDocId, projectId) {
+    if (!db) return;
+
+    try {
+      // 1. Eliminar el documento de la colección 'projects'
+      const projRef = doc(db, "projects", projectId);
+      await deleteDoc(projRef);
+
+      // 2. Eliminar la referencia del array 'projectRefs' del documento del artesano
+      const artisanRef = doc(db, "artisans", artisanDocId);
+      await updateDoc(artisanRef, {
+        projectRefs: arrayRemove(projectId)
+      });
+    } catch (err) {
+      console.error("Error eliminando documento de colección 'projects':", err);
+      throw err;
+    }
   }
 }
 

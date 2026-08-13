@@ -486,7 +486,6 @@ class AppController {
     }));
 
     const projectData = {
-      id: editingIdx >= 0 ? projects[editingIdx].id : `proj_${Date.now()}`,
       title,
       category: this.currentArtisanProfile.categoryLabel || "Artesanía",
       date: "Publicación reciente",
@@ -495,17 +494,26 @@ class AppController {
       steps
     };
 
-    if (editingIdx >= 0) {
-      projects[editingIdx] = projectData;
-    } else {
-      projects.unshift(projectData);
-    }
-
     if (this.currentArtisanProfile.docId) {
       try {
-        await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { projects });
+        if (editingIdx >= 0 && projects[editingIdx] && projects[editingIdx].id) {
+          // Actualizar documento existente en colección 'projects'
+          const existingId = projects[editingIdx].id;
+          await this.artisanRepo.updateProject(existingId, projectData);
+          projects[editingIdx] = { id: existingId, ...projectData };
+        } else {
+          // Crear nuevo documento en colección 'projects' e insertar ref en 'artisans'
+          const createdProj = await this.artisanRepo.createProject(this.currentArtisanProfile.docId, projectData);
+          if (createdProj) projects.unshift(createdProj);
+        }
       } catch (err) {
-        console.warn("Firestore update diferido por permisos:", err);
+        console.warn("Firestore update de proyecto diferido:", err);
+      }
+    } else {
+      if (editingIdx >= 0) {
+        projects[editingIdx] = { id: `proj_${Date.now()}`, ...projectData };
+      } else {
+        projects.unshift({ id: `proj_${Date.now()}`, ...projectData });
       }
     }
 
@@ -590,20 +598,26 @@ class AppController {
     if (!confirm("¿Seguro que deseas eliminar este trabajo de tu galería?")) return;
 
     const projects = this.currentArtisanProfile.projects || [];
-    projects.splice(idx, 1);
+    const targetProj = projects[idx];
 
-    if (this.currentArtisanProfile.docId) {
+    if (this.currentArtisanProfile.docId && targetProj && targetProj.id) {
       try {
-        await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { projects });
-        this.currentArtisanProfile.projects = projects;
-        this.renderProjectsManagerGrid();
-        this.artisans = await this.artisanRepo.getAllArtisans();
-        this.renderArtisans();
-        ToastComponent.show("Trabajo eliminado de tu catálogo.");
+        await this.artisanRepo.deleteProject(this.currentArtisanProfile.docId, targetProj.id);
       } catch (err) {
-        alert(`Error al eliminar: ${err.message}`);
+        console.warn("Error borrando documento de colección 'projects':", err);
       }
     }
+
+    projects.splice(idx, 1);
+    this.currentArtisanProfile.projects = projects;
+    this.renderProjectsManagerGrid();
+    
+    try {
+      this.artisans = await this.artisanRepo.getAllArtisans();
+      this.renderArtisans();
+    } catch (e) {}
+
+    ToastComponent.show("Trabajo eliminado de tu catálogo.");
   }
 
   switchShopTab(tabId) {
