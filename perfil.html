@@ -300,6 +300,15 @@
         </div>
       </div>
     </div>
+  <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
+  <div class="modal-overlay" id="lightboxModal" style="z-index: 4000; background: rgba(0, 0, 0, 0.9);">
+    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #FFF;">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div style="max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+      <div id="lightboxMediaContainer" style="width: 100%; height: 100%; display: flex; justify-content: center;"></div>
+      <p id="lightboxCaption" style="color: #FFF; margin-top: 1rem; font-size: 1.1rem; text-align: center; font-weight: 500;"></p>
+    </div>
   </div>
 
   <!-- Footer -->
@@ -430,20 +439,27 @@
         document.getElementById('modalProjDesc').textContent = proj.desc;
 
         const stepsContainer = document.getElementById('modalProjSteps');
+        stepsContainer.style.display = 'grid';
+        stepsContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(220px, 1fr))';
+        stepsContainer.style.gap = '1.2rem';
+
         if (proj.steps && proj.steps.length > 0) {
           stepsContainer.innerHTML = proj.steps.map(step => `
-            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
-              <img src="${step.img}" alt="${step.title}" style="width: 100%; max-height: 380px; object-fit: cover;">
-              <div style="padding: 1.2rem;">
-                <h4 style="font-size: 1.1rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.4rem;">${step.title}</h4>
-                <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6;">${step.desc}</p>
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="openLightboxModal('${step.img}', '${step.title.replace(/'/g, "\\'")}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+              <div style="position: relative; height: 160px; overflow: hidden;">
+                <img src="${step.img}" alt="${step.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
+              </div>
+              <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+                <h4 style="font-size: 0.95rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.4rem; line-height: 1.3;">${step.title}</h4>
+                <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin: 0;">${step.desc}</p>
               </div>
             </div>
           `).join('');
         } else {
           stepsContainer.innerHTML = `
-            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden;">
-              <img src="${proj.mainImage}" alt="${proj.title}" style="width: 100%; max-height: 380px; object-fit: cover;">
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="openLightboxModal('${proj.mainImage}', '${proj.title.replace(/'/g, "\\'")}')">
+              <img src="${proj.mainImage}" alt="${proj.title}" style="width: 100%; height: 200px; object-fit: cover;">
             </div>
           `;
         }
@@ -455,6 +471,25 @@
       window.closeProjectModal = () => {
         document.getElementById('projectDetailModal').classList.remove('active');
         document.body.style.overflow = '';
+      };
+
+      // Visor Lightbox para Ampliar Fotos / Vídeos
+      window.openLightboxModal = (mediaUrl, caption) => {
+        const container = document.getElementById('lightboxMediaContainer');
+        const isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm');
+
+        if (isVideo) {
+          container.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 90vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></video>`;
+        } else {
+          container.innerHTML = `<img src="${mediaUrl}" alt="${caption}" style="max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
+        }
+
+        document.getElementById('lightboxCaption').textContent = caption || '';
+        document.getElementById('lightboxModal').classList.add('active');
+      };
+
+      window.closeLightboxModal = () => {
+        document.getElementById('lightboxModal').classList.remove('active');
       };
 
       // Bio & Info
