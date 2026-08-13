@@ -309,7 +309,7 @@ class AppController {
     e.preventDefault();
 
     const authEmailInput = document.getElementById('inputAuthEmail');
-    const authEmail = authEmailInput ? authEmailInput.value : document.getElementById('inputPhone').value + '@artesanos.es';
+    const authEmail = authEmailInput ? authEmailInput.value : document.getElementById('inputPhone').value + '@arteysanos.es';
     const authPasswordInput = document.getElementById('inputAuthPassword');
     const authPassword = authPasswordInput ? authPasswordInput.value : '12345678';
     
