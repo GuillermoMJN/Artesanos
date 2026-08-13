@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuración de credenciales de Firebase
 const firebaseConfig = {
@@ -17,17 +18,20 @@ const firebaseConfig = {
 let app = null;
 let db = null;
 let auth = null;
+let storage = null;
 
 if (firebaseConfig.apiKey) {
   app = initializeApp(firebaseConfig);
   db = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
 }
 
 export {
   app,
   db,
   auth,
+  storage,
   // Firestore exports
   collection,
   getDocs,
@@ -41,5 +45,9 @@ export {
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendEmailVerification
+  sendEmailVerification,
+  // Storage exports
+  ref,
+  uploadBytes,
+  getDownloadURL
 };

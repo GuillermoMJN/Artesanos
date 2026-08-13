@@ -232,8 +232,8 @@ class AppController {
     const promoForm = document.getElementById('promoForm');
     if (promoForm) promoForm.addEventListener('submit', (e) => this.handlePromoSubmit(e));
 
-    const galleryForm = document.getElementById('galleryForm');
-    if (galleryForm) galleryForm.addEventListener('submit', (e) => this.handleGallerySubmit(e));
+    const projectEditorForm = document.getElementById('projectEditorForm');
+    if (projectEditorForm) projectEditorForm.addEventListener('submit', (e) => this.handleProjectSave(e));
   }
 
   setupHeaderScroll() {
@@ -374,10 +374,226 @@ class AppController {
       document.getElementById('editAddress').value = this.currentArtisanProfile.address || '';
       document.getElementById('editDescription').value = this.currentArtisanProfile.description || '';
 
-      this.renderGalleryPreviewGrid(this.currentArtisanProfile.gallery || []);
+      this.renderProjectsManagerGrid();
     }
 
     document.getElementById('shopManageModal').classList.add('active');
+  }
+
+  showNewProjectForm() {
+    this.tempProjectFiles = [];
+    document.getElementById('editingProjectIdx').value = "-1";
+    document.getElementById('projectFormTitle').textContent = "Añadir Nuevo Trabajo";
+    document.getElementById('projectInputTitle').value = "";
+    document.getElementById('projectInputDesc').value = "";
+    document.getElementById('projectMediaPreviewList').innerHTML = "";
+    document.getElementById('fileUploadStatus').textContent = "Formatos aceptados: JPG, PNG, WEBP, MP4, MOV...";
+    document.getElementById('projectFormContainer').style.display = 'block';
+  }
+
+  hideProjectForm() {
+    this.tempProjectFiles = [];
+    document.getElementById('projectFormContainer').style.display = 'none';
+  }
+
+  async handleProjectFilesSelected(e) {
+    const files = Array.from(e.target.files);
+    if (!files || files.length === 0) return;
+
+    const statusEl = document.getElementById('fileUploadStatus');
+    const previewContainer = document.getElementById('projectMediaPreviewList');
+    if (!this.tempProjectFiles) this.tempProjectFiles = [];
+
+    statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo ${files.length} archivo(s) a Firebase Storage...`;
+
+    for (const file of files) {
+      try {
+        const fileUrl = await this.artisanRepo.uploadFile(file, 'projects');
+        const isVideo = file.type.startsWith('video/') || file.name.endsWith('.mp4') || file.name.endsWith('.mov');
+        
+        this.tempProjectFiles.push({
+          url: fileUrl,
+          type: isVideo ? 'video' : 'image',
+          title: file.name
+        });
+      } catch (err) {
+        console.error("Error al subir archivo:", err);
+      }
+    }
+
+    statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #4CAF50;"></i> ${this.tempProjectFiles.length} archivo(s) listos`;
+    this.renderProjectMediaPreviews();
+    e.target.value = "";
+  }
+
+  renderProjectMediaPreviews() {
+    const container = document.getElementById('projectMediaPreviewList');
+    if (!container) return;
+
+    if (!this.tempProjectFiles || this.tempProjectFiles.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = this.tempProjectFiles.map((fileObj, idx) => `
+      <div style="position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); height: 90px; background: #000;">
+        ${fileObj.type === 'video' ? `
+          <video src="${fileObj.url}" style="width:100%; height:100%; object-fit:cover;"></video>
+        ` : `
+          <img src="${fileObj.url}" style="width:100%; height:100%; object-fit:cover;">
+        `}
+        <button type="button" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #FFF; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem;" onclick="window.appUI.removeProjectMediaFile(${idx})">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    `).join('');
+  }
+
+  removeProjectMediaFile(idx) {
+    if (this.tempProjectFiles) {
+      this.tempProjectFiles.splice(idx, 1);
+      this.renderProjectMediaPreviews();
+      const statusEl = document.getElementById('fileUploadStatus');
+      if (statusEl) statusEl.textContent = `${this.tempProjectFiles.length} archivo(s) listos`;
+    }
+  }
+
+  async handleProjectSave(e) {
+    e.preventDefault();
+    if (!this.currentArtisanProfile) return;
+
+    const title = document.getElementById('projectInputTitle').value;
+    const desc = document.getElementById('projectInputDesc').value;
+    const editingIdx = parseInt(document.getElementById('editingProjectIdx').value, 10);
+
+    const mediaFiles = this.tempProjectFiles || [];
+    if (mediaFiles.length === 0) {
+      alert("Por favor pulsa 'Añadir archivo' y sube al menos una fotografía o vídeo para este trabajo.");
+      return;
+    }
+
+    const projects = this.currentArtisanProfile.projects || [];
+    const mainImage = mediaFiles[0].url;
+    const steps = mediaFiles.map((f, i) => ({
+      title: f.title || `Paso #${i + 1}`,
+      img: f.url,
+      desc: desc || "Fotografía/Vídeo del proceso de trabajo."
+    }));
+
+    const projectData = {
+      id: editingIdx >= 0 ? projects[editingIdx].id : `proj_${Date.now()}`,
+      title,
+      category: this.currentArtisanProfile.categoryLabel || "Artesanía",
+      date: "Publicación reciente",
+      mainImage,
+      desc: desc || "Trabajo artesanal publicado desde la tienda.",
+      steps
+    };
+
+    if (editingIdx >= 0) {
+      projects[editingIdx] = projectData;
+    } else {
+      projects.unshift(projectData);
+    }
+
+    if (this.currentArtisanProfile.docId) {
+      try {
+        await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { projects });
+        this.currentArtisanProfile.projects = projects;
+        this.renderProjectsManagerGrid();
+        this.hideProjectForm();
+        this.artisans = await this.artisanRepo.getAllArtisans();
+        this.renderArtisans();
+        ToastComponent.show(editingIdx >= 0 ? "¡Trabajo actualizado con éxito!" : "¡Nuevo trabajo publicado con éxito!");
+      } catch (err) {
+        alert(`Error al guardar trabajo: ${err.message}`);
+      }
+    }
+  }
+
+  renderProjectsManagerGrid() {
+    const container = document.getElementById('projectsManagerGrid');
+    if (!container || !this.currentArtisanProfile) return;
+
+    const projects = this.currentArtisanProfile.projects || [];
+    if (projects.length === 0) {
+      container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+          <i class="fa-solid fa-photo-film" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 0.8rem;"></i>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Todavía no has creado ningún trabajo en tu galería.</p>
+          <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" onclick="window.appUI.showNewProjectForm()">
+            <i class="fa-solid fa-plus"></i> Crear Mi Primer Trabajo
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = projects.map((proj, idx) => `
+      <div style="background: #FFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.03);">
+        <div>
+          <div style="height: 140px; overflow: hidden; position: relative;">
+            <img src="${proj.mainImage}" alt="${proj.title}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem;">
+              <i class="fa-solid fa-images"></i> ${proj.steps ? proj.steps.length : 1} archivo(s)
+            </span>
+          </div>
+          <div style="padding: 1rem;">
+            <h4 style="font-size: 1rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem;">${proj.title}</h4>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${proj.desc || 'Sin descripción'}</p>
+          </div>
+        </div>
+        <div style="padding: 0.8rem 1rem; background: var(--bg-subtle); border-top: 1px solid var(--border-color); display: flex; gap: 0.6rem; justify-content: flex-end;">
+          <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" onclick="window.appUI.editProject(${idx})">
+            <i class="fa-solid fa-pen"></i> Editar
+          </button>
+          <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; color: #D32F2F;" onclick="window.appUI.deleteProject(${idx})">
+            <i class="fa-solid fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  editProject(idx) {
+    const projects = this.currentArtisanProfile.projects || [];
+    const proj = projects[idx];
+    if (!proj) return;
+
+    this.showNewProjectForm();
+    document.getElementById('editingProjectIdx').value = idx;
+    document.getElementById('projectFormTitle').textContent = "Editar Trabajo";
+    document.getElementById('projectInputTitle').value = proj.title;
+    document.getElementById('projectInputDesc').value = proj.desc || "";
+
+    if (proj.steps) {
+      this.tempProjectFiles = proj.steps.map(s => ({
+        url: s.img,
+        type: (s.img.endsWith('.mp4') || s.img.endsWith('.mov')) ? 'video' : 'image',
+        title: s.title
+      }));
+      this.renderProjectMediaPreviews();
+    }
+  }
+
+  async deleteProject(idx) {
+    if (!confirm("¿Seguro que deseas eliminar este trabajo de tu galería?")) return;
+
+    const projects = this.currentArtisanProfile.projects || [];
+    projects.splice(idx, 1);
+
+    if (this.currentArtisanProfile.docId) {
+      try {
+        await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { projects });
+        this.currentArtisanProfile.projects = projects;
+        this.renderProjectsManagerGrid();
+        this.artisans = await this.artisanRepo.getAllArtisans();
+        this.renderArtisans();
+        ToastComponent.show("Trabajo eliminado de tu catálogo.");
+      } catch (err) {
+        alert(`Error al eliminar: ${err.message}`);
+      }
+    }
   }
 
   switchShopTab(tabId) {

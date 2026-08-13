@@ -1,6 +1,10 @@
 import { 
   db, 
   auth, 
+  storage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
   collection, 
   getDocs, 
   addDoc, 
@@ -18,6 +22,31 @@ import { Artisan } from '../../domain/models/Artisan.js';
 import { initialArtisansSeed } from '../mock/initialArtisansData.js';
 
 export class FirebaseArtisanRepository {
+  async uploadFile(file, folder = 'projects') {
+    if (!storage) {
+      // Fallback local en Data URL si no hay Firebase Storage configurado
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+
+    try {
+      const fileName = `${folder}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+      const storageRef = ref(storage, fileName);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+      return downloadUrl;
+    } catch (err) {
+      console.warn("Error subiendo a Firebase Storage, usando DataURL fallback:", err);
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    }
+  }
   async getAllArtisans() {
     if (!db) return initialArtisansSeed.map(item => new Artisan(item));
 
