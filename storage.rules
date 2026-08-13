@@ -1,0 +1,31 @@
+rules_version = '2';
+
+// Reglas de Seguridad para Firebase Storage en "Arte y Sanos"
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Reglas para la carpeta de proyectos de los artesanos
+    match /projects/{allPaths=**} {
+      
+      // Permitir LECTURA pública para que cualquier visitante de la web pueda ver los trabajos
+      allow read: if true;
+
+      // Permitir CREAR / SUBIR archivos solo a usuarios autenticados:
+      // - Debe estar autenticado (request.auth != null)
+      // - El archivo debe ser una imagen o vídeo (tipo MIME imagen/* o video/*)
+      // - El tamaño del archivo debe ser inferior a 25 MB
+      allow write, create: if request.auth != null
+                           && (request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*'))
+                           && request.resource.size < 25 * 1024 * 1024;
+
+      // Permitir ELIMINAR solo si el usuario está autenticado
+      allow delete: if request.auth != null;
+    }
+
+    // Regla por defecto para cualquier otro directorio: permitir lectura pública, escritura solo autenticados
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}
