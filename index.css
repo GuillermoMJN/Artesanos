@@ -136,8 +136,9 @@ body.intro-active {
 }
 
 .intro-overlay.open .intro-line {
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  opacity: 0 !important;
+  transform: translateX(-50%) scaleX(0) !important;
+  transition: opacity 0.15s ease, transform 0.15s ease !important;
 }
 
 /* Animación de la página principal (Fade In de blanco + Zoom In suave) */
