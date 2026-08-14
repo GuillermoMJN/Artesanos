@@ -38,7 +38,7 @@ class AppController {
     const el = document.getElementById('statArtisansCount');
     if (el) {
       const count = this.artisans.length;
-      el.textContent = `+${count}`;
+      el.textContent = `${count}`;
     }
   }
 
@@ -83,13 +83,24 @@ class AppController {
     if (!navActions) return;
 
     if (user) {
+      const displayName = (user.profile && user.profile.displayName) || user.email.split('@')[0];
+      const isArtisan = user.profile ? user.profile.role === 'artisan' : !!this.currentArtisanProfile;
+
       navActions.innerHTML = `
-        <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()">
-          <i class="fa-solid fa-store"></i> Mi Tienda
-        </button>
-        <button class="btn btn-secondary" onclick="window.appUI.handleLogout()">
-          <i class="fa-solid fa-right-from-bracket"></i> Salir
-        </button>
+        <div style="display: flex; align-items: center; gap: 0.6rem;">
+          <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
+            <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta);"></i>
+            ${displayName}
+          </span>
+          ${isArtisan ? `
+            <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.88rem;">
+              <i class="fa-solid fa-store"></i> Mi Tienda
+            </button>
+          ` : ''}
+          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.88rem;">
+            <i class="fa-solid fa-right-from-bracket"></i> Salir
+          </button>
+        </div>
       `;
     } else {
       navActions.innerHTML = `
@@ -97,7 +108,7 @@ class AppController {
           <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
         </button>
         <button class="btn btn-primary" onclick="window.appUI.openRegisterModal()">
-          <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
+          <i class="fa-solid fa-user-plus"></i> Registrarse
         </button>
       `;
     }
@@ -649,55 +660,97 @@ class AppController {
     ToastComponent.show('Has cerrado sesión correctamente.');
   }
 
+  selectRegisterRole(role) {
+    const roleInput = document.getElementById('registerAccountRole');
+    const roleBtnClient = document.getElementById('roleBtnClient');
+    const roleBtnArtisan = document.getElementById('roleBtnArtisan');
+    const extraFields = document.getElementById('artisanExtraFields');
+    const btnSubmit = document.getElementById('btnSubmitRegister');
+    const modalTitle = document.getElementById('registerModalTitle');
+
+    if (roleInput) roleInput.value = role;
+
+    if (role === 'client') {
+      if (roleBtnClient) {
+        roleBtnClient.style.background = 'var(--terracotta)';
+        roleBtnClient.style.color = '#FFF';
+      }
+      if (roleBtnArtisan) {
+        roleBtnArtisan.style.background = 'transparent';
+        roleBtnArtisan.style.color = 'var(--text-main)';
+      }
+      if (extraFields) extraFields.style.display = 'none';
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Crear Cuenta de Usuario';
+      if (modalTitle) modalTitle.textContent = 'Crear Cuenta de Usuario';
+    } else {
+      if (roleBtnArtisan) {
+        roleBtnArtisan.style.background = 'var(--terracotta)';
+        roleBtnArtisan.style.color = '#FFF';
+      }
+      if (roleBtnClient) {
+        roleBtnClient.style.background = 'transparent';
+        roleBtnClient.style.color = 'var(--text-main)';
+      }
+      if (extraFields) extraFields.style.display = 'block';
+      if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Crear Cuenta de Artesano';
+      if (modalTitle) modalTitle.textContent = 'Crear Cuenta de Artesano';
+    }
+  }
+
   async handleNewArtisanSubmit(e) {
     e.preventDefault();
 
-    const authEmailInput = document.getElementById('inputAuthEmail');
-    const authEmail = authEmailInput ? authEmailInput.value : document.getElementById('inputPhone').value + '@arteysanos.es';
-    const authPasswordInput = document.getElementById('inputAuthPassword');
-    const authPassword = authPasswordInput ? authPasswordInput.value : '12345678';
+    const role = (document.getElementById('registerAccountRole') && document.getElementById('registerAccountRole').value) || 'client';
+    const authEmail = document.getElementById('inputAuthEmail').value;
+    const authPassword = document.getElementById('inputAuthPassword').value;
+    const displayName = document.getElementById('inputDisplayName').value;
 
-    const name = document.getElementById('inputName').value;
-    const category = document.getElementById('inputCategory').value;
-    const trade = document.getElementById('inputTrade').value;
-    const location = document.getElementById('inputLocation').value;
-    const address = document.getElementById('inputAddress').value;
-    const phone = document.getElementById('inputPhone').value;
-    const websiteInput = document.getElementById('inputWebsite');
-    const website = websiteInput ? websiteInput.value : '';
-    const description = document.getElementById('inputDescription').value;
-
-    let createdUid = null;
+    let createdUser = null;
 
     try {
-      const user = await this.authRepo.signUp(authEmail, authPassword);
-      createdUid = user.uid;
+      createdUser = await this.authRepo.signUp(authEmail, authPassword, displayName, role);
       ToastComponent.show('📩 Correo de verificación enviado a ' + authEmail);
     } catch (authErr) {
-      console.warn('Info Auth:', authErr.message);
+      alert('Error al registrar usuario: ' + authErr.message);
+      return;
     }
 
-    const newArtisan = await this.artisanRepo.createArtisan({
-      id: Date.now(),
-      ownerId: createdUid || (this.currentUser ? this.currentUser.uid : 'anonymous'),
-      name,
-      trade,
-      category,
-      location,
-      address,
-      phone,
-      email: authEmail,
-      website,
-      description
-    });
+    if (role === 'artisan') {
+      const name = document.getElementById('inputName').value || displayName;
+      const category = document.getElementById('inputCategory').value;
+      const trade = document.getElementById('inputTrade').value;
+      const location = document.getElementById('inputLocation').value;
+      const address = document.getElementById('inputAddress').value;
+      const phone = document.getElementById('inputPhone').value;
+      const websiteInput = document.getElementById('inputWebsite');
+      const website = websiteInput ? websiteInput.value : '';
+      const description = document.getElementById('inputDescription').value;
 
-    this.artisans.unshift(newArtisan);
-    this.renderCategories();
-    this.renderArtisans();
+      const newArtisan = await this.artisanRepo.createArtisan({
+        id: Date.now(),
+        ownerId: createdUser ? createdUser.uid : 'anonymous',
+        name,
+        trade,
+        category,
+        location,
+        address,
+        phone,
+        email: authEmail,
+        website,
+        description
+      });
+
+      this.artisans.unshift(newArtisan);
+      this.currentArtisanProfile = newArtisan;
+      this.renderCategories();
+      this.renderArtisans();
+      ToastComponent.show(`¡Bienvenido, ${name}! Tu cuenta y taller artesano están listos.`);
+    } else {
+      ToastComponent.show(`¡Bienvenido, ${displayName}! Tu cuenta de usuario está lista.`);
+    }
+
     this.closeModal('registerModal');
     e.target.reset();
-
-    ToastComponent.show(`¡Bienvenido, ${name}! Tu cuenta y tienda están listas.`);
   }
 
   async handleEditShopSubmit(e) {

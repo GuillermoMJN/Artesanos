@@ -159,10 +159,44 @@
       word-break: break-word;
       font-size: 0.98rem;
     }
+
+    /* Estilos del Sistema de Reseñas */
+    .star-rating-select {
+      display: flex;
+      gap: 0.4rem;
+      font-size: 1.6rem;
+      cursor: pointer;
+      color: #D1D5DB;
+    }
+    .star-rating-select i {
+      transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .star-rating-select i.active,
+    .star-rating-select i:hover,
+    .star-rating-select i.hovered {
+      color: var(--warm-gold);
+    }
+    .review-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 1.4rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .comment-bubble {
+      background: var(--bg-subtle);
+      border-radius: 12px;
+      padding: 1rem 1.2rem;
+      border: 1px solid rgba(230, 221, 208, 0.6);
+      margin-bottom: 0.8rem;
+    }
   </style>
 </head>
 
 <body style="background: var(--beige-light);">
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
 
   <!-- Header / Navigation -->
   <header class="header scrolled" id="mainHeader">
@@ -173,6 +207,9 @@
       <nav>
         <ul class="nav-links">
           <li><a href="index.html#directorio" class="nav-link">← Volver al Directorio</a></li>
+          <li id="perfilNavAuth">
+            <!-- Rellenado dinámicamente con sesión de usuario -->
+          </li>
         </ul>
       </nav>
     </div>
@@ -231,7 +268,7 @@
     </section>
 
     <!-- Bio & Details Section -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; flex-wrap: wrap;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; flex-wrap: wrap; margin-bottom: 4rem;">
       <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
         <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-dark);">
           <i class="fa-solid fa-book-open" style="color: var(--terracotta);"></i> Historia del Taller
@@ -278,11 +315,86 @@
         </div>
       </div>
     </div>
+
+    <!-- SECCIÓN DE RESEÑAS Y VALORACIONES GLOBALES DEL ARTESANO -->
+    <section id="reviewsSection" style="margin-bottom: 4rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="section-tag"><i class="fa-solid fa-star"></i> Opiniones Reales</span>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 2.1rem; color: var(--primary-dark);">Reseñas y Valoración del Artesano</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.3rem;">La puntuación media se calcula únicamente con las valoraciones directas a este artesano.</p>
+        </div>
+      </div>
+
+      <!-- Resumen Global de Puntuación -->
+      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem; background: #FFFFFF; padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2.5rem; align-items: center;">
+        <div style="text-align: center; border-right: 1px solid var(--border-color); padding-right: 1.5rem;">
+          <div style="font-size: 3.5rem; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-dark); line-height: 1;" id="summaryScoreNum">5.0</div>
+          <div style="color: var(--warm-gold); font-size: 1.3rem; margin: 0.5rem 0;" id="summaryScoreStars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.9rem;" id="summaryScoreCount">Basado en 0 opiniones</p>
+        </div>
+
+        <div>
+          <h4 style="color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.15rem;">¿Has visitado este taller o comprado sus piezas?</h4>
+          <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1rem;">
+            Comparte tu experiencia para ayudar a otros amantes de la artesanía a descubrir el trabajo de este creador.
+          </p>
+          <a href="#newReviewBox" class="btn btn-primary" style="display: inline-block;">
+            <i class="fa-solid fa-pen-nib"></i> Escribir una Reseña
+          </a>
+        </div>
+      </div>
+
+      <!-- Formulario para Añadir Nueva Reseña -->
+      <div id="newReviewBox" style="background: var(--bg-subtle); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2.5rem;">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.2rem;">
+          <i class="fa-solid fa-comment-dots" style="color: var(--terracotta);"></i> Deja tu Valoración y Comentario
+        </h3>
+
+        <form id="artisanReviewForm">
+          <div style="margin-bottom: 1.2rem;">
+            <label class="form-label" style="margin-bottom: 0.4rem;">Tu Puntuación General *</label>
+            <div class="star-rating-select" id="starRatingSelect">
+              <i class="fa-solid fa-star active" data-value="1"></i>
+              <i class="fa-solid fa-star active" data-value="2"></i>
+              <i class="fa-solid fa-star active" data-value="3"></i>
+              <i class="fa-solid fa-star active" data-value="4"></i>
+              <i class="fa-solid fa-star active" data-value="5"></i>
+            </div>
+            <input type="hidden" id="reviewRatingInput" value="5">
+          </div>
+
+          <div id="guestReviewerFields" class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Tu Nombre o Alias *</label>
+              <input type="text" id="reviewAuthorName" class="form-input" placeholder="ej. Lucía Morales" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="form-label">Tu Opinión sobre el Artesano *</label>
+            <textarea id="reviewCommentText" class="form-textarea" rows="4" placeholder="Describe tu experiencia, calidad del trabajo, trato recibido, etc..." required></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmitReview" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Publicar Reseña
+          </button>
+        </form>
+      </div>
+
+      <!-- Listado de Reseñas Publicadas -->
+      <div id="reviewsListContainer" style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- Se inyectan dinámicamente -->
+      </div>
+    </section>
+
   </main>
 
-  <!-- Modal Detalle de Proyecto Individual -->
+  <!-- Modal Detalle de Proyecto Individual con Comentarios Independientes -->
   <div class="modal-overlay" id="projectDetailModal">
-    <div class="modal-card" style="max-width: 800px;">
+    <div class="modal-card" style="max-width: 850px;">
       <button class="modal-close" onclick="closeProjectModal()">
         <i class="fa-solid fa-xmark"></i>
       </button>
@@ -297,11 +409,41 @@
           <i class="fa-solid fa-camera-retro" style="color: var(--terracotta);"></i> Proceso de Desarrollo & Galería
         </h3>
 
-        <div id="modalProjSteps" style="display: flex; flex-direction: column; gap: 1.5rem;">
-          <!-- Se inyectan dinámicamente las fotos y pasos del proyecto -->
+        <div id="modalProjSteps" style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem;">
+          <!-- Fotos y pasos del proyecto -->
         </div>
+
+        <!-- SECCIÓN DE COMENTARIOS DEL PROYECTO -->
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+
+        <div style="margin-bottom: 1.5rem;">
+          <h4 style="font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-comments" style="color: var(--terracotta);"></i> Preguntas y Comentarios sobre esta Pieza
+          </h4>
+          <p style="color: var(--text-secondary); font-size: 0.88rem;">Comentarios de la comunidad sobre este proyecto en particular (no alteran la media de estrellas del artesano).</p>
+        </div>
+
+        <!-- Lista de Comentarios del Proyecto -->
+        <div id="projectCommentsList" style="margin-bottom: 1.5rem; max-height: 250px; overflow-y: auto;">
+          <!-- Dinámico -->
+        </div>
+
+        <!-- Formulario para Comentar en el Proyecto -->
+        <form id="projectCommentForm" style="display: flex; flex-direction: column; gap: 0.8rem; background: var(--bg-subtle); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div style="display: flex; gap: 0.8rem;">
+            <input type="text" id="projectCommentAuthor" class="form-input" placeholder="Tu Nombre o Alias *" required style="flex: 1;">
+          </div>
+          <div style="display: flex; gap: 0.8rem;">
+            <input type="text" id="projectCommentText" class="form-input" placeholder="Escribe tu comentario o consulta sobre esta obra..." required style="flex: 1;">
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap; padding: 0.7rem 1.4rem;">
+              <i class="fa-solid fa-paper-plane"></i> Enviar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
+  </div>
+
   <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
   <div class="modal-overlay" id="lightboxModal" style="z-index: 4000; background: rgba(0, 0, 0, 0.9);">
     <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #FFF;">
@@ -320,9 +462,11 @@
     </div>
   </footer>
 
-  <!-- Script para Cargar Datos del Perfil -->
+  <!-- Script para Cargar Datos del Perfil, Reseñas y Comentarios -->
   <script type="module">
-    import { FirebaseArtisanRepository } from './src/data/firebase/FirebaseArtisanRepository.js';
+    import { FirebaseArtisanRepository, FirebaseAuthRepository } from './src/data/firebase/FirebaseArtisanRepository.js';
+    import { ReviewRepository } from './src/data/firebase/ReviewRepository.js';
+    import { ToastComponent } from './src/presentation/components/ToastComponent.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
       const urlParams = new URLSearchParams(window.location.search);
@@ -335,6 +479,39 @@
       }
 
       const repo = new FirebaseArtisanRepository();
+      const authRepo = new FirebaseAuthRepository();
+      const reviewRepo = new ReviewRepository();
+
+      let currentLoggedUser = null;
+      let activeProjectIdForComments = null;
+
+      // Escuchar estado de usuario autenticado
+      authRepo.onAuthChange((user) => {
+        currentLoggedUser = user;
+        const navContainer = document.getElementById('perfilNavAuth');
+        const authorInput = document.getElementById('reviewAuthorName');
+        const projAuthorInput = document.getElementById('projectCommentAuthor');
+
+        if (user) {
+          const name = (user.profile && user.profile.displayName) || user.email.split('@')[0];
+          if (authorInput) {
+            authorInput.value = name;
+            authorInput.disabled = true;
+          }
+          if (projAuthorInput) {
+            projAuthorInput.value = name;
+            projAuthorInput.disabled = true;
+          }
+          if (navContainer) {
+            navContainer.innerHTML = `
+              <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
+                <i class="fa-solid fa-user" style="color: var(--terracotta);"></i> ${name}
+              </span>
+            `;
+          }
+        }
+      });
+
       const artisans = await repo.getAllArtisans();
       const artisan = artisans.find(a => String(a.id) === String(artisanId));
 
@@ -353,8 +530,26 @@
       document.getElementById('profileCategory').textContent = artisan.categoryLabel;
       document.getElementById('profileDesc').textContent = artisan.description;
       document.getElementById('profileLocation').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${artisan.location}`;
-      document.getElementById('profileRating').innerHTML = `<i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> ${artisan.rating} (${artisan.reviewsCount} opiniones)`;
       document.getElementById('profileExperience').innerHTML = `<i class="fa-solid fa-certificate"></i> ${artisan.experience}`;
+
+      function updateRatingUI(rating, count) {
+        const num = Number(rating || 5.0).toFixed(1);
+        document.getElementById('profileRating').innerHTML = `<i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> ${num} (${count} opiniones)`;
+        document.getElementById('summaryScoreNum').textContent = num;
+        document.getElementById('summaryScoreCount').textContent = `Basado en ${count} opinión(es)`;
+
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          if (i <= Math.round(rating)) {
+            starsHtml += '<i class="fa-solid fa-star"></i>';
+          } else {
+            starsHtml += '<i class="fa-regular fa-star"></i>';
+          }
+        }
+        document.getElementById('summaryScoreStars').innerHTML = starsHtml;
+      }
+
+      updateRatingUI(artisan.rating, artisan.reviewsCount || 0);
 
       // Botones contacto
       document.getElementById('btnWhatsapp').href = `https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}`;
@@ -430,10 +625,176 @@
         `;
       }).join('');
 
+      // Cargar Reseñas del Artesano
+      async function renderReviews() {
+        const listContainer = document.getElementById('reviewsListContainer');
+        const reviews = await reviewRepo.getArtisanReviews(artisan.id);
+
+        if (reviews.length === 0) {
+          listContainer.innerHTML = `
+            <div style="background: #FFFFFF; padding: 2rem; text-align: center; border-radius: 12px; border: 1px solid var(--border-color); color: var(--text-muted);">
+              <i class="fa-regular fa-comment-dots" style="font-size: 2.2rem; margin-bottom: 0.6rem; color: var(--terracotta);"></i>
+              <p>Aún no hay opiniones para este artesano. ¡Sé el primero en calificarlo!</p>
+            </div>
+          `;
+          return;
+        }
+
+        // Calcular media y actualizar contadores
+        const total = reviews.length;
+        const avg = reviews.reduce((acc, r) => acc + Number(r.rating || 5), 0) / total;
+        updateRatingUI(avg, total);
+
+        listContainer.innerHTML = reviews.map(rev => {
+          let stars = '';
+          for (let i = 1; i <= 5; i++) {
+            stars += i <= rev.rating ? '<i class="fa-solid fa-star" style="color: var(--warm-gold);"></i>' : '<i class="fa-regular fa-star" style="color: #D1D5DB;"></i>';
+          }
+          const dateStr = rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Reciente';
+
+          return `
+            <div class="review-card">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--terracotta); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem;">
+                    ${(rev.userName || 'U').charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <h4 style="font-size: 1.05rem; color: var(--primary-dark); margin: 0;">${rev.userName || 'Usuario'}</h4>
+                    <span style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
+                  </div>
+                </div>
+                <div style="font-size: 1rem; display: flex; gap: 0.2rem;">
+                  ${stars}
+                </div>
+              </div>
+              <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; margin: 0; margin-top: 0.5rem;">${rev.comment}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      await renderReviews();
+
+      // Manejar Selector de Estrellas Interactivo
+      const starSelect = document.getElementById('starRatingSelect');
+      const ratingInput = document.getElementById('reviewRatingInput');
+      const stars = starSelect.querySelectorAll('i');
+
+      stars.forEach(star => {
+        star.addEventListener('click', () => {
+          const val = parseInt(star.getAttribute('data-value'), 10);
+          ratingInput.value = val;
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'), 10);
+            if (sVal <= val) {
+              s.classList.add('active');
+            } else {
+              s.classList.remove('active');
+            }
+          });
+        });
+
+        star.addEventListener('mouseenter', () => {
+          const val = parseInt(star.getAttribute('data-value'), 10);
+          stars.forEach(s => {
+            const sVal = parseInt(s.getAttribute('data-value'), 10);
+            if (sVal <= val) {
+              s.classList.add('hovered');
+            } else {
+              s.classList.remove('hovered');
+            }
+          });
+        });
+
+        star.addEventListener('mouseleave', () => {
+          stars.forEach(s => s.classList.remove('hovered'));
+        });
+      });
+
+      // Manejar Envío de Reseña al Artesano
+      document.getElementById('artisanReviewForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const rating = parseInt(ratingInput.value, 10);
+        const authorName = (currentLoggedUser && currentLoggedUser.profile && currentLoggedUser.profile.displayName) || document.getElementById('reviewAuthorName').value;
+        const comment = document.getElementById('reviewCommentText').value;
+
+        try {
+          const result = await reviewRepo.addArtisanReview(artisan.id, {
+            userId: currentLoggedUser ? currentLoggedUser.uid : 'anon',
+            userName: authorName,
+            rating: rating,
+            comment: comment
+          });
+
+          ToastComponent.show('⭐ ¡Tu reseña ha sido publicada con éxito!');
+          document.getElementById('reviewCommentText').value = '';
+          await renderReviews();
+        } catch (err) {
+          alert('Error al publicar reseña: ' + err.message);
+        }
+      });
+
+      // Cargar Comentarios de un Proyecto en el Modal
+      async function renderProjectComments(projId) {
+        const container = document.getElementById('projectCommentsList');
+        const comments = await reviewRepo.getProjectComments(projId);
+
+        if (comments.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; color: var(--text-muted); font-size: 0.88rem; padding: 1rem;">
+              No hay comentarios sobre esta pieza todavía. ¡Haz la primera pregunta u opinión!
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = comments.map(c => {
+          const dateStr = c.createdAt ? new Date(c.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '';
+          return `
+            <div class="comment-bubble">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                <strong style="color: var(--primary-dark); font-size: 0.9rem;">
+                  <i class="fa-solid fa-user-circle" style="color: var(--terracotta);"></i> ${c.userName || 'Usuario'}
+                </strong>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</span>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0; line-height: 1.4;">${c.comment}</p>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Enviar Comentario en el Modal de Proyecto
+      document.getElementById('projectCommentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!activeProjectIdForComments) return;
+
+        const author = (currentLoggedUser && currentLoggedUser.profile && currentLoggedUser.profile.displayName) || document.getElementById('projectCommentAuthor').value;
+        const textInput = document.getElementById('projectCommentText');
+        const text = textInput.value;
+
+        try {
+          await reviewRepo.addProjectComment(activeProjectIdForComments, artisan.id, {
+            userId: currentLoggedUser ? currentLoggedUser.uid : 'anon',
+            userName: author,
+            comment: text
+          });
+
+          textInput.value = '';
+          ToastComponent.show('💬 Comentario añadido al proyecto');
+          await renderProjectComments(activeProjectIdForComments);
+        } catch (err) {
+          alert('Error al publicar comentario: ' + err.message);
+        }
+      });
+
       // Funciones globales para modal de proyectos
-      window.openProjectModal = (idx) => {
+      window.openProjectModal = async (idx) => {
         const proj = window.currentArtisanProjects[idx];
         if (!proj) return;
+
+        activeProjectIdForComments = proj.id || `proj_${idx}`;
 
         document.getElementById('modalProjTitle').textContent = proj.title;
         document.getElementById('modalProjCategory').innerHTML = `<i class="fa-solid fa-folder"></i> ${proj.category || 'Proyecto'}`;
@@ -447,7 +808,7 @@
 
         if (proj.steps && proj.steps.length > 0) {
           stepsContainer.innerHTML = proj.steps.map(step => `
-            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="openLightboxModal('${step.img}', '${step.title.replace(/'/g, "\\'")}')" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="openLightboxModal('${step.img}', '${step.title.replace(/'/g, "\\'")}')">
               <div style="position: relative; height: 160px; overflow: hidden;">
                 <img src="${step.img}" alt="${step.title}" style="width: 100%; height: 100%; object-fit: cover;">
                 <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
@@ -465,6 +826,8 @@
             </div>
           `;
         }
+
+        await renderProjectComments(activeProjectIdForComments);
 
         document.body.style.overflow = 'hidden';
         document.getElementById('projectDetailModal').classList.add('active');

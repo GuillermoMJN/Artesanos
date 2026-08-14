@@ -268,20 +268,90 @@ export class FirebaseArtisanRepository {
 export class FirebaseAuthRepository {
   onAuthChange(callback) {
     if (!auth) return;
-    onAuthStateChanged(auth, callback);
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        // Enriquecer el usuario con su perfil de la base de datos si existe
+        const userProfile = await this.getUserProfile(user.uid);
+        user.profile = userProfile;
+      }
+      callback(user);
+    });
   }
 
-  async signUp(email, password) {
+  async getUserProfile(uid) {
+    if (!uid) return null;
+    if (db) {
+      try {
+        const uSnap = await getDoc(doc(db, "users", uid));
+        if (uSnap.exists()) {
+          return uSnap.data();
+        }
+      } catch (e) {
+        console.warn("No se pudo leer perfil en Firestore:", e.message);
+      }
+    }
+    try {
+      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
+      return localUsers[uid] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  async saveUserProfile(uid, data) {
+    if (!uid) return;
+    if (db) {
+      try {
+        const uRef = doc(db, "users", uid);
+        await updateDoc(uRef, { ...data, updatedAt: new Date() }).catch(async () => {
+          // Si no existe, crearlo
+          const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+          await setDoc(uRef, { ...data, createdAt: new Date() });
+        });
+      } catch (e) {
+        console.warn("Guardado de usuario en Firestore diferido:", e.message);
+      }
+    }
+    try {
+      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
+      localUsers[uid] = { ...(localUsers[uid] || {}), ...data };
+      localStorage.setItem('arteysanos_users', JSON.stringify(localUsers));
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async signUp(email, password, displayName = '', role = 'artisan') {
     if (!auth) throw new Error("Firebase Auth no inicializado");
     const credential = await createUserWithEmailAndPassword(auth, email, password);
-    await sendEmailVerification(credential.user);
-    return credential.user;
+    const user = credential.user;
+
+    const profileData = {
+      uid: user.uid,
+      email: user.email,
+      displayName: displayName || (role === 'artisan' ? 'Artesano' : 'Usuario'),
+      role: role, // 'artisan' o 'client'
+      createdAt: new Date().toISOString()
+    };
+
+    await this.saveUserProfile(user.uid, profileData);
+    user.profile = profileData;
+
+    try {
+      await sendEmailVerification(user);
+    } catch (e) {
+      console.warn("No se pudo enviar email de verificación:", e.message);
+    }
+
+    return user;
   }
 
   async signIn(email, password) {
     if (!auth) throw new Error("Firebase Auth no inicializado");
     const credential = await signInWithEmailAndPassword(auth, email, password);
-    return credential.user;
+    const user = credential.user;
+    user.profile = await this.getUserProfile(user.uid);
+    return user;
   }
 
   async logout() {

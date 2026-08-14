@@ -54,7 +54,7 @@
           <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
         </button>
         <button class="btn btn-primary" onclick="window.appUI.openRegisterModal()" id="btnRegisterNav">
-          <i class="fa-solid fa-plus"></i> Crear Cuenta Artesano
+          <i class="fa-solid fa-user-plus"></i> Registrarse
         </button>
       </div>
     </div>
@@ -274,85 +274,111 @@
     </div>
   </div>
 
-  <!-- Modal Formulario "Publicar mi Negocio / Registro con Auth" -->
+  <!-- Modal Formulario "Registro de Cuenta (Cliente o Artesano)" -->
   <div class="modal-overlay" id="registerModal">
     <div class="modal-card">
       <button class="modal-close" onclick="window.appUI.closeModal('registerModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="modal-body">
-        <div style="text-align: center; margin-bottom: 2rem;">
-          <span class="hero-badge"><i class="fa-solid fa-store"></i> Unirme a la red</span>
-          <h2 style="font-size: 2rem; margin-top: 0.5rem;">Crear Cuenta de Artesano</h2>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">Crea tu cuenta verificada para publicar y gestionar tu negocio en la plataforma.</p>
+        <div style="text-align: center; margin-bottom: 1.5rem;">
+          <span class="hero-badge"><i class="fa-solid fa-user-plus"></i> Únete a Arte y Sanos</span>
+          <h2 style="font-size: 1.8rem; margin-top: 0.5rem;" id="registerModalTitle">Crear Cuenta</h2>
+          <p style="color: var(--text-secondary); font-size: 0.92rem;">Elige tu tipo de perfil para comenzar en la plataforma.</p>
+        </div>
+
+        <!-- Selector de Tipo de Cuenta -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem; background: var(--bg-subtle); padding: 0.4rem; border-radius: 12px;">
+          <button type="button" id="roleBtnClient" class="btn" style="background: var(--terracotta); color: #FFF; font-size: 0.9rem; padding: 0.6rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s;" onclick="window.appUI.selectRegisterRole('client')">
+            <i class="fa-solid fa-user"></i> Soy Usuario / Cliente
+          </button>
+          <button type="button" id="roleBtnArtisan" class="btn" style="background: transparent; color: var(--text-main); font-size: 0.9rem; padding: 0.6rem; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: all 0.2s;" onclick="window.appUI.selectRegisterRole('artisan')">
+            <i class="fa-solid fa-hammer"></i> Soy Artesano
+          </button>
         </div>
 
         <form id="registerForm">
+          <input type="hidden" id="registerAccountRole" value="client">
+
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">Correo Electrónico (Login) *</label>
+              <label class="form-label">Nombre Completo o Alias *</label>
+              <input type="text" id="inputDisplayName" class="form-input" placeholder="ej. Carmen Ruiz" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Correo Electrónico *</label>
               <input type="email" id="inputAuthEmail" class="form-input" placeholder="tu@email.com" required>
             </div>
-            <div class="form-group">
-              <label class="form-label">Contraseña de acceso *</label>
-              <input type="password" id="inputAuthPassword" class="form-input" placeholder="Mínimo 6 caracteres" minlength="6" required>
-            </div>
-          </div>
-
-          <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Nombre del Artesano o Taller *</label>
-              <input type="text" id="inputName" class="form-input" placeholder="ej. Taller Cerámico El Crisol" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Categoría Principal *</label>
-              <select id="inputCategory" class="form-select" required>
-                <option value="ceramica">Cerámica</option>
-                <option value="tejido">Tejido & Textil</option>
-                <option value="herreria">Herrería & Metal</option>
-                <option value="tatuaje">Tatuaje Artístico</option>
-                <option value="comida">Comida Artesana</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Especialidad u Oficio *</label>
-              <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Ciudad / Provincia *</label>
-              <input type="text" id="inputLocation" class="form-input" placeholder="ej. Granada, España" required>
-            </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Dirección Completa del Taller *</label>
-            <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejon del Aire 14, Albaicín" required>
+            <label class="form-label">Contraseña de acceso *</label>
+            <input type="password" id="inputAuthPassword" class="form-input" placeholder="Mínimo 6 caracteres" minlength="6" required>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">Teléfono / WhatsApp de Contacto *</label>
-              <input type="tel" id="inputPhone" class="form-input" placeholder="ej. +34 600 000 000" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Sitio Web / Red Social (Opcional)</label>
-              <input type="url" id="inputWebsite" class="form-input" placeholder="https://mitaller.com">
-            </div>
-          </div>
+          <!-- Campos Específicos para Artesanos (Ocultos para Clientes) -->
+          <div id="artisanExtraFields" style="display: none;">
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
+            <h4 style="color: var(--primary-dark); font-size: 1.05rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i class="fa-solid fa-store" style="color: var(--terracotta);"></i> Información del Taller / Negocio
+            </h4>
 
-          <div class="form-group">
-            <label class="form-label">Descripción de tu trabajo e Historia *</label>
-            <textarea id="inputDescription" class="form-textarea" rows="4" placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..." required></textarea>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Nombre del Taller o Marca *</label>
+                <input type="text" id="inputName" class="form-input" placeholder="ej. Taller Cerámico El Crisol">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoría Principal *</label>
+                <select id="inputCategory" class="form-select">
+                  <option value="ceramica">Cerámica</option>
+                  <option value="tejido">Tejido & Textil</option>
+                  <option value="herreria">Herrería & Metal</option>
+                  <option value="madera">Ebanistería & Madera</option>
+                  <option value="cuero">Marroquinería & Cuero</option>
+                  <option value="joyeria">Joyería & Orfebrería</option>
+                  <option value="tatuaje">Tatuaje Artístico</option>
+                  <option value="comida">Comida Artesana</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Especialidad u Oficio *</label>
+                <input type="text" id="inputTrade" class="form-input" placeholder="ej. Alfarería tradicional en torno">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Ciudad / Provincia *</label>
+                <input type="text" id="inputLocation" class="form-input" placeholder="ej. Granada, España">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Dirección Completa del Taller *</label>
+              <input type="text" id="inputAddress" class="form-input" placeholder="ej. Callejón del Aire 14, Albaicín">
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Teléfono / WhatsApp de Contacto *</label>
+                <input type="tel" id="inputPhone" class="form-input" placeholder="ej. +34 600 000 000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sitio Web / Red Social (Opcional)</label>
+                <input type="url" id="inputWebsite" class="form-input" placeholder="https://mitaller.com">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Descripción de tu trabajo e Historia *</label>
+              <textarea id="inputDescription" class="form-textarea" rows="3" placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..."></textarea>
+            </div>
           </div>
 
           <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-            <button type="submit" class="btn btn-primary" style="flex: 1;">
-              <i class="fa-solid fa-check"></i> Registrarme & Verificar Cuenta
+            <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="flex: 1;">
+              <i class="fa-solid fa-check"></i> Crear Cuenta de Usuario
             </button>
             <button type="button" class="btn btn-secondary" onclick="window.appUI.closeModal('registerModal')">
               Cancelar
