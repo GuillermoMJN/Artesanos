@@ -6,7 +6,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstati
 // Configuración de credenciales de Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCUGHYFtVmXweGGK7tNfUIhmE_hFr4J_QA",
-  authDomain: "artesanos-2a706.firebaseapp.com",
+  authDomain: "artesanos-2a706.web.app",
   projectId: "artesanos-2a706",
   storageBucket: "artesanos-2a706.firebasestorage.app",
   messagingSenderId: "514399575895",
