@@ -159,7 +159,74 @@ export class ReviewRepository {
       this._saveLocalProjectComment({ id: savedId, ...newComment });
     }
 
-    return { id: savedId, ...newComment };
+  /**
+   * Añade una respuesta del artesano a una reseña existente
+   */
+  async replyToArtisanReview(reviewId, { artisanUid, artisanName, replyText }) {
+    if (!reviewId || !replyText) return null;
+
+    const replyData = {
+      artisanUid: artisanUid || 'artisan',
+      artisanName: artisanName || 'Artesano',
+      text: replyText.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    if (db) {
+      try {
+        const revRef = doc(db, "artisan_reviews", String(reviewId));
+        await updateDoc(revRef, { reply: replyData });
+      } catch (err) {
+        console.warn("Error guardando respuesta en Firebase:", err.message);
+      }
+    }
+
+    // Fallback local
+    try {
+      const data = JSON.parse(localStorage.getItem(ReviewRepository.LOCAL_ARTISAN_REVIEWS) || '[]');
+      const target = data.find(r => String(r.id) === String(reviewId));
+      if (target) {
+        target.reply = replyData;
+        localStorage.setItem(ReviewRepository.LOCAL_ARTISAN_REVIEWS, JSON.stringify(data));
+      }
+    } catch (e) {}
+
+    return replyData;
+  }
+
+  /**
+   * Añade una respuesta del artesano a un comentario de un proyecto
+   */
+  async replyToProjectComment(commentId, { artisanUid, artisanName, replyText }) {
+    if (!commentId || !replyText) return null;
+
+    const replyData = {
+      artisanUid: artisanUid || 'artisan',
+      artisanName: artisanName || 'Artesano',
+      text: replyText.trim(),
+      createdAt: new Date().toISOString()
+    };
+
+    if (db) {
+      try {
+        const comRef = doc(db, "project_comments", String(commentId));
+        await updateDoc(comRef, { reply: replyData });
+      } catch (err) {
+        console.warn("Error guardando respuesta a comentario en Firebase:", err.message);
+      }
+    }
+
+    // Fallback local
+    try {
+      const data = JSON.parse(localStorage.getItem(ReviewRepository.LOCAL_PROJECT_COMMENTS) || '[]');
+      const target = data.find(c => String(c.id) === String(commentId));
+      if (target) {
+        target.reply = replyData;
+        localStorage.setItem(ReviewRepository.LOCAL_PROJECT_COMMENTS, JSON.stringify(data));
+      }
+    } catch (e) {}
+
+    return replyData;
   }
 
   // --- MÉTODOS PRIVADOS LOCAL STORAGE FALLBACK ---
