@@ -520,15 +520,15 @@
 
           if (navContainer) {
             navContainer.innerHTML = `
-              <div style="display: flex; align-items: center; gap: 0.6rem;">
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
                   <i class="fa-solid fa-user" style="color: var(--terracotta);"></i> ${name}
                 </span>
                 <a href="index.html?manage=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-                  <i class="fa-solid fa-sliders"></i> Mi Panel
+                  <i class="fa-solid fa-store"></i> Gestionar mi tienda
                 </a>
-                <button class="btn btn-secondary" id="btnPerfilLogout" style="padding: 0.45rem 0.8rem; font-size: 0.85rem;">
-                  <i class="fa-solid fa-right-from-bracket"></i>
+                <button class="btn btn-secondary" id="btnPerfilLogout" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                  <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
                 </button>
               </div>
             `;

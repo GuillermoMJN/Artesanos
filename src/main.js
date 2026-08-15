@@ -99,10 +99,10 @@ class AppController {
             </a>
           ` : ''}
           <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-            <i class="fa-solid fa-sliders"></i> ${isArtisan ? 'Gestionar Taller' : 'Mi Cuenta'}
+            <i class="fa-solid fa-store"></i> ${isArtisan ? 'Gestionar mi tienda' : 'Mi Cuenta'}
           </button>
-          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.8rem; font-size: 0.85rem;" title="Cerrar Sesión">
-            <i class="fa-solid fa-right-from-bracket"></i>
+          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
           </button>
         </div>
       `;
