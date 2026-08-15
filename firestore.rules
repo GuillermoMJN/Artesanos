@@ -21,20 +21,22 @@ service cloud.firestore {
     match /artisan_reviews/{reviewId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null;
     }
 
     // 4. COMENTARIOS DE PROYECTOS
     match /project_comments/{commentId} {
       allow read: if true;
       allow create: if request.auth != null;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if request.auth != null;
     }
 
     // 5. PERFILES DE USUARIO
     match /users/{userId} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write, delete: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

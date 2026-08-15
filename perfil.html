@@ -236,6 +236,9 @@
           </div>
         </div>
         <div style="display: flex; flex-direction: column; gap: 0.8rem; min-width: 200px;">
+          <a id="btnOwnerManage" href="index.html?manage=true" class="btn" style="display: none; text-align: center; background: var(--warm-gold); color: #FFF; font-weight: 700; border: none; box-shadow: var(--shadow-sm);">
+            <i class="fa-solid fa-sliders"></i> Gestionar Mi Perfil & Tienda
+          </a>
           <a id="btnWhatsapp" href="#" target="_blank" class="btn btn-primary" style="text-align: center;">
             <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
           </a>
@@ -485,33 +488,6 @@
       let currentLoggedUser = null;
       let activeProjectIdForComments = null;
 
-      // Escuchar estado de usuario autenticado
-      authRepo.onAuthChange((user) => {
-        currentLoggedUser = user;
-        const navContainer = document.getElementById('perfilNavAuth');
-        const authorInput = document.getElementById('reviewAuthorName');
-        const projAuthorInput = document.getElementById('projectCommentAuthor');
-
-        if (user) {
-          const name = (user.profile && user.profile.displayName) || user.email.split('@')[0];
-          if (authorInput) {
-            authorInput.value = name;
-            authorInput.disabled = true;
-          }
-          if (projAuthorInput) {
-            projAuthorInput.value = name;
-            projAuthorInput.disabled = true;
-          }
-          if (navContainer) {
-            navContainer.innerHTML = `
-              <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
-                <i class="fa-solid fa-user" style="color: var(--terracotta);"></i> ${name}
-              </span>
-            `;
-          }
-        }
-      });
-
       const artisans = await repo.getAllArtisans();
       const artisan = artisans.find(a => String(a.id) === String(artisanId));
 
@@ -520,6 +496,58 @@
         window.location.href = 'index.html';
         return;
       }
+
+      // Escuchar estado de usuario autenticado
+      authRepo.onAuthChange((user) => {
+        currentLoggedUser = user;
+        const navContainer = document.getElementById('perfilNavAuth');
+        const authorInput = document.getElementById('reviewAuthorName');
+        const projAuthorInput = document.getElementById('projectCommentAuthor');
+        const btnOwnerManage = document.getElementById('btnOwnerManage');
+
+        if (user) {
+          const name = (user.profile && user.profile.displayName) || user.email.split('@')[0];
+          const isArtisan = user.profile ? user.profile.role === 'artisan' : false;
+
+          if (authorInput) {
+            authorInput.value = name;
+            authorInput.disabled = true;
+          }
+          if (projAuthorInput) {
+            projAuthorInput.value = name;
+            projAuthorInput.disabled = true;
+          }
+
+          if (navContainer) {
+            navContainer.innerHTML = `
+              <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
+                  <i class="fa-solid fa-user" style="color: var(--terracotta);"></i> ${name}
+                </span>
+                <a href="index.html?manage=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                  <i class="fa-solid fa-sliders"></i> Mi Panel
+                </a>
+                <button class="btn btn-secondary" id="btnPerfilLogout" style="padding: 0.45rem 0.8rem; font-size: 0.85rem;">
+                  <i class="fa-solid fa-right-from-bracket"></i>
+                </button>
+              </div>
+            `;
+
+            const logoutBtn = document.getElementById('btnPerfilLogout');
+            if (logoutBtn) {
+              logoutBtn.addEventListener('click', async () => {
+                await authRepo.logout();
+                window.location.reload();
+              });
+            }
+          }
+
+          // Si el usuario es el dueño de este perfil artesano
+          if (btnOwnerManage && (user.uid === artisan.ownerId || (artisan.ownerId && artisan.ownerId.includes(user.uid)))) {
+            btnOwnerManage.style.display = 'inline-block';
+          }
+        }
+      });
 
       // Rellenar cabecera y hero
       document.title = `${artisan.name} | Perfil de Artesano`;

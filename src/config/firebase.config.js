@@ -1,7 +1,44 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, getDocs, getDoc, addDoc, doc, updateDoc, deleteDoc, arrayUnion, arrayRemove, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  getDoc, 
+  addDoc, 
+  setDoc,
+  doc, 
+  updateDoc, 
+  deleteDoc, 
+  arrayUnion, 
+  arrayRemove, 
+  query, 
+  where,
+  orderBy,
+  writeBatch
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { 
+  getAuth, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signOut, 
+  onAuthStateChanged, 
+  sendEmailVerification,
+  updatePassword,
+  updateEmail,
+  updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { 
+  getStorage, 
+  ref, 
+  uploadBytes, 
+  getDownloadURL,
+  deleteObject,
+  listAll
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 // Configuración de credenciales de Firebase
 const firebaseConfig = {
@@ -37,21 +74,34 @@ export {
   getDocs,
   getDoc,
   addDoc,
+  setDoc,
   doc,
   updateDoc,
   deleteDoc,
   arrayUnion,
   arrayRemove,
   query,
+  where,
   orderBy,
+  writeBatch,
   // Auth exports
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   sendEmailVerification,
+  updatePassword,
+  updateEmail,
+  updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  sendPasswordResetEmail,
   // Storage exports
   ref,
   uploadBytes,
-  getDownloadURL
+  getDownloadURL,
+  deleteObject,
+  listAll
 };
+

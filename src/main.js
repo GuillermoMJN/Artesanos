@@ -12,6 +12,7 @@ class AppController {
     this.sortBy = 'featured';
     this.currentUser = null;
     this.currentArtisanProfile = null;
+    this.tempProjectFiles = [];
   }
 
   async init() {
@@ -25,11 +26,17 @@ class AppController {
 
     this.authRepo.onAuthChange(async (user) => {
       this.currentUser = user;
-      this.updateAuthUI(user);
       if (user) {
         this.currentArtisanProfile = await this.artisanRepo.getArtisanByOwnerId(user.uid);
       } else {
         this.currentArtisanProfile = null;
+      }
+      this.updateAuthUI(user);
+
+      // Si la URL contiene el parámetro ?manage=true y el usuario está logueado, abrir automáticamente el panel
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('manage') === 'true' && user) {
+        this.openShopManageModal();
       }
     });
   }
@@ -47,31 +54,24 @@ class AppController {
     const introOverlay = document.getElementById('introOverlay');
 
     if (hasVisited || !introOverlay) {
-      // Si ya visitó la página en esta sesión, desactivar inmediatamente la animación
       document.body.classList.remove('intro-active');
       if (introOverlay) introOverlay.style.display = 'none';
       return;
     }
 
-    // Marcar como visitado en esta sesión
     sessionStorage.setItem('arteysanos_visited', 'true');
 
-    // 1. Esperar a que la línea vertical marrón termine de bajar (700ms)
     setTimeout(() => {
       const introLine = introOverlay.querySelector('.intro-line');
-
-      // Quitar la animación para que el transition de CSS pueda actuar
       if (introLine) {
-        introLine.style.animation = 'none';    // libera el control del keyframe
+        introLine.style.animation = 'none';
         introLine.style.transition = 'opacity 1s ease-out';
-        introLine.style.opacity = '0';         // fade rápido a transparente
+        introLine.style.opacity = '0';
       }
 
-      // 2. Abrir las cortinas inmediatamente en paralelo
       introOverlay.classList.add('open');
       document.body.classList.remove('intro-active');
 
-      // 3. Ocultar el overlay al finalizar las transiciones
       setTimeout(() => {
         introOverlay.style.display = 'none';
       }, 1200);
@@ -83,22 +83,26 @@ class AppController {
     if (!navActions) return;
 
     if (user) {
-      const displayName = (user.profile && user.profile.displayName) || user.email.split('@')[0];
+      const displayName = (user.profile && user.profile.displayName) || (this.currentArtisanProfile && this.currentArtisanProfile.name) || user.email.split('@')[0];
       const isArtisan = user.profile ? user.profile.role === 'artisan' : !!this.currentArtisanProfile;
+      const artisanId = this.currentArtisanProfile ? this.currentArtisanProfile.id : null;
 
       navActions.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 0.6rem;">
+        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
           <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
             <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta);"></i>
             ${displayName}
           </span>
-          ${isArtisan ? `
-            <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.88rem;">
-              <i class="fa-solid fa-store"></i> Mi Tienda
-            </button>
+          ${(isArtisan && artisanId) ? `
+            <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <i class="fa-solid fa-eye"></i> Mi Perfil
+            </a>
           ` : ''}
-          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.88rem;">
-            <i class="fa-solid fa-right-from-bracket"></i> Salir
+          <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <i class="fa-solid fa-sliders"></i> ${isArtisan ? 'Gestionar Taller' : 'Mi Cuenta'}
+          </button>
+          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.8rem; font-size: 0.85rem;" title="Cerrar Sesión">
+            <i class="fa-solid fa-right-from-bracket"></i>
           </button>
         </div>
       `;
@@ -169,7 +173,6 @@ class AppController {
       return matchesCategory && matchesSearch;
     });
 
-    // Lógica de ordenación
     if (this.sortBy === 'rating') {
       filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     } else if (this.sortBy === 'reviews') {
@@ -213,11 +216,11 @@ class AppController {
       });
     }
 
-    // Cerrar modales al hacer clic fuera (en el overlay)
+    // Cerrar modales al hacer clic fuera
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
-          this.closeModal(overlay.id); // usa closeModal para restaurar body scroll
+          this.closeModal(overlay.id);
         }
       });
     });
@@ -226,7 +229,7 @@ class AppController {
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal-overlay.active').forEach(modal => {
-          this.closeModal(modal.id); // usa closeModal para restaurar body scroll
+          this.closeModal(modal.id);
         });
       }
     });
@@ -245,6 +248,15 @@ class AppController {
 
     const projectEditorForm = document.getElementById('projectEditorForm');
     if (projectEditorForm) projectEditorForm.addEventListener('submit', (e) => this.handleProjectSave(e));
+
+    const changeEmailForm = document.getElementById('changeEmailForm');
+    if (changeEmailForm) changeEmailForm.addEventListener('submit', (e) => this.handleChangeEmailSubmit(e));
+
+    const changePasswordForm = document.getElementById('changePasswordForm');
+    if (changePasswordForm) changePasswordForm.addEventListener('submit', (e) => this.handleChangePasswordSubmit(e));
+
+    const confirmDeleteAccountForm = document.getElementById('confirmDeleteAccountForm');
+    if (confirmDeleteAccountForm) confirmDeleteAccountForm.addEventListener('submit', (e) => this.handleDeleteAccountConfirm(e));
   }
 
   setupHeaderScroll() {
@@ -363,8 +375,8 @@ class AppController {
     document.getElementById('registerModal').classList.add('active');
   }
   closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('active');
-    // Restaurar el scroll del body sólo si no queda ningún modal abierto
+    const el = document.getElementById(modalId);
+    if (el) el.classList.remove('active');
     const anyOpen = document.querySelector('.modal-overlay.active');
     if (!anyOpen) document.body.style.overflow = '';
   }
@@ -377,18 +389,89 @@ class AppController {
 
     document.body.style.overflow = 'hidden';
 
+    // Rellenar datos del artesano
     if (this.currentArtisanProfile) {
-      document.getElementById('editName').value = this.currentArtisanProfile.name || '';
-      document.getElementById('editTrade').value = this.currentArtisanProfile.trade || '';
-      document.getElementById('editPhone').value = this.currentArtisanProfile.phone || '';
-      document.getElementById('editWebsite').value = this.currentArtisanProfile.website || '';
-      document.getElementById('editAddress').value = this.currentArtisanProfile.address || '';
-      document.getElementById('editDescription').value = this.currentArtisanProfile.description || '';
+      const p = this.currentArtisanProfile;
+      const editName = document.getElementById('editName');
+      const editTrade = document.getElementById('editTrade');
+      const editCategory = document.getElementById('editCategory');
+      const editLocation = document.getElementById('editLocation');
+      const editPhone = document.getElementById('editPhone');
+      const editWebsite = document.getElementById('editWebsite');
+      const editAddress = document.getElementById('editAddress');
+      const editDescription = document.getElementById('editDescription');
+      const avatarPreview = document.getElementById('avatarEditPreview');
+      const btnViewProfile = document.getElementById('btnViewMyPublicProfile');
+
+      if (editName) editName.value = p.name || '';
+      if (editTrade) editTrade.value = p.trade || '';
+      if (editCategory) editCategory.value = p.category || 'ceramica';
+      if (editLocation) editLocation.value = p.location || '';
+      if (editPhone) editPhone.value = p.phone || '';
+      if (editWebsite) editWebsite.value = p.website || '';
+      if (editAddress) editAddress.value = p.address || '';
+      if (editDescription) editDescription.value = p.description || '';
+      if (avatarPreview) avatarPreview.src = p.image || 'images/artisan1.jpg';
+
+      if (btnViewProfile) {
+        btnViewProfile.href = `perfil.html?id=${p.id}`;
+        btnViewProfile.style.display = 'inline-flex';
+      }
+
+      if (p.promo) {
+        const promoTitle = document.getElementById('promoTitle');
+        const promoDetails = document.getElementById('promoDetails');
+        if (promoTitle) promoTitle.value = p.promo.title || '';
+        if (promoDetails) promoDetails.value = p.promo.details || '';
+      }
 
       this.renderProjectsManagerGrid();
+    } else {
+      const btnViewProfile = document.getElementById('btnViewMyPublicProfile');
+      if (btnViewProfile) btnViewProfile.style.display = 'none';
     }
 
+    // Por defecto ir a la primera pestaña
+    this.switchShopTab('tabGeneral');
     document.getElementById('shopManageModal').classList.add('active');
+  }
+
+  async handleAvatarChange(e) {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    const statusEl = document.getElementById('avatarUploadStatus');
+    const previewEl = document.getElementById('avatarEditPreview');
+
+    // Previsualización instantánea local
+    const reader = new FileReader();
+    reader.onload = (re) => {
+      if (previewEl) previewEl.src = re.target.result;
+    };
+    reader.readAsDataURL(file);
+
+    if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo foto a Firebase Storage...`;
+
+    try {
+      const artisanDocId = this.currentArtisanProfile ? this.currentArtisanProfile.docId : null;
+      const uploadedUrl = await this.authRepo.updateAvatar(file, artisanDocId);
+
+      if (this.currentArtisanProfile) {
+        this.currentArtisanProfile.image = uploadedUrl;
+      }
+
+      if (previewEl) previewEl.src = uploadedUrl;
+      if (statusEl) statusEl.innerHTML = `<i class="fa-solid fa-circle-check" style="color: #4CAF50;"></i> Foto actualizada correctamente`;
+
+      // Refrescar artesanos en vista general
+      this.artisans = await this.artisanRepo.getAllArtisans();
+      this.renderArtisans();
+
+      ToastComponent.show('📸 ¡Foto de perfil actualizada con éxito!');
+    } catch (err) {
+      if (statusEl) statusEl.innerHTML = `<span style="color: #D32F2F;">Error al subir foto</span>`;
+      alert(`Error al actualizar la foto: ${err.message}`);
+    }
   }
 
   showNewProjectForm() {
@@ -412,7 +495,6 @@ class AppController {
     if (!files || files.length === 0) return;
 
     const statusEl = document.getElementById('fileUploadStatus');
-    const previewContainer = document.getElementById('projectMediaPreviewList');
     if (!this.tempProjectFiles) this.tempProjectFiles = [];
 
     statusEl.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Subiendo ${files.length} archivo(s) a Firebase Storage...`;
@@ -505,39 +587,40 @@ class AppController {
       steps
     };
 
-    if (this.currentArtisanProfile.docId) {
-      try {
+    const btnSave = document.getElementById('btnSaveProject');
+    if (btnSave) btnSave.disabled = true;
+
+    try {
+      if (this.currentArtisanProfile.docId) {
         if (editingIdx >= 0 && projects[editingIdx] && projects[editingIdx].id) {
-          // Actualizar documento existente en colección 'projects'
           const existingId = projects[editingIdx].id;
           await this.artisanRepo.updateProject(existingId, projectData);
           projects[editingIdx] = { id: existingId, ...projectData };
         } else {
-          // Crear nuevo documento en colección 'projects' e insertar ref en 'artisans'
           const createdProj = await this.artisanRepo.createProject(this.currentArtisanProfile.docId, projectData);
           if (createdProj) projects.unshift(createdProj);
         }
-      } catch (err) {
-        console.warn("Firestore update de proyecto diferido:", err);
-      }
-    } else {
-      if (editingIdx >= 0) {
-        projects[editingIdx] = { id: `proj_${Date.now()}`, ...projectData };
       } else {
-        projects.unshift({ id: `proj_${Date.now()}`, ...projectData });
+        if (editingIdx >= 0) {
+          projects[editingIdx] = { id: `proj_${Date.now()}`, ...projectData };
+        } else {
+          projects.unshift({ id: `proj_${Date.now()}`, ...projectData });
+        }
       }
-    }
 
-    this.currentArtisanProfile.projects = projects;
-    this.renderProjectsManagerGrid();
-    this.hideProjectForm();
+      this.currentArtisanProfile.projects = projects;
+      this.renderProjectsManagerGrid();
+      this.hideProjectForm();
 
-    try {
       this.artisans = await this.artisanRepo.getAllArtisans();
       this.renderArtisans();
-    } catch (e) { }
 
-    ToastComponent.show(editingIdx >= 0 ? "¡Trabajo actualizado con éxito!" : "¡Nuevo trabajo publicado con éxito!");
+      ToastComponent.show(editingIdx >= 0 ? "✨ ¡Trabajo actualizado con éxito!" : "✨ ¡Nuevo trabajo publicado con éxito!");
+    } catch (err) {
+      alert(`Error al guardar trabajo: ${err.message}`);
+    } finally {
+      if (btnSave) btnSave.disabled = false;
+    }
   }
 
   renderProjectsManagerGrid() {
@@ -549,7 +632,7 @@ class AppController {
       container.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 2rem; background: var(--bg-subtle); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
           <i class="fa-solid fa-photo-film" style="font-size: 2.5rem; color: var(--text-muted); margin-bottom: 0.8rem;"></i>
-          <p style="color: var(--text-secondary); font-size: 0.95rem;">Todavía no has creado ningún trabajo en tu galería.</p>
+          <p style="color: var(--text-secondary); font-size: 0.95rem;">Todavía no has creado ningún trabajo en tu catálogo.</p>
           <button type="button" class="btn btn-secondary" style="margin-top: 1rem;" onclick="window.appUI.showNewProjectForm()">
             <i class="fa-solid fa-plus"></i> Crear Mi Primer Trabajo
           </button>
@@ -606,7 +689,7 @@ class AppController {
   }
 
   async deleteProject(idx) {
-    if (!confirm("¿Seguro que deseas eliminar este trabajo de tu galería?")) return;
+    if (!confirm("¿Seguro que deseas eliminar este trabajo de tu catálogo?")) return;
 
     const projects = this.currentArtisanProfile.projects || [];
     const targetProj = projects[idx];
@@ -628,17 +711,20 @@ class AppController {
       this.renderArtisans();
     } catch (e) { }
 
-    ToastComponent.show("Trabajo eliminado de tu catálogo.");
+    ToastComponent.show("🗑️ Trabajo eliminado de tu catálogo.");
   }
 
   switchShopTab(tabId) {
     document.querySelectorAll('.shop-tab-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
 
-    document.getElementById(tabId).style.display = 'block';
-    if (tabId === 'tabGeneral') document.getElementById('btnTabGeneral').classList.add('active');
-    if (tabId === 'tabPromos') document.getElementById('btnTabPromos').classList.add('active');
-    if (tabId === 'tabGallery') document.getElementById('btnTabGallery').classList.add('active');
+    const tabEl = document.getElementById(tabId);
+    if (tabEl) tabEl.style.display = 'block';
+
+    if (tabId === 'tabGeneral') document.getElementById('btnTabGeneral')?.classList.add('active');
+    if (tabId === 'tabGallery') document.getElementById('btnTabGallery')?.classList.add('active');
+    if (tabId === 'tabPromos') document.getElementById('btnTabPromos')?.classList.add('active');
+    if (tabId === 'tabSecurity') document.getElementById('btnTabSecurity')?.classList.add('active');
   }
 
   async handleLoginSubmit(e) {
@@ -657,6 +743,9 @@ class AppController {
 
   async handleLogout() {
     await this.authRepo.logout();
+    this.currentUser = null;
+    this.currentArtisanProfile = null;
+    this.updateAuthUI(null);
     ToastComponent.show('Has cerrado sesión correctamente.');
   }
 
@@ -757,9 +846,16 @@ class AppController {
     e.preventDefault();
     if (!this.currentUser || !this.currentArtisanProfile) return;
 
+    const categorySelect = document.getElementById('editCategory');
+    const categoryVal = categorySelect ? categorySelect.value : (this.currentArtisanProfile.category || 'ceramica');
+    const categoryLabel = categorySelect && categorySelect.options[categorySelect.selectedIndex] ? categorySelect.options[categorySelect.selectedIndex].text : (this.currentArtisanProfile.categoryLabel || 'Artesanía');
+
     const updatedData = {
       name: document.getElementById('editName').value,
       trade: document.getElementById('editTrade').value,
+      category: categoryVal,
+      categoryLabel: categoryLabel,
+      location: document.getElementById('editLocation').value,
       phone: document.getElementById('editPhone').value,
       website: document.getElementById('editWebsite').value,
       address: document.getElementById('editAddress').value,
@@ -773,7 +869,7 @@ class AppController {
         this.artisans = await this.artisanRepo.getAllArtisans();
         this.renderArtisans();
         this.closeModal('shopManageModal');
-        ToastComponent.show('¡Los datos de tu tienda han sido actualizados!');
+        ToastComponent.show('💾 ¡Los datos de tu taller han sido actualizados!');
       } catch (err) {
         alert(`Error guardando: ${err.message}`);
       }
@@ -802,51 +898,95 @@ class AppController {
         this.artisans = await this.artisanRepo.getAllArtisans();
         this.renderArtisans();
         this.closeModal('shopManageModal');
-        ToastComponent.show('¡Promoción publicada con éxito!');
+        ToastComponent.show('🏷️ ¡Promoción publicada con éxito!');
       } catch (err) {
         alert(`Error al guardar oferta: ${err.message}`);
       }
     }
   }
 
-  async handleGallerySubmit(e) {
+  // --- SEGURIDAD: CAMBIAR CONTRASEÑA ---
+  async handleChangePasswordSubmit(e) {
     e.preventDefault();
-    if (!this.currentUser || !this.currentArtisanProfile) return;
+    const currPass = document.getElementById('inputPasswordCurrent').value;
+    const newPass = document.getElementById('inputPasswordNew').value;
 
-    const imageUrl = document.getElementById('galleryImageUrl').value;
-    const gallery = this.currentArtisanProfile.gallery || [];
-    gallery.push(imageUrl);
-
-    if (this.currentArtisanProfile.docId) {
-      try {
-        await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, { gallery });
-        this.currentArtisanProfile.gallery = gallery;
-        this.renderGalleryPreviewGrid(gallery);
-        this.artisans = await this.artisanRepo.getAllArtisans();
-        this.renderArtisans();
-        document.getElementById('galleryImageUrl').value = '';
-        ToastComponent.show('¡Imagen añadida a la galería!');
-      } catch (err) {
-        alert(`Error al añadir imagen: ${err.message}`);
-      }
+    try {
+      await this.authRepo.changePassword(currPass, newPass);
+      e.target.reset();
+      ToastComponent.show('🔑 ¡Contraseña cambiada con éxito!');
+    } catch (err) {
+      alert(`Error al cambiar contraseña: ${err.message}`);
     }
   }
 
-  renderGalleryPreviewGrid(gallery) {
-    const container = document.getElementById('galleryPreviewGrid');
-    if (!container) return;
+  // --- SEGURIDAD: CAMBIAR CORREO ---
+  async handleChangeEmailSubmit(e) {
+    e.preventDefault();
+    const newEmail = document.getElementById('inputNewEmail').value;
+    const currPass = document.getElementById('inputEmailCurrentPassword').value;
 
-    container.innerHTML = gallery.map(url => `
-      <div class="artisan-gallery-item">
-        <img src="${url}" alt="Trabajo artesanal">
-      </div>
-    `).join('');
+    try {
+      await this.authRepo.changeEmail(currPass, newEmail);
+      e.target.reset();
+      ToastComponent.show(`✉️ Correo electrónico actualizado a ${newEmail}`);
+    } catch (err) {
+      alert(`Error al actualizar correo: ${err.message}`);
+    }
+  }
+
+  // --- ZONA DE PELIGRO: ELIMINAR CUENTA EN CASCADA ---
+  openDeleteAccountModal() {
+    document.getElementById('deleteAccountPasswordConfirm').value = '';
+    document.getElementById('deleteAccountModal').classList.add('active');
+  }
+
+  async handleDeleteAccountConfirm(e) {
+    e.preventDefault();
+    const pass = document.getElementById('deleteAccountPasswordConfirm').value;
+    const btnConfirm = document.getElementById('btnConfirmDeleteAccount');
+
+    if (!pass) {
+      alert('Debes ingresar tu contraseña actual.');
+      return;
+    }
+
+    if (btnConfirm) {
+      btnConfirm.disabled = true;
+      btnConfirm.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Eliminando todos los registros...`;
+    }
+
+    try {
+      await this.authRepo.deleteAccountCascade(pass);
+
+      this.closeModal('deleteAccountModal');
+      this.closeModal('shopManageModal');
+      this.currentUser = null;
+      this.currentArtisanProfile = null;
+
+      // Actualizar listado de artesanos
+      this.artisans = await this.artisanRepo.getAllArtisans();
+      this.updateStatsCount();
+      this.renderCategories();
+      this.renderArtisans();
+      this.updateAuthUI(null);
+
+      ToastComponent.show('👋 Tu cuenta y todos los registros asociados han sido eliminados.');
+    } catch (err) {
+      alert(`Error al eliminar cuenta: ${err.message}`);
+    } finally {
+      if (btnConfirm) {
+        btnConfirm.disabled = false;
+        btnConfirm.innerHTML = `<i class="fa-solid fa-trash"></i> Confirmar Eliminación`;
+      }
+    }
   }
 }
 
-// Inicializar Aplicación y exponarla globalmente para eventos en HTML
+// Inicializar Aplicación y exponerla globalmente
 document.addEventListener('DOMContentLoaded', () => {
   const app = new AppController();
   app.init();
   window.appUI = app;
 });
+

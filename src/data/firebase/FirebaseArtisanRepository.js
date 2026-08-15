@@ -3,29 +3,63 @@ import {
   auth, 
   storage,
   ref,
-  uploadBytes,
+  uploadBytes, 
   getDownloadURL,
+  deleteObject,
+  listAll,
   collection, 
   getDocs, 
   getDoc,
   addDoc, 
+  setDoc,
   doc, 
   updateDoc, 
   deleteDoc,
-  arrayUnion,
-  arrayRemove,
+  arrayUnion, 
+  arrayRemove, 
   query, 
+  where,
   orderBy,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-  sendEmailVerification
+  sendEmailVerification,
+  updatePassword,
+  updateEmail,
+  updateProfile,
+  deleteUser,
+  reauthenticateWithCredential,
+  EmailAuthProvider
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
 import { initialArtisansSeed } from '../mock/initialArtisansData.js';
 
 export class FirebaseArtisanRepository {
+  async uploadProfileImage(file, artisanUid = 'anon') {
+    const safeArtisan = (artisanUid || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_');
+    const safeFileName = `avatar_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+    const storagePath = `artesanos/${safeArtisan}/avatar/${safeFileName}`;
+
+    if (storage) {
+      try {
+        const storageRef = ref(storage, storagePath);
+        const snapshot = await uploadBytes(storageRef, file);
+        const downloadUrl = await getDownloadURL(snapshot.ref);
+        return downloadUrl;
+      } catch (err) {
+        console.warn("Subida de avatar a Firebase Storage diferida, usando DataURL:", err);
+      }
+    }
+
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = () => resolve('');
+      reader.readAsDataURL(file);
+    });
+  }
+
   async uploadFile(file, artisanUid = 'anon', projectUid = 'default') {
     const safeArtisan = (artisanUid || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_');
     const safeProject = (projectUid || 'default').replace(/[^a-zA-Z0-9_-]/g, '_');
@@ -50,6 +84,7 @@ export class FirebaseArtisanRepository {
       reader.readAsDataURL(file);
     });
   }
+
   async getAllArtisans() {
     if (!db) return [];
 
@@ -120,7 +155,7 @@ export class FirebaseArtisanRepository {
   }
 
   async getArtisanByOwnerId(uid) {
-    if (!db) return null;
+    if (!db || !uid) return null;
     try {
       const q = query(collection(db, "artisans"));
       const querySnapshot = await getDocs(q);
@@ -188,9 +223,9 @@ export class FirebaseArtisanRepository {
   }
 
   async updateArtisan(docId, updatedData) {
-    if (!db) return;
-    const ref = doc(db, "artisans", docId);
-    await updateDoc(ref, updatedData);
+    if (!db || !docId) return;
+    const refDoc = doc(db, "artisans", docId);
+    await updateDoc(refDoc, updatedData);
   }
 
   // --- MÉTODOS PARA LA COLECCIÓN INDEPENDIENTE 'projects' ---
@@ -227,7 +262,7 @@ export class FirebaseArtisanRepository {
   }
 
   async updateProject(projectId, projectData) {
-    if (!db) return;
+    if (!db || !projectId) return;
 
     try {
       const projRef = doc(db, "projects", projectId);
@@ -250,17 +285,114 @@ export class FirebaseArtisanRepository {
 
     try {
       // 1. Eliminar el documento de la colección 'projects'
-      const projRef = doc(db, "projects", projectId);
-      await deleteDoc(projRef);
+      if (projectId) {
+        const projRef = doc(db, "projects", projectId);
+        await deleteDoc(projRef);
+      }
 
       // 2. Eliminar la referencia del array 'projectRefs' del documento del artesano
-      const artisanRef = doc(db, "artisans", artisanDocId);
-      await updateDoc(artisanRef, {
-        projectRefs: arrayRemove(projectId)
-      });
+      if (artisanDocId && projectId) {
+        const artisanRef = doc(db, "artisans", artisanDocId);
+        await updateDoc(artisanRef, {
+          projectRefs: arrayRemove(projectId)
+        });
+      }
     } catch (err) {
       console.error("Error eliminando documento de colección 'projects':", err);
       throw err;
+    }
+  }
+
+  // --- BORRADO EN CASCADA COMPLETO DEL ARTESANO Y ARCHIVOS ---
+  async deleteArtisanCascade(artisanDocId, artisanUid) {
+    if (!db && !storage) return;
+
+    console.log(`Iniciando borrado en cascada para artesano ${artisanDocId} (UID: ${artisanUid})`);
+
+    // 1. Eliminar todos los proyectos asociados en 'projects'
+    try {
+      if (artisanDocId) {
+        const projSnap = await getDocs(query(collection(db, "projects")));
+        for (const pDoc of projSnap.docs) {
+          const pData = pDoc.data();
+          if (pData.artisanDocId === artisanDocId) {
+            await deleteDoc(doc(db, "projects", pDoc.id)).catch(e => console.warn("Error borrando proyecto:", e));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Error en borrado en cascada de proyectos:", err);
+    }
+
+    // 2. Eliminar reseñas asociadas en 'artisan_reviews'
+    try {
+      if (artisanDocId) {
+        const revSnap = await getDocs(query(collection(db, "artisan_reviews")));
+        for (const rDoc of revSnap.docs) {
+          const rData = rDoc.data();
+          if (String(rData.artisanId) === String(artisanDocId) || (artisanUid && rData.userId === artisanUid)) {
+            await deleteDoc(doc(db, "artisan_reviews", rDoc.id)).catch(e => console.warn("Error borrando reseña:", e));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Error borrando reseñas asociadas:", err);
+    }
+
+    // 3. Eliminar comentarios asociados en 'project_comments'
+    try {
+      if (artisanDocId) {
+        const comSnap = await getDocs(query(collection(db, "project_comments")));
+        for (const cDoc of comSnap.docs) {
+          const cData = cDoc.data();
+          if (String(cData.artisanId) === String(artisanDocId) || (artisanUid && cData.userId === artisanUid)) {
+            await deleteDoc(doc(db, "project_comments", cDoc.id)).catch(e => console.warn("Error borrando comentario:", e));
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("Error borrando comentarios asociados:", err);
+    }
+
+    // 4. Eliminar archivos en Firebase Storage bajo 'artesanos/{safeArtisan}/'
+    if (storage && artisanUid) {
+      try {
+        const safeArtisan = artisanUid.replace(/[^a-zA-Z0-9_-]/g, '_');
+        await this._deleteStorageFolder(`artesanos/${safeArtisan}`);
+      } catch (stErr) {
+        console.warn("Error eliminando archivos de Storage:", stErr);
+      }
+    }
+
+    // 5. Eliminar el documento principal del artesano en 'artisans'
+    try {
+      if (artisanDocId) {
+        await deleteDoc(doc(db, "artisans", artisanDocId));
+      }
+    } catch (artErr) {
+      console.warn("Error eliminando documento de artesano:", artErr);
+    }
+  }
+
+  async _deleteStorageFolder(folderPath) {
+    if (!storage) return;
+    try {
+      const folderRef = ref(storage, folderPath);
+      const res = await listAll(folderRef);
+
+      // Eliminar archivos
+      for (const itemRef of res.items) {
+        try {
+          await deleteObject(itemRef);
+        } catch (e) {}
+      }
+
+      // Recursividad en subcarpetas
+      for (const prefixRef of res.prefixes) {
+        await this._deleteStorageFolder(prefixRef.fullPath);
+      }
+    } catch (e) {
+      // Ignorar si la carpeta no existe o no tiene elementos
     }
   }
 }
@@ -270,7 +402,6 @@ export class FirebaseAuthRepository {
     if (!auth) return;
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Enriquecer el usuario con su perfil de la base de datos si existe
         const userProfile = await this.getUserProfile(user.uid);
         user.profile = userProfile;
       }
@@ -304,8 +435,6 @@ export class FirebaseAuthRepository {
       try {
         const uRef = doc(db, "users", uid);
         await updateDoc(uRef, { ...data, updatedAt: new Date() }).catch(async () => {
-          // Si no existe, crearlo
-          const { setDoc } = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
           await setDoc(uRef, { ...data, createdAt: new Date() });
         });
       } catch (e) {
@@ -330,7 +459,7 @@ export class FirebaseAuthRepository {
       uid: user.uid,
       email: user.email,
       displayName: displayName || (role === 'artisan' ? 'Artesano' : 'Usuario'),
-      role: role, // 'artisan' o 'client'
+      role: role,
       createdAt: new Date().toISOString()
     };
 
@@ -357,5 +486,106 @@ export class FirebaseAuthRepository {
   async logout() {
     if (!auth) return;
     await signOut(auth);
+  }
+
+  // --- MÉTODOS DE SEGURIDAD Y GESTIÓN DE CUENTA ---
+
+  async changePassword(currentPassword, newPassword) {
+    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
+    if (!currentPassword) throw new Error("Debes indicar tu contraseña actual");
+    if (!newPassword || newPassword.length < 6) throw new Error("La nueva contraseña debe tener al menos 6 caracteres");
+
+    // 1. Reautenticación por seguridad
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // 2. Actualizar contraseña
+    await updatePassword(user, newPassword);
+  }
+
+  async changeEmail(currentPassword, newEmail) {
+    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
+    if (!currentPassword) throw new Error("Debes indicar tu contraseña actual");
+    if (!newEmail || !newEmail.includes('@')) throw new Error("Correo electrónico no válido");
+
+    const user = auth.currentUser;
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // Actualizar en Firebase Auth
+    await updateEmail(user, newEmail);
+
+    // Actualizar en Firestore users
+    await this.saveUserProfile(user.uid, { email: newEmail });
+
+    // Actualizar en artisans si aplica
+    if (db) {
+      try {
+        const artisanRepo = new FirebaseArtisanRepository();
+        const artisan = await artisanRepo.getArtisanByOwnerId(user.uid);
+        if (artisan && artisan.docId) {
+          await artisanRepo.updateArtisan(artisan.docId, { email: newEmail });
+        }
+      } catch (e) {}
+    }
+  }
+
+  async updateAvatar(file, artisanDocId = null) {
+    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
+    const user = auth.currentUser;
+    const artisanRepo = new FirebaseArtisanRepository();
+    const photoUrl = await artisanRepo.uploadProfileImage(file, user.uid);
+
+    await updateProfile(user, { photoURL: photoUrl });
+    await this.saveUserProfile(user.uid, { photoURL: photoUrl });
+
+    if (artisanDocId) {
+      await artisanRepo.updateArtisan(artisanDocId, { image: photoUrl });
+    }
+
+    return photoUrl;
+  }
+
+  async deleteAccountCascade(currentPassword) {
+    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
+    if (!currentPassword) throw new Error("Debes ingresar tu contraseña actual para confirmar la eliminación de la cuenta");
+
+    const user = auth.currentUser;
+    const uid = user.uid;
+
+    // 1. Reautenticación de seguridad en Firebase Auth
+    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, credential);
+
+    // 2. Localizar y borrar artesano, proyectos, reseñas, comentarios y archivos en Storage
+    const artisanRepo = new FirebaseArtisanRepository();
+    try {
+      const artisan = await artisanRepo.getArtisanByOwnerId(uid);
+      if (artisan) {
+        await artisanRepo.deleteArtisanCascade(artisan.docId, uid);
+      }
+    } catch (artErr) {
+      console.warn("Error en borrado en cascada de artesano:", artErr);
+    }
+
+    // 3. Borrar perfil en colección 'users'
+    if (db) {
+      try {
+        await deleteDoc(doc(db, "users", uid));
+      } catch (uErr) {
+        console.warn("Error borrando perfil de usuario en users:", uErr);
+      }
+    }
+
+    // 4. Limpiar datos locales
+    try {
+      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
+      delete localUsers[uid];
+      localStorage.setItem('arteysanos_users', JSON.stringify(localUsers));
+    } catch (e) {}
+
+    // 5. Eliminar la cuenta del usuario en Firebase Authentication
+    await deleteUser(user);
   }
 }
