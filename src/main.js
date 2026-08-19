@@ -102,7 +102,9 @@ class AppController {
       drawer.classList.remove('active');
       if (icon) icon.className = 'fa-solid fa-bars';
     }
-  }  updateAuthUI(user) {
+  }
+
+  updateAuthUI(user) {
     const navActions = document.getElementById('navAuthActions');
     const mobileNavActions = document.getElementById('mobileNavAuthActions');
 
@@ -156,7 +158,7 @@ class AppController {
         <button class="btn btn-secondary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.handleLogout();" style="width: 100%; justify-content: center;">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
         </button>
-      `;    `;
+      `;
 
       if (navActions) navActions.innerHTML = desktopHtml;
       if (mobileNavActions) mobileNavActions.innerHTML = mobileHtml;
@@ -260,15 +262,24 @@ class AppController {
     const resultsCounter = document.getElementById('resultsCount');
     if (!directoryGrid) return;
 
+    const cleanQuery = (this.searchQuery || '').trim().toLowerCase();
+    const cleanLocation = (this.selectedLocation || 'all').trim().toLowerCase();
+
     let filtered = this.artisans.filter(item => {
-      const matchesCategory = this.activeCategory === 'all' || item.category === this.activeCategory;
-      const matchesLocation = this.selectedLocation === 'all' ||
-        (item.location && item.location.toLowerCase().includes(this.selectedLocation.toLowerCase()));
-      const matchesSearch = this.searchQuery === '' ||
-        item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        item.trade.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        item.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
+      const itemCategory = (item.category || '').toLowerCase();
+      const itemLocation = (item.location || '').toLowerCase();
+      const itemName = (item.name || '').toLowerCase();
+      const itemTrade = (item.trade || '').toLowerCase();
+      const itemDesc = (item.description || '').toLowerCase();
+
+      const matchesCategory = this.activeCategory === 'all' || itemCategory === this.activeCategory.toLowerCase();
+      const matchesLocation = cleanLocation === 'all' || itemLocation.includes(cleanLocation);
+      const matchesSearch = cleanQuery === '' ||
+        itemName.includes(cleanQuery) ||
+        itemTrade.includes(cleanQuery) ||
+        itemLocation.includes(cleanQuery) ||
+        itemDesc.includes(cleanQuery);
+
       return matchesCategory && matchesLocation && matchesSearch;
     });
 
@@ -971,7 +982,9 @@ class AppController {
 
     if (role === 'artisan') {
       const name = document.getElementById('inputName').value || displayName;
-      const category = document.getElementById('inputCategory').value;
+      const categorySelect = document.getElementById('inputCategory');
+      const category = categorySelect ? categorySelect.value : 'ceramica';
+      const categoryLabel = categorySelect && categorySelect.options[categorySelect.selectedIndex] ? categorySelect.options[categorySelect.selectedIndex].text : 'Artesanía';
       const trade = document.getElementById('inputTrade').value;
       const location = document.getElementById('inputLocation').value;
       const address = document.getElementById('inputAddress').value;
@@ -988,6 +1001,7 @@ class AppController {
         name,
         trade,
         category,
+        categoryLabel,
         location,
         address,
         phone,
@@ -1001,6 +1015,7 @@ class AppController {
 
       this.artisans.unshift(newArtisan);
       this.currentArtisanProfile = newArtisan;
+      this.updateStatsCount();
       this.renderLocationFilterOptions();
       this.renderCategories();
       this.renderArtisans();
@@ -1042,6 +1057,7 @@ class AppController {
         this.currentArtisanProfile = { ...this.currentArtisanProfile, ...updatedData };
         this.artisans = await this.artisanRepo.getAllArtisans();
         this.renderLocationFilterOptions();
+        this.renderCategories();
         this.renderArtisans();
         this.closeModal('shopManageModal');
         ToastComponent.show('💾 ¡Los datos de tu taller han sido actualizados!');
@@ -1142,6 +1158,7 @@ class AppController {
       // Actualizar listado de artesanos
       this.artisans = await this.artisanRepo.getAllArtisans();
       this.updateStatsCount();
+      this.renderLocationFilterOptions();
       this.renderCategories();
       this.renderArtisans();
       this.updateAuthUI(null);
