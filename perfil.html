@@ -639,7 +639,7 @@
       }
 
       // Escuchar estado de usuario autenticado
-      authRepo.onAuthChange((user) => {
+      authRepo.onAuthChange(async (user) => {
         currentLoggedUser = user;
         const navContainer = document.getElementById('perfilNavAuth');
         const authorInput = document.getElementById('reviewAuthorName');
@@ -647,6 +647,12 @@
         const btnOwnerManage = document.getElementById('btnOwnerManage');
 
         if (user) {
+          if (!user.profile) {
+            try {
+              user.profile = await authRepo.getUserProfile(user.uid);
+            } catch (e) {}
+          }
+          const isArtisan = (user.profile && user.profile.role === 'artisan');
           const name = (user.profile && user.profile.displayName) || user.email.split('@')[0];
 
           if (authorInput) {
@@ -662,11 +668,14 @@
             navContainer.innerHTML = `
               <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
                 <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
-                  <i class="fa-solid fa-user" style="color: var(--terracotta);"></i> ${name}
+                  <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta);"></i> ${name}
+                  <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
                 </span>
-                <a href="index.html?manage=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-                  <i class="fa-solid fa-store"></i> Gestionar mi tienda
-                </a>
+                ${isArtisan ? `
+                  <a href="index.html?manage=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                    <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
+                  </a>
+                ` : ''}
                 <button class="btn btn-secondary" id="btnPerfilLogout" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
                   <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
                 </button>

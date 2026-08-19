@@ -547,7 +547,7 @@ export class FirebaseAuthRepository {
       profile = {
         uid: user.uid,
         email: user.email || '',
-        displayName: user.displayName || (intendedRole === 'artisan' ? 'Artesano Google' : 'Usuario Google'),
+        displayName: user.displayName || (intendedRole === 'artisan' ? 'Artesano' : 'Usuario'),
         photoURL: user.photoURL || '',
         role: intendedRole,
         createdAt: new Date().toISOString()
@@ -556,6 +556,33 @@ export class FirebaseAuthRepository {
     }
 
     user.profile = profile;
+
+    // Si es artesano y no tiene ficha de tienda aún, crearla automáticamente
+    if (profile.role === 'artisan') {
+      const artisanRepo = new FirebaseArtisanRepository();
+      const existingArtisan = await artisanRepo.getArtisanByOwnerId(user.uid);
+      if (!existingArtisan) {
+        const artisanName = profile.displayName || user.displayName || 'Taller de Artesanía';
+        await artisanRepo.createArtisan({
+          id: Date.now(),
+          ownerId: user.uid,
+          name: artisanName,
+          trade: 'Artesanía & Oficios',
+          category: 'ceramica',
+          categoryLabel: 'Cerámica & Barro',
+          location: 'España',
+          address: 'Taller Artesanal',
+          phone: '',
+          email: user.email || '',
+          website: '',
+          description: 'Taller artesanal en Arte y Sanos. Pulsa en "Gestionar mi tienda" para personalizar tu historia, oficio y catálogo.',
+          image: profile.photoURL || user.photoURL || 'images/default_avatar.svg',
+          acceptsCustomOrders: true,
+          isVisitable: false
+        });
+      }
+    }
+
     return user;
   }
 

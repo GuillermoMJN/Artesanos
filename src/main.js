@@ -29,15 +29,24 @@ class AppController {
     this.authRepo.onAuthChange(async (user) => {
       this.currentUser = user;
       if (user) {
-        this.currentArtisanProfile = await this.artisanRepo.getArtisanByOwnerId(user.uid);
+        if (!user.profile) {
+          user.profile = await this.authRepo.getUserProfile(user.uid);
+        }
+        const isArtisan = (user.profile && user.profile.role === 'artisan');
+        if (isArtisan) {
+          this.currentArtisanProfile = await this.artisanRepo.getArtisanByOwnerId(user.uid);
+        } else {
+          this.currentArtisanProfile = null;
+        }
       } else {
         this.currentArtisanProfile = null;
       }
       this.updateAuthUI(user);
 
-      // Si la URL contiene el parámetro ?manage=true y el usuario está logueado, abrir automáticamente el panel
+      // Si la URL contiene el parámetro ?manage=true y el usuario está logueado como artesano, abrir automáticamente el panel
       const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('manage') === 'true' && user) {
+      const isArtisan = (user && user.profile && user.profile.role === 'artisan') || !!this.currentArtisanProfile;
+      if (urlParams.get('manage') === 'true' && user && isArtisan) {
         this.openShopManageModal();
       }
     });
@@ -93,31 +102,31 @@ class AppController {
       drawer.classList.remove('active');
       if (icon) icon.className = 'fa-solid fa-bars';
     }
-  }
-
-  updateAuthUI(user) {
+  }  updateAuthUI(user) {
     const navActions = document.getElementById('navAuthActions');
     const mobileNavActions = document.getElementById('mobileNavAuthActions');
 
     if (user) {
+      const isArtisan = (user.profile && user.profile.role === 'artisan') || !!this.currentArtisanProfile;
       const displayName = (user.profile && user.profile.displayName) || (this.currentArtisanProfile && this.currentArtisanProfile.name) || user.email.split('@')[0];
-      const isArtisan = user.profile ? user.profile.role === 'artisan' : !!this.currentArtisanProfile;
       const artisanId = this.currentArtisanProfile ? this.currentArtisanProfile.id : null;
 
       const desktopHtml = `
         <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-          <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
-            <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta);"></i>
-            ${displayName}
+          <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);" title="Cuenta de ${isArtisan ? 'Artesano / Comercio' : 'Usuario / Cliente'}">
+            <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta);"></i>
+            ${displayName} <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
           </span>
-          ${(isArtisan && artisanId) ? `
-            <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-              <i class="fa-solid fa-eye"></i> Mi Perfil
-            </a>
+          ${isArtisan ? `
+            ${artisanId ? `
+              <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-eye"></i> Mi Perfil
+              </a>
+            ` : ''}
+            <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+              <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
+            </button>
           ` : ''}
-          <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-            <i class="fa-solid fa-store"></i> ${isArtisan ? 'Gestionar mi tienda' : 'Mi Cuenta'}
-          </button>
           <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
             <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
           </button>
@@ -125,22 +134,29 @@ class AppController {
       `;
 
       const mobileHtml = `
-        <div style="display: flex; align-items: center; gap: 0.6rem; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem;">
-          <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta); font-size: 1.1rem;"></i>
-          <span style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;">${displayName}</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta); font-size: 1.1rem;"></i>
+            <span style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;">${displayName}</span>
+          </div>
+          <span style="font-size: 0.72rem; background: ${isArtisan ? 'var(--terracotta)' : 'var(--warm-gold)'}; color: #FFF; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600;">
+            ${isArtisan ? 'Taller' : 'Cliente'}
+          </span>
         </div>
-        ${(isArtisan && artisanId) ? `
-          <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="window.appUI.toggleMobileMenu(false)">
-            <i class="fa-solid fa-eye"></i> Ver Mi Perfil Público
-          </a>
+        ${isArtisan ? `
+          ${artisanId ? `
+            <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="window.appUI.toggleMobileMenu(false)">
+              <i class="fa-solid fa-eye"></i> Ver Mi Perfil Público
+            </a>
+          ` : ''}
+          <button class="btn btn-primary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openShopManageModal();" style="width: 100%; justify-content: center;">
+            <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
+          </button>
         ` : ''}
-        <button class="btn btn-primary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openShopManageModal();" style="width: 100%; justify-content: center;">
-          <i class="fa-solid fa-store"></i> ${isArtisan ? 'Gestionar mi tienda' : 'Mi Cuenta'}
-        </button>
         <button class="btn btn-secondary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.handleLogout();" style="width: 100%; justify-content: center;">
           <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
         </button>
-      `;
+      `;    `;
 
       if (navActions) navActions.innerHTML = desktopHtml;
       if (mobileNavActions) mobileNavActions.innerHTML = mobileHtml;
@@ -469,6 +485,12 @@ class AppController {
   openShopManageModal() {
     if (!this.currentUser) {
       this.openLoginModal();
+      return;
+    }
+
+    const isArtisan = (this.currentUser.profile && this.currentUser.profile.role === 'artisan') || !!this.currentArtisanProfile;
+    if (!isArtisan) {
+      ToastComponent.show('ℹ️ Tu cuenta está registrada como Usuario / Cliente. El panel de gestión está reservado para Comercios y Artesanos.');
       return;
     }
 
@@ -847,14 +869,32 @@ class AppController {
     }
   }
 
-  async handleGoogleLogin() {
+  async handleGoogleLogin(context = 'register') {
     try {
-      const role = (document.getElementById('registerAccountRole') && document.getElementById('registerAccountRole').value) || 'client';
+      let role = 'client';
+      if (context === 'register') {
+        role = (document.getElementById('registerAccountRole') && document.getElementById('registerAccountRole').value) || 'client';
+      }
       const user = await this.authRepo.signInWithGoogle(role);
       this.closeModal('loginModal');
       this.closeModal('registerModal');
+
+      // Actualizar listado de artesanos y perfil
+      this.artisans = await this.artisanRepo.getAllArtisans();
+      this.renderLocationFilterOptions();
+      this.renderCategories();
+      this.renderArtisans();
+
+      if (user.profile && user.profile.role === 'artisan') {
+        this.currentArtisanProfile = await this.artisanRepo.getArtisanByOwnerId(user.uid);
+      } else {
+        this.currentArtisanProfile = null;
+      }
+      this.updateAuthUI(user);
+
       const name = (user.profile && user.profile.displayName) || user.displayName || user.email;
-      ToastComponent.show(`¡Bienvenido, ${name}! Sesión iniciada con Google.`);
+      const roleLabel = (user.profile && user.profile.role === 'artisan') ? 'Artesano / Taller' : 'Usuario / Cliente';
+      ToastComponent.show(`¡Bienvenido, ${name}! Sesión iniciada como ${roleLabel}.`);
     } catch (err) {
       if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
         return;
@@ -878,6 +918,7 @@ class AppController {
     const extraFields = document.getElementById('artisanExtraFields');
     const btnSubmit = document.getElementById('btnSubmitRegister');
     const modalTitle = document.getElementById('registerModalTitle');
+    const googleBtnLabel = document.getElementById('btnGoogleRegisterLabel');
 
     if (roleInput) roleInput.value = role;
 
@@ -893,6 +934,7 @@ class AppController {
       if (extraFields) extraFields.style.display = 'none';
       if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Crear Cuenta de Usuario';
       if (modalTitle) modalTitle.textContent = 'Crear Cuenta de Usuario';
+      if (googleBtnLabel) googleBtnLabel.textContent = 'Registrarse como Cliente con Google';
     } else {
       if (roleBtnArtisan) {
         roleBtnArtisan.style.background = 'var(--terracotta)';
@@ -905,6 +947,7 @@ class AppController {
       if (extraFields) extraFields.style.display = 'block';
       if (btnSubmit) btnSubmit.innerHTML = '<i class="fa-solid fa-check"></i> Crear Cuenta de Artesano';
       if (modalTitle) modalTitle.textContent = 'Crear Cuenta de Artesano';
+      if (googleBtnLabel) googleBtnLabel.textContent = 'Registrarse como Artesano con Google';
     }
   }
 
