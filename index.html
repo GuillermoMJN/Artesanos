@@ -57,6 +57,23 @@
           <i class="fa-solid fa-user-plus"></i> Registrarse
         </button>
       </div>
+
+      <!-- Botón Hamburguesa Móvil -->
+      <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Abrir menú de navegación" onclick="window.appUI.toggleMobileMenu()">
+        <i class="fa-solid fa-bars" id="mobileNavIcon"></i>
+      </button>
+    </div>
+
+    <!-- Menú Desplegable Móvil (Drawer) -->
+    <div class="mobile-menu-drawer" id="mobileMenuDrawer">
+      <ul class="mobile-nav-links">
+        <li><a href="#directorio" class="nav-link" onclick="window.appUI.toggleMobileMenu(false)">Explorar Directorio</a></li>
+        <li><a href="#categorias" class="nav-link" onclick="window.appUI.toggleMobileMenu(false)">Categorías & Oficios</a></li>
+        <li><a href="#nosotros" class="nav-link" onclick="window.appUI.toggleMobileMenu(false)">Nuestra Filosofía</a></li>
+      </ul>
+      <div class="mobile-auth-actions" id="mobileNavAuthActions">
+        <!-- Rellenado dinámicamente según sesión en JS -->
+      </div>
     </div>
   </header>
 

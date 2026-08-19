@@ -40,28 +40,28 @@
       flex-wrap: wrap;
     }
     .profile-avatar {
-      width: 150px;
-      height: 150px;
+      width: 140px;
+      height: 140px;
       border-radius: 50%;
       object-fit: cover;
       border: 4px solid var(--warm-gold);
       box-shadow: var(--shadow-lg);
+      flex-shrink: 0;
     }
     .profile-info h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.5rem;
+      font-size: 2.3rem;
       color: var(--beige-light);
       margin-bottom: 0.3rem;
     }
     .profile-trade {
       color: var(--warm-gold);
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 600;
-      margin-bottom: 0.8rem;
     }
     .profile-meta-chips {
       display: flex;
-      gap: 1rem;
+      gap: 0.8rem;
       flex-wrap: wrap;
       margin-top: 0.8rem;
     }
@@ -73,8 +73,15 @@
       font-size: 0.85rem;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
+    .profile-actions-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      min-width: 220px;
+    }
+
     .project-card {
-      background: var(--card-bg);
+      background: var(--bg-card);
       border-radius: var(--radius-md);
       border: 1px solid var(--border-color);
       overflow: hidden;
@@ -105,21 +112,49 @@
       line-height: 1.5;
     }
 
+    /* Grids responsivos de la página de perfil */
+    .profile-details-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .profile-rating-summary-grid {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2rem;
+      background: #FFFFFF;
+      padding: 2rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      margin-bottom: 2.5rem;
+      align-items: center;
+    }
+
+    .profile-rating-score-side {
+      text-align: center;
+      border-right: 1px solid var(--border-color);
+      padding-right: 1.5rem;
+    }
+
     /* Estilos pulidos para la tarjeta de Información de Contacto */
     .contact-info-card {
-      background: var(--card-bg, #FFFFFF);
-      padding: 2.2rem 2rem;
+      background: var(--bg-card, #FFFFFF);
+      padding: 2rem 1.8rem;
       border-radius: var(--radius-md, 16px);
       border: 1px solid var(--border-color, #E6DDD0);
       box-shadow: 0 4px 20px rgba(62, 39, 35, 0.04);
+      height: fit-content;
     }
     
     .contact-info-box {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.9rem;
       background: var(--bg-subtle, #F4EFE6);
-      padding: 1.25rem;
+      padding: 1.2rem;
       border-radius: 16px;
       border: 1px solid rgba(192, 108, 76, 0.12);
     }
@@ -127,8 +162,8 @@
     .contact-item {
       display: flex;
       align-items: center;
-      gap: 1.2rem;
-      padding: 0.9rem 1.2rem;
+      gap: 1rem;
+      padding: 0.85rem 1.1rem;
       background: var(--bg-main, #FAF7F2);
       border-radius: 12px;
       border: 1px solid rgba(230, 221, 208, 0.8);
@@ -141,15 +176,15 @@
     }
 
     .contact-item > i {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: #FFFFFF;
       color: var(--terracotta, #C06C4C);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.15rem;
+      font-size: 1.1rem;
       box-shadow: 0 2px 8px rgba(62, 39, 35, 0.08);
       flex-shrink: 0;
     }
@@ -157,7 +192,7 @@
     .contact-item strong {
       display: block;
       word-break: break-word;
-      font-size: 0.98rem;
+      font-size: 0.92rem;
     }
 
     /* Estilos del Sistema de Reseñas */
@@ -189,6 +224,69 @@
       padding: 1rem 1.2rem;
       border: 1px solid rgba(230, 221, 208, 0.6);
       margin-bottom: 0.8rem;
+    }
+
+    /* ── Responsive Perfil de Artesano ── */
+    @media (max-width: 900px) {
+      .profile-details-grid {
+        grid-template-columns: 1fr;
+        gap: 1.8rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .profile-hero {
+        padding: 2.4rem 0 2rem;
+      }
+      .profile-header-card {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+        gap: 1.2rem;
+      }
+      .profile-avatar {
+        width: 105px;
+        height: 105px;
+      }
+      .profile-info h1 {
+        font-size: 1.75rem;
+      }
+      .profile-trade {
+        font-size: 1rem;
+      }
+      .profile-meta-chips {
+        justify-content: center;
+        gap: 0.4rem;
+      }
+      .profile-chip {
+        font-size: 0.78rem;
+        padding: 0.3rem 0.75rem;
+      }
+      .profile-actions-box {
+        width: 100%;
+      }
+      .profile-actions-box .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .profile-rating-summary-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+        padding: 1.4rem 1.1rem;
+        text-align: center;
+      }
+      .profile-rating-score-side {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        padding-right: 0;
+        padding-bottom: 1.2rem;
+      }
+      .contact-info-card {
+        padding: 1.4rem 1.1rem;
+      }
+      .contact-item {
+        padding: 0.75rem 0.9rem;
+      }
     }
   </style>
 </head>
@@ -235,7 +333,7 @@
             <span class="profile-chip" id="profileExperience"><i class="fa-solid fa-certificate"></i> Experiencia</span>
           </div>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.8rem; min-width: 200px;">
+        <div class="profile-actions-box">
           <a id="btnOwnerManage" href="index.html?manage=true" class="btn" style="display: none; text-align: center; background: var(--warm-gold); color: #FFF; font-weight: 700; border: none; box-shadow: var(--shadow-sm);">
             <i class="fa-solid fa-sliders"></i> Gestionar Mi Perfil & Tienda
           </a>
@@ -271,8 +369,8 @@
     </section>
 
     <!-- Bio & Details Section -->
-    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; flex-wrap: wrap; margin-bottom: 4rem;">
-      <div style="background: var(--card-bg); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+    <div class="profile-details-grid">
+      <div style="background: var(--bg-card); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
         <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--primary-dark);">
           <i class="fa-solid fa-book-open" style="color: var(--terracotta);"></i> Historia del Taller
         </h3>
@@ -282,7 +380,7 @@
         <div id="profileTags" style="display: flex; gap: 0.6rem; flex-wrap: wrap;"></div>
       </div>
 
-      <div class="contact-info-card" style="height: fit-content;">
+      <div class="contact-info-card">
         <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 1.2rem; color: var(--primary-dark);">
           <i class="fa-solid fa-address-card" style="color: var(--terracotta);"></i> Información de Contacto
         </h3>
@@ -330,8 +428,8 @@
       </div>
 
       <!-- Resumen Global de Puntuación -->
-      <div style="display: grid; grid-template-columns: 280px 1fr; gap: 2rem; background: #FFFFFF; padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 2.5rem; align-items: center;">
-        <div style="text-align: center; border-right: 1px solid var(--border-color); padding-right: 1.5rem;">
+      <div class="profile-rating-summary-grid">
+        <div class="profile-rating-score-side">
           <div style="font-size: 3.5rem; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-dark); line-height: 1;" id="summaryScoreNum">5.0</div>
           <div style="color: var(--warm-gold); font-size: 1.3rem; margin: 0.5rem 0;" id="summaryScoreStars">
             <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>

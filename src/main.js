@@ -78,16 +78,31 @@ class AppController {
     }, 700);
   }
 
+  toggleMobileMenu(forceState) {
+    const drawer = document.getElementById('mobileMenuDrawer');
+    const icon = document.getElementById('mobileNavIcon');
+    if (!drawer) return;
+
+    const shouldOpen = typeof forceState === 'boolean' ? forceState : !drawer.classList.contains('active');
+    if (shouldOpen) {
+      drawer.classList.add('active');
+      if (icon) icon.className = 'fa-solid fa-xmark';
+    } else {
+      drawer.classList.remove('active');
+      if (icon) icon.className = 'fa-solid fa-bars';
+    }
+  }
+
   updateAuthUI(user) {
     const navActions = document.getElementById('navAuthActions');
-    if (!navActions) return;
+    const mobileNavActions = document.getElementById('mobileNavAuthActions');
 
     if (user) {
       const displayName = (user.profile && user.profile.displayName) || (this.currentArtisanProfile && this.currentArtisanProfile.name) || user.email.split('@')[0];
       const isArtisan = user.profile ? user.profile.role === 'artisan' : !!this.currentArtisanProfile;
       const artisanId = this.currentArtisanProfile ? this.currentArtisanProfile.id : null;
 
-      navActions.innerHTML = `
+      const desktopHtml = `
         <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
           <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);">
             <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta);"></i>
@@ -106,8 +121,29 @@ class AppController {
           </button>
         </div>
       `;
+
+      const mobileHtml = `
+        <div style="display: flex; align-items: center; gap: 0.6rem; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem;">
+          <i class="fa-solid ${isArtisan ? 'fa-hammer' : 'fa-user'}" style="color: var(--terracotta); font-size: 1.1rem;"></i>
+          <span style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;">${displayName}</span>
+        </div>
+        ${(isArtisan && artisanId) ? `
+          <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="window.appUI.toggleMobileMenu(false)">
+            <i class="fa-solid fa-eye"></i> Ver Mi Perfil Público
+          </a>
+        ` : ''}
+        <button class="btn btn-primary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openShopManageModal();" style="width: 100%; justify-content: center;">
+          <i class="fa-solid fa-store"></i> ${isArtisan ? 'Gestionar mi tienda' : 'Mi Cuenta'}
+        </button>
+        <button class="btn btn-secondary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.handleLogout();" style="width: 100%; justify-content: center;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+        </button>
+      `;
+
+      if (navActions) navActions.innerHTML = desktopHtml;
+      if (mobileNavActions) mobileNavActions.innerHTML = mobileHtml;
     } else {
-      navActions.innerHTML = `
+      const desktopLoginHtml = `
         <button class="btn btn-secondary" onclick="window.appUI.openLoginModal()">
           <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
         </button>
@@ -115,6 +151,17 @@ class AppController {
           <i class="fa-solid fa-user-plus"></i> Registrarse
         </button>
       `;
+      const mobileLoginHtml = `
+        <button class="btn btn-secondary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openLoginModal();" style="width: 100%; justify-content: center;">
+          <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión
+        </button>
+        <button class="btn btn-primary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openRegisterModal();" style="width: 100%; justify-content: center;">
+          <i class="fa-solid fa-user-plus"></i> Registrarse
+        </button>
+      `;
+
+      if (navActions) navActions.innerHTML = desktopLoginHtml;
+      if (mobileNavActions) mobileNavActions.innerHTML = mobileLoginHtml;
     }
   }
 
