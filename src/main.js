@@ -465,7 +465,7 @@ class AppController {
       if (editWebsite) editWebsite.value = p.website || '';
       if (editAddress) editAddress.value = p.address || '';
       if (editDescription) editDescription.value = p.description || '';
-      if (avatarPreview) avatarPreview.src = p.image || 'images/artisan1.jpg';
+      if (avatarPreview) avatarPreview.src = p.image || 'images/default_avatar.svg';
 
       if (btnViewProfile) {
         btnViewProfile.href = `perfil.html?id=${p.id}`;
@@ -896,7 +896,8 @@ class AppController {
         phone,
         email: authEmail,
         website,
-        description
+        description,
+        image: 'images/default_avatar.svg'
       });
 
       this.artisans.unshift(newArtisan);

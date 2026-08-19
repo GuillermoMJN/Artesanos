@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <!-- Fondo Beige Oscuro / Cálido (#E8DEC9) -->
+  <rect width="400" height="400" fill="#E8DEC9"/>
+  
+  <!-- Círculo interior sutil -->
+  <circle cx="200" cy="200" r="185" fill="#F4EFE6" stroke="#D8CCB5" stroke-width="4"/>
+
+  <!-- Monigote / Avatar Silueta en Color Marrón Corporativo (#5C4033) -->
+  <g fill="#5C4033">
+    <!-- Cabeza -->
+    <circle cx="200" cy="145" r="65" />
+    
+    <!-- Torso y Hombros -->
+    <path d="M 85 350 C 85 245, 140 235, 200 235 C 260 235, 315 245, 315 350 Z" />
+  </g>
+</svg>

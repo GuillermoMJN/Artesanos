@@ -70,13 +70,6 @@ export class Artisan {
   }
 
   getDefaultImage(cat) {
-    const images = {
-      ceramica: 'images/ceramics_artisan_1786534790567.png',
-      tejido: 'images/textile_artisan_1786534801221.png',
-      herreria: 'images/blacksmith_artisan_1786534811595.png',
-      tatuaje: 'images/tattoo_artisan_1786534822293.png',
-      comida: 'images/bakery_artisan_1786534832288.png'
-    };
-    return images[cat] || 'images/ceramics_artisan_1786534790567.png';
+    return 'images/default_avatar.svg';
   }
 }
