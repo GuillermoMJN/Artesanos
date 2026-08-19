@@ -32,7 +32,8 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  reauthenticateWithPopup
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
 
@@ -650,16 +651,34 @@ export class FirebaseAuthRepository {
     return photoUrl;
   }
 
-  async deleteAccountCascade(currentPassword) {
+  async updateDisplayName(displayName) {
     if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    if (!currentPassword) throw new Error("Debes ingresar tu contraseña actual para confirmar la eliminación de la cuenta");
+    const user = auth.currentUser;
+    const cleanName = (displayName || '').trim();
+    if (!cleanName) throw new Error("El nombre no puede estar vacío");
 
+    await updateProfile(user, { displayName: cleanName });
+    await this.saveUserProfile(user.uid, { displayName: cleanName });
+    if (user.profile) user.profile.displayName = cleanName;
+    return cleanName;
+  }
+
+  async deleteAccountCascade(currentPassword = null) {
+    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
     const user = auth.currentUser;
     const uid = user.uid;
+    const isGoogleAuth = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
 
     // 1. Reautenticación de seguridad en Firebase Auth
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
-    await reauthenticateWithCredential(user, credential);
+    if (isGoogleAuth) {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      await reauthenticateWithPopup(user, provider);
+    } else {
+      if (!currentPassword) throw new Error("Debes ingresar tu contraseña actual para confirmar la eliminación de la cuenta");
+      const credential = EmailAuthProvider.credential(user.email, currentPassword);
+      await reauthenticateWithCredential(user, credential);
+    }
 
     // 2. Localizar y borrar artesano, proyectos, reseñas, comentarios y archivos en Storage
     const artisanRepo = new FirebaseArtisanRepository();

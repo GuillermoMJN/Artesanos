@@ -810,7 +810,157 @@
     </div>
   </div>
 
-  <!-- Modal Confirmación para Eliminar Cuenta en Cascada -->
+  <!-- Modal Panel "Mi Cuenta de Usuario" (Exclusivo para Clientes / Compradores) -->
+  <div class="modal-overlay" id="userAccountModal">
+    <div class="modal-card" style="max-width: 650px;">
+      <button class="modal-close" onclick="window.appUI.closeModal('userAccountModal')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+              <span class="hero-badge" style="margin: 0; padding: 0.25rem 0.75rem; font-size: 0.75rem;"><i class="fa-solid fa-user-gear"></i> Perfil de Usuario</span>
+              <span class="hero-badge" style="background: rgba(197, 160, 89, 0.15); color: #7D5C14; border-color: rgba(197, 160, 89, 0.4); margin: 0; padding: 0.25rem 0.75rem; font-size: 0.75rem;">
+                <i class="fa-solid fa-user"></i> Cliente
+              </span>
+            </div>
+            <h2 style="font-size: 1.7rem; font-family: 'Playfair Display', serif; color: var(--primary-dark); margin: 0;">Mi Cuenta & Ajustes</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.2rem; margin-bottom: 0;">Administra tu nombre público, avatar y la seguridad de tu cuenta.</p>
+          </div>
+        </div>
+
+        <!-- Pestañas del Panel de Usuario -->
+        <div class="shop-tabs-nav" style="margin-bottom: 1.2rem;">
+          <button class="tab-btn active" onclick="window.appUI.switchUserTab('userTabProfile')" id="btnUserTabProfile">
+            <i class="fa-solid fa-user"></i> Datos & Avatar
+          </button>
+          <button class="tab-btn" onclick="window.appUI.switchUserTab('userTabSecurity')" id="btnUserTabSecurity">
+            <i class="fa-solid fa-shield-halved"></i> Seguridad & Acceso
+          </button>
+        </div>
+
+        <!-- Tab 1: Datos & Foto de Perfil -->
+        <div id="userTabProfile" class="user-tab-content">
+          <div class="dashboard-card" style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
+            <div style="position: relative; width: 80px; height: 80px; border-radius: 50%; overflow: hidden; border: 3px solid var(--warm-gold); box-shadow: 0 3px 12px rgba(62, 39, 35, 0.1); flex-shrink: 0; background: #FFF;">
+              <img id="userAvatarEditPreview" src="images/default_avatar.svg" alt="Avatar de Usuario" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div style="flex: 1; min-width: 220px;">
+              <h4 style="font-size: 1.05rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.2rem;">Foto de Perfil / Avatar</h4>
+              <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.8rem; line-height: 1.4;">Esta foto aparecerá junto a tus opiniones y comentarios en las fichas de los artesanos.</p>
+              <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+                <label class="btn btn-secondary" style="cursor: pointer; padding: 0.45rem 1rem; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 0.4rem; margin: 0; border-radius: 8px;">
+                  <i class="fa-solid fa-camera"></i> Subir Avatar
+                  <input type="file" id="inputUserAvatarFile" accept="image/*" style="display: none;" onchange="window.appUI.handleUserAvatarChange(event)">
+                </label>
+                <span id="userAvatarUploadStatus" style="font-size: 0.8rem; color: var(--text-muted);"><i class="fa-regular fa-image"></i> JPG, PNG o WEBP</span>
+              </div>
+            </div>
+          </div>
+
+          <form id="editUserProfileForm" class="dashboard-card">
+            <h4 class="dashboard-card-title">
+              <i class="fa-solid fa-id-card" style="color: var(--terracotta);"></i> Información Personal
+            </h4>
+
+            <div class="form-group" style="margin-bottom: 1rem;">
+              <label class="form-label">Nombre Completo o Alias Público *</label>
+              <input type="text" id="inputUserDisplayName" class="form-input" placeholder="Tu nombre o alias" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.2rem;">
+              <label class="form-label">Correo Electrónico (Registrado)</label>
+              <input type="email" id="inputUserEmailDisplay" class="form-input" disabled style="background: var(--bg-subtle); color: var(--text-muted);">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="font-weight: 700; padding: 0.6rem 1.4rem; font-size: 0.88rem; border-radius: 8px;">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios
+            </button>
+          </form>
+        </div>
+
+        <!-- Tab 2: Seguridad & Contraseña & Zona de Peligro -->
+        <div id="userTabSecurity" class="user-tab-content" style="display: none;">
+          <div id="userPasswordFormsSection" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem;">
+            
+            <!-- Cambiar Correo -->
+            <div class="dashboard-card" style="margin-bottom: 0;">
+              <h4 style="font-size: 0.95rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-envelope" style="color: var(--terracotta);"></i> Cambiar Correo
+              </h4>
+              <form id="changeUserEmailForm">
+                <div class="form-group" style="margin-bottom: 0.6rem;">
+                  <label class="form-label" style="font-size: 0.78rem;">Contraseña actual *</label>
+                  <input type="password" id="inputUserEmailCurrentPassword" class="form-input" placeholder="••••••••" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.9rem;">
+                  <label class="form-label" style="font-size: 0.78rem;">Nuevo correo *</label>
+                  <input type="email" id="inputUserNewEmail" class="form-input" placeholder="nuevo@email.com" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="font-weight: 600; font-size: 0.82rem; width: 100%; border-radius: 7px;">
+                  <i class="fa-solid fa-arrows-rotate"></i> Actualizar Correo
+                </button>
+              </form>
+            </div>
+
+            <!-- Cambiar Contraseña -->
+            <div class="dashboard-card" style="margin-bottom: 0;">
+              <h4 style="font-size: 0.95rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.4rem;">
+                <i class="fa-solid fa-key" style="color: var(--warm-gold);"></i> Cambiar Contraseña
+              </h4>
+              <form id="changeUserPasswordForm">
+                <div class="form-group" style="margin-bottom: 0.6rem;">
+                  <label class="form-label" style="font-size: 0.78rem;">Contraseña actual *</label>
+                  <input type="password" id="inputUserPasswordCurrent" class="form-input" placeholder="••••••••" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0.9rem;">
+                  <label class="form-label" style="font-size: 0.78rem;">Nueva contraseña *</label>
+                  <input type="password" id="inputUserPasswordNew" class="form-input" placeholder="••••••••" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="font-weight: 600; font-size: 0.82rem; width: 100%; border-radius: 7px;">
+                  <i class="fa-solid fa-shield-halved"></i> Guardar Contraseña
+                </button>
+              </form>
+            </div>
+
+          </div>
+
+          <!-- Aviso si es cuenta de Google -->
+          <div id="userGoogleAuthNotice" class="dashboard-card" style="display: none; margin-bottom: 1.5rem; background: var(--bg-subtle);">
+            <div style="display: flex; align-items: center; gap: 0.8rem;">
+              <i class="fa-brands fa-google" style="color: #4285F4; font-size: 1.4rem;"></i>
+              <div>
+                <strong style="color: var(--primary-dark); font-size: 0.95rem;">Cuenta conectada con Google</strong>
+                <p style="color: var(--text-secondary); font-size: 0.82rem; margin: 0;">Tu acceso y seguridad están administrados por tu cuenta de Google.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ZONA DE PELIGRO: Eliminar Cuenta de Usuario -->
+          <div style="background: #FFF5F5; border: 1.5px solid #FFCDD2; padding: 1.4rem 1.6rem; border-radius: 16px;">
+            <div style="display: flex; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div style="width: 38px; height: 38px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div style="flex: 1; min-width: 240px;">
+                <h4 style="color: #C62828; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem;">Zona de Peligro: Eliminar Mi Cuenta</h4>
+                <p style="color: #5D4037; font-size: 0.82rem; line-height: 1.5; margin-bottom: 0.9rem;">
+                  Esta acción es <strong>irreversible</strong>. Se eliminará tu cuenta de usuario, tus datos personales y tu acceso a la plataforma.
+                </p>
+                <button type="button" class="btn" style="background: #D32F2F; color: #FFF; border: none; font-weight: 700; padding: 0.6rem 1.3rem; font-size: 0.82rem; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;" onclick="window.appUI.openDeleteAccountModal()">
+                  <i class="fa-solid fa-trash-can"></i> Eliminar mi Cuenta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Confirmación para Eliminar Cuenta -->
   <div class="modal-overlay" id="deleteAccountModal" style="z-index: 5000;">
     <div class="modal-card" style="max-width: 520px; border-top: 5px solid #D32F2F;">
       <button class="modal-close" onclick="window.appUI.closeModal('deleteAccountModal')">
@@ -821,14 +971,14 @@
           <i class="fa-solid fa-skull-crossbones"></i>
         </div>
         <h3 style="font-size: 1.5rem; color: #B71C1C; margin-bottom: 0.5rem;">¿Eliminar Cuenta Definitivamente?</h3>
-        <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;">
-          Esta acción <strong>borrará todos tus registros</strong> en Firebase (tienda, proyectos, fotos, reseñas y usuario). Para continuar, introduce tu contraseña actual:
+        <p id="deleteAccountNoticeText" style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.5rem;">
+          Esta acción <strong>borrará todos tus registros</strong> en la plataforma. Para confirmar la eliminación:
         </p>
 
         <form id="confirmDeleteAccountForm">
-          <div class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
+          <div id="deletePasswordGroup" class="form-group" style="text-align: left; margin-bottom: 1.5rem;">
             <label class="form-label">Introduce tu Contraseña para confirmar *</label>
-            <input type="password" id="deleteAccountPasswordConfirm" class="form-input" placeholder="Tu contraseña actual" required>
+            <input type="password" id="deleteAccountPasswordConfirm" class="form-input" placeholder="Tu contraseña actual">
           </div>
 
           <div style="display: flex; gap: 0.8rem; justify-content: center;">
