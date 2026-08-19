@@ -389,30 +389,33 @@
     </div>
   </div>
 
-  <!-- Modal Panel "Gestionar Mi Perfil & Tienda" -->
+  <!-- Modal Panel "Gestionar Mi Perfil & Tienda" (Gran Espacio & Dashboard) -->
   <div class="modal-overlay" id="shopManageModal">
-    <div class="modal-card" style="max-width: 960px;">
+    <div class="modal-card">
       <button class="modal-close" onclick="window.appUI.closeModal('shopManageModal')">
         <i class="fa-solid fa-xmark"></i>
       </button>
       <div class="modal-body">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1.2rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);">
           <div>
-            <span class="hero-badge"><i class="fa-solid fa-sliders"></i> Panel de Artesano</span>
-            <h2 style="font-size: 2rem; margin-top: 0.3rem;" id="shopManageTitle">Gestionar Mi Perfil & Taller</h2>
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.3rem;">
+              <span class="hero-badge" style="margin: 0; padding: 0.35rem 0.9rem; font-size: 0.82rem;"><i class="fa-solid fa-sliders"></i> Panel de Control</span>
+              <span id="verificationStatusBadge" class="hero-badge" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; border-color: rgba(76, 175, 80, 0.25); margin: 0; padding: 0.35rem 0.9rem; font-size: 0.82rem;">
+                <i class="fa-solid fa-circle-check"></i> Taller Verificado
+              </span>
+            </div>
+            <h2 style="font-size: 2.2rem; font-family: 'Playfair Display', serif; color: var(--primary-dark); margin: 0;" id="shopManageTitle">Gestionar Mi Perfil & Tienda</h2>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.3rem; margin-bottom: 0;">Administra tu catálogo de obras, información pública de contacto y seguridad de tu cuenta.</p>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.8rem;">
-            <a href="#" id="btnViewMyPublicProfile" class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-              <i class="fa-solid fa-eye"></i> Ver mi Perfil Público
+          <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
+            <a href="#" id="btnViewMyPublicProfile" target="_blank" class="btn btn-secondary" style="padding: 0.6rem 1.2rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 10px; font-weight: 600;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Ver Mi Perfil Público
             </a>
-            <span id="verificationStatusBadge" class="hero-badge" style="background: rgba(76, 175, 80, 0.1); color: #4CAF50; border-color: rgba(76, 175, 80, 0.2); margin: 0;">
-              <i class="fa-solid fa-circle-check"></i> Verificado
-            </span>
           </div>
         </div>
 
-        <!-- Pestañas del Panel -->
-        <div style="display: flex; gap: 0.6rem; border-bottom: 2px solid var(--border-color); margin-bottom: 2rem; overflow-x: auto; padding-bottom: 2px;">
+        <!-- Pestañas del Panel (Barra Segmentada) -->
+        <div class="shop-tabs-nav">
           <button class="tab-btn active" onclick="window.appUI.switchShopTab('tabGeneral')" id="btnTabGeneral">
             <i class="fa-solid fa-store"></i> Información & Foto
           </button>
@@ -422,7 +425,7 @@
           <button class="tab-btn" onclick="window.appUI.switchShopTab('tabPromos')" id="btnTabPromos">
             <i class="fa-solid fa-tags"></i> Promociones & Ofertas
           </button>
-          <button class="tab-btn" onclick="window.appUI.switchShopTab('tabSecurity')" id="btnTabSecurity" style="color: var(--text-main);">
+          <button class="tab-btn" onclick="window.appUI.switchShopTab('tabSecurity')" id="btnTabSecurity">
             <i class="fa-solid fa-shield-halved"></i> Seguridad & Mi Cuenta
           </button>
         </div>
@@ -430,38 +433,42 @@
         <!-- Tab 1: General & Foto de Perfil -->
         <div id="tabGeneral" class="shop-tab-content">
           <!-- Subida / Cambio de Foto de Perfil / Taller -->
-          <div style="display: flex; align-items: center; gap: 1.5rem; background: var(--bg-subtle); padding: 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 1.5rem; flex-wrap: wrap;">
-            <div style="position: relative; width: 85px; height: 85px; border-radius: 50%; overflow: hidden; border: 3px solid var(--warm-gold); box-shadow: var(--shadow-sm); flex-shrink: 0; background: #FFF;">
+          <div class="dashboard-card" style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+            <div style="position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden; border: 3px solid var(--warm-gold); box-shadow: 0 4px 15px rgba(62, 39, 35, 0.1); flex-shrink: 0; background: #FFF;">
               <img id="avatarEditPreview" src="images/artisan1.jpg" alt="Foto de Perfil" style="width: 100%; height: 100%; object-fit: cover;">
             </div>
-            <div style="flex: 1; min-width: 220px;">
-              <h4 style="font-size: 1.05rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem;">Foto de Perfil / Imagen del Taller</h4>
-              <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.8rem;">Esta fotografía aparecerá en tu tarjeta del directorio, cabecera de perfil y proyectos.</p>
-              <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;">
-                <label class="btn btn-secondary" style="cursor: pointer; padding: 0.45rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0;">
-                  <i class="fa-solid fa-camera"></i> Cambiar Foto
+            <div style="flex: 1; min-width: 250px;">
+              <h4 style="font-size: 1.15rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem;">Foto de Perfil / Imagen Principal del Taller</h4>
+              <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; line-height: 1.5;">Esta fotografía de alta calidad se mostrará en tu tarjeta del directorio, la cabecera de tu tienda y en tus obras publicadas.</p>
+              <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                <label class="btn btn-secondary" style="cursor: pointer; padding: 0.55rem 1.2rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 0.5rem; margin: 0; border-radius: 8px;">
+                  <i class="fa-solid fa-camera"></i> Subir Nueva Foto
                   <input type="file" id="inputAvatarFile" accept="image/*" style="display: none;" onchange="window.appUI.handleAvatarChange(event)">
                 </label>
-                <span id="avatarUploadStatus" style="font-size: 0.82rem; color: var(--text-muted);">Formatos: JPG, PNG o WEBP</span>
+                <span id="avatarUploadStatus" style="font-size: 0.85rem; color: var(--text-muted);"><i class="fa-regular fa-image"></i> Formatos JPG, PNG o WEBP</span>
               </div>
             </div>
           </div>
 
-          <form id="editShopForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Nombre del Taller o Creador *</label>
-                <input type="text" id="editName" class="form-input" required>
+          <form id="editShopForm" class="dashboard-card">
+            <h4 class="dashboard-card-title">
+              <i class="fa-solid fa-address-card" style="color: var(--terracotta);"></i> Datos Principales del Taller
+            </h4>
+
+            <div class="form-row" style="margin-bottom: 1.2rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Nombre Comercial o del Artesano *</label>
+                <input type="text" id="editName" class="form-input" placeholder="ej. Taller Cerámica Albaicín" required>
               </div>
-              <div class="form-group">
-                <label class="form-label">Especialidad u Oficio *</label>
-                <input type="text" id="editTrade" class="form-input" required>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Especialidad u Oficio Artesanal *</label>
+                <input type="text" id="editTrade" class="form-input" placeholder="ej. Torneado de Barro & Cerámica" required>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Categoría Principal *</label>
+            <div class="form-row" style="margin-bottom: 1.2rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Categoría de Artesanía *</label>
                 <select id="editCategory" class="form-select">
                   <option value="ceramica">Cerámica & Barro</option>
                   <option value="tejido">Textil & Telar</option>
@@ -473,63 +480,77 @@
                   <option value="comida">Comida & Obrador</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label class="form-label">Ciudad / Provincia *</label>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Ciudad / Provincia / Región *</label>
                 <input type="text" id="editLocation" class="form-input" placeholder="ej. Granada, España" required>
               </div>
             </div>
 
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Teléfono / WhatsApp *</label>
-                <input type="tel" id="editPhone" class="form-input" required>
+            <div class="form-row" style="margin-bottom: 1.2rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Teléfono de Contacto *</label>
+                <input type="tel" id="editPhone" class="form-input" placeholder="+34 600 000 000" required>
               </div>
-              <div class="form-group">
-                <label class="form-label">Sitio Web / Tienda Online</label>
-                <input type="url" id="editWebsite" class="form-input" placeholder="https://mi-tienda.com">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Sitio Web / Tienda Online Oficial (Opcional)</label>
+                <input type="url" id="editWebsite" class="form-input" placeholder="https://mi-tienda-artesanal.com">
               </div>
             </div>
 
-            <div class="form-group" style="margin-bottom: 1.2rem;">
-              <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.9rem; color: var(--primary-dark); font-weight: 600;">
-                <input type="checkbox" id="editAllowWhatsapp" checked style="width: 18px; height: 18px; accent-color: var(--terracotta);">
-                <i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 1.1rem;"></i> Permitir que los clientes me contacten por WhatsApp
+            <!-- Ajuste WhatsApp destacado -->
+            <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid rgba(37, 211, 102, 0.25); border-radius: 12px; padding: 1rem 1.4rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+              <div style="display: flex; align-items: center; gap: 0.8rem;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; background: #25D366; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
+                  <i class="fa-brands fa-whatsapp"></i>
+                </div>
+                <div>
+                  <strong style="color: var(--primary-dark); font-size: 0.95rem; display: block;">Botón de Contacto por WhatsApp</strong>
+                  <span style="color: var(--text-secondary); font-size: 0.85rem;">Permite que los compradores te contacten directamente a tu app de WhatsApp.</span>
+                </div>
+              </div>
+              <label style="display: flex; align-items: center; gap: 0.6rem; cursor: pointer; font-size: 0.92rem; color: var(--primary-dark); font-weight: 700;">
+                <input type="checkbox" id="editAllowWhatsapp" checked style="width: 20px; height: 20px; accent-color: #25D366; cursor: pointer;">
+                Activar botón en mi perfil
               </label>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Dirección Física del Taller *</label>
-              <input type="text" id="editAddress" class="form-input" required>
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+              <label class="form-label">Dirección Física o Taller Abierto al Público *</label>
+              <input type="text" id="editAddress" class="form-input" placeholder="Calle / Plaza, Número, Barrio o Polígono" required>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Descripción Breve & Filosofía del Taller *</label>
-              <textarea id="editDescription" class="form-textarea" rows="3" required></textarea>
+            <div class="form-group" style="margin-bottom: 1.8rem;">
+              <label class="form-label">Historia, Filosofía y Técnicas del Taller *</label>
+              <textarea id="editDescription" class="form-textarea" rows="4" placeholder="Explica la historia de tu taller, los materiales nobles que utilizas, el proceso artesanal..." required></textarea>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-              <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios de Perfil
-            </button>
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.85rem 2rem; font-size: 1rem; font-weight: 700; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.6rem;">
+                <i class="fa-solid fa-floppy-disk"></i> Guardar Cambios de Perfil
+              </button>
+            </div>
           </form>
         </div>
 
         <!-- Tab 2: Proyectos & Catálogo -->
         <div id="tabGallery" class="shop-tab-content" style="display: none;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <div class="dashboard-card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.2rem;">
             <div>
-              <h3 style="font-size: 1.2rem; color: var(--primary-dark); font-weight: 700;">Mis Proyectos & Catálogo</h3>
-              <p style="color: var(--text-secondary); font-size: 0.9rem;">Crea, edita y elimina los trabajos artesanales expuestos en tu perfil con fotos y vídeos.</p>
+              <h3 style="font-size: 1.3rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem;">
+                <i class="fa-solid fa-photo-film" style="color: var(--terracotta);"></i> Catálogo de Obras & Proyectos
+              </h3>
+              <p style="color: var(--text-secondary); font-size: 0.92rem; margin: 0;">Publica tus piezas terminadas con galerías fotográficas del proceso paso a paso.</p>
             </div>
-            <button type="button" class="btn btn-primary" onclick="window.appUI.showNewProjectForm()">
-              <i class="fa-solid fa-plus"></i> Crear Nuevo Trabajo
+            <button type="button" class="btn btn-primary" onclick="window.appUI.showNewProjectForm()" style="padding: 0.7rem 1.4rem; font-size: 0.92rem; border-radius: 10px; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+              <i class="fa-solid fa-plus"></i> Añadir Nuevo Trabajo
             </button>
           </div>
 
           <!-- Formulario de Crear / Editar Trabajo (oculto por defecto) -->
-          <div id="projectFormContainer" style="display: none; background: var(--bg-subtle); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-              <h4 id="projectFormTitle" style="font-size: 1.1rem; color: var(--primary-dark); font-weight: 700;">Añadir Nuevo Trabajo</h4>
-              <button type="button" style="background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted);" onclick="window.appUI.hideProjectForm()">
+          <div id="projectFormContainer" style="display: none; background: #FFFFFF; padding: 2rem; border-radius: 20px; border: 1.5px solid #E6DDD0; box-shadow: 0 8px 30px rgba(62, 39, 35, 0.04); margin-bottom: 2.2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.4rem; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border-color);">
+              <h4 id="projectFormTitle" style="font-size: 1.25rem; color: var(--primary-dark); font-weight: 700; margin: 0;">Añadir Nuevo Trabajo</h4>
+              <button type="button" style="background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--text-muted);" onclick="window.appUI.hideProjectForm()">
                 <i class="fa-solid fa-xmark"></i>
               </button>
             </div>
@@ -538,20 +559,20 @@
               <input type="hidden" id="editingProjectIdx" value="-1">
 
               <div class="form-group">
-                <label class="form-label">Título del Trabajo / Proyecto *</label>
-                <input type="text" id="projectInputTitle" class="form-input" placeholder="ej. Jarrón Escultórico 'Raíces' o Colección Otoño" required>
+                <label class="form-label">Título del Trabajo o Colección *</label>
+                <input type="text" id="projectInputTitle" class="form-input" placeholder="ej. Vajilla Completa Albaicín o Colección Otoño" required>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Descripción del Proyecto (Opcional)</label>
-                <textarea id="projectInputDesc" class="form-textarea" rows="3" placeholder="Explica los detalles, materiales utilizados o la historia de este trabajo..."></textarea>
+                <label class="form-label">Descripción del Proyecto o Proceso (Opcional)</label>
+                <textarea id="projectInputDesc" class="form-textarea" rows="3" placeholder="Explica las técnicas, materiales y el proceso de elaboración de esta pieza..."></textarea>
               </div>
 
               <div class="form-group">
-                <label class="form-label">Subir Fotografías y/o Vídeos *</label>
-                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                  <label class="btn btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 0.6rem;">
-                    <i class="fa-solid fa-paperclip"></i> Añadir archivo
+                <label class="form-label">Subir Fotografías y/o Vídeos del Proceso *</label>
+                <div style="display: flex; align-items: center; gap: 1.2rem; flex-wrap: wrap; background: var(--bg-subtle); padding: 1.2rem; border-radius: 12px; border: 1px dashed var(--border-color);">
+                  <label class="btn btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 0.6rem; border-radius: 8px;">
+                    <i class="fa-solid fa-paperclip"></i> Seleccionar Archivos
                     <input type="file" id="projectFileInput" accept="image/*,video/*" multiple style="display: none;" onchange="window.appUI.handleProjectFilesSelected(event)">
                   </label>
                   <span id="fileUploadStatus" style="font-size: 0.88rem; color: var(--text-muted);">Formatos aceptados: JPG, PNG, WEBP, MP4, MOV...</span>
@@ -559,110 +580,117 @@
               </div>
 
               <!-- Lista / Previsualización de archivos cargados -->
-              <div id="projectMediaPreviewList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.8rem; margin: 1.2rem 0;"></div>
+              <div id="projectMediaPreviewList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin: 1.4rem 0;"></div>
 
-              <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+              <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.8rem;">
                 <button type="button" class="btn btn-secondary" onclick="window.appUI.hideProjectForm()">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="btnSaveProject">
+                <button type="submit" class="btn btn-primary" id="btnSaveProject" style="font-weight: 700;">
                   <i class="fa-solid fa-check"></i> Guardar Trabajo
                 </button>
               </div>
             </form>
           </div>
 
-          <!-- Lista de Proyectos Existentes -->
-          <div id="projectsManagerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.2rem;">
+          <!-- Lista de Proyectos Existentes (Grid Amplio) -->
+          <div id="projectsManagerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem;">
             <!-- Renderizado dinámico desde JS -->
           </div>
         </div>
 
         <!-- Tab 3: Promociones -->
         <div id="tabPromos" class="shop-tab-content" style="display: none;">
-          <form id="promoForm">
-            <div class="form-group">
-              <label class="form-label">Título de la Promoción (ej. 15% Descuento con código ARTESANO15)</label>
-              <input type="text" id="promoTitle" class="form-input" placeholder="ej. 2x1 en talleres de cerámica los viernes" required>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Detalles / Condiciones de la oferta</label>
-              <textarea id="promoDetails" class="form-textarea" rows="2" placeholder="Válido mostrando este perfil en el taller o introduciendo el código en la web."></textarea>
-            </div>
-            <button type="submit" class="btn btn-gold" style="width: 100%;">
-              <i class="fa-solid fa-plus"></i> Publicar Promoción Destacada
-            </button>
-          </form>
+          <div class="dashboard-card">
+            <h4 class="dashboard-card-title">
+              <i class="fa-solid fa-tag" style="color: var(--warm-gold-hover);"></i> Publicar Promoción u Oferta Destacada
+            </h4>
+            <p style="color: var(--text-secondary); font-size: 0.92rem; margin-bottom: 1.5rem; line-height: 1.6;">
+              Las promociones activas aparecen de forma destacada en la cabecera de tu perfil público y muestran una etiqueta especial en el directorio principal.
+            </p>
+
+            <form id="promoForm">
+              <div class="form-group">
+                <label class="form-label">Título de la Oferta o Descuento *</label>
+                <input type="text" id="promoTitle" class="form-input" placeholder="ej. 15% de Descuento con código ARTESANO15 o 2x1 en talleres" required>
+              </div>
+              <div class="form-group" style="margin-bottom: 1.8rem;">
+                <label class="form-label">Condiciones o Instrucciones para Canjear</label>
+                <textarea id="promoDetails" class="form-textarea" rows="3" placeholder="Válido mostrando este perfil en el taller o contactando por WhatsApp."></textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end;">
+                <button type="submit" class="btn btn-gold" style="padding: 0.8rem 2rem; font-weight: 700; border-radius: 10px;">
+                  <i class="fa-solid fa-plus"></i> Publicar Promoción Destacada
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- Tab 4: Seguridad & Mi Cuenta -->
         <div id="tabSecurity" class="shop-tab-content" style="display: none;">
-          <div style="display: flex; flex-direction: column; gap: 2rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.8rem; margin-bottom: 2rem;" class="form-row">
             
             <!-- Cambiar Correo Electrónico -->
-            <div style="background: var(--bg-subtle); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div class="dashboard-card" style="margin-bottom: 0;">
               <h4 style="font-size: 1.15rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-envelope" style="color: var(--terracotta);"></i> Cambiar Correo Electrónico
               </h4>
-              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.2rem;">Actualiza el correo con el que inicias sesión y recibes notificaciones.</p>
+              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.4rem;">Actualiza el correo con el que inicias sesión.</p>
 
               <form id="changeEmailForm">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Nuevo Correo Electrónico *</label>
-                    <input type="email" id="inputNewEmail" class="form-input" placeholder="nuevo@correo.com" required>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Contraseña Actual (por seguridad) *</label>
-                    <input type="password" id="inputEmailCurrentPassword" class="form-input" placeholder="••••••••" required>
-                  </div>
+                <div class="form-group">
+                  <label class="form-label">Nuevo Correo Electrónico *</label>
+                  <input type="email" id="inputNewEmail" class="form-input" placeholder="nuevo@correo.com" required>
                 </div>
-                <button type="submit" class="btn btn-secondary" style="font-weight: 600;">
-                  <i class="fa-solid fa-check"></i> Actualizar Correo Electrónico
+                <div class="form-group" style="margin-bottom: 1.4rem;">
+                  <label class="form-label">Contraseña Actual *</label>
+                  <input type="password" id="inputEmailCurrentPassword" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="font-weight: 600; width: 100%; border-radius: 8px;">
+                  <i class="fa-solid fa-check"></i> Actualizar Correo
                 </button>
               </form>
             </div>
 
             <!-- Cambiar Contraseña -->
-            <div style="background: var(--bg-subtle); padding: 1.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div class="dashboard-card" style="margin-bottom: 0;">
               <h4 style="font-size: 1.15rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.5rem;">
                 <i class="fa-solid fa-key" style="color: var(--warm-gold);"></i> Cambiar Contraseña
               </h4>
-              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.2rem;">Establece una nueva clave de acceso segura para proteger tu taller.</p>
+              <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 1.4rem;">Establece una nueva clave de acceso segura.</p>
 
               <form id="changePasswordForm">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label">Contraseña Actual *</label>
-                    <input type="password" id="inputPasswordCurrent" class="form-input" placeholder="••••••••" required>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">Nueva Contraseña (mínimo 6 caracteres) *</label>
-                    <input type="password" id="inputPasswordNew" class="form-input" placeholder="••••••••" minlength="6" required>
-                  </div>
+                <div class="form-group">
+                  <label class="form-label">Contraseña Actual *</label>
+                  <input type="password" id="inputPasswordCurrent" class="form-input" placeholder="••••••••" required>
                 </div>
-                <button type="submit" class="btn btn-secondary" style="font-weight: 600;">
-                  <i class="fa-solid fa-shield-halved"></i> Guardar Nueva Contraseña
+                <div class="form-group" style="margin-bottom: 1.4rem;">
+                  <label class="form-label">Nueva Contraseña (mín. 6 caracteres) *</label>
+                  <input type="password" id="inputPasswordNew" class="form-input" placeholder="••••••••" minlength="6" required>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="font-weight: 600; width: 100%; border-radius: 8px;">
+                  <i class="fa-solid fa-shield-halved"></i> Guardar Contraseña
                 </button>
               </form>
             </div>
 
-            <!-- ZONA DE PELIGRO: Eliminar Cuenta & Todos los Registros -->
-            <div style="background: #FFF5F5; border: 1.5px solid #FFCDD2; padding: 1.5rem; border-radius: var(--radius-md);">
-              <div style="display: flex; align-items: flex-start; gap: 1rem;">
-                <div style="width: 42px; height: 42px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">
-                  <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
-                <div style="flex: 1;">
-                  <h4 style="color: #C62828; font-size: 1.15rem; font-weight: 700; margin-bottom: 0.3rem;">Zona de Peligro: Eliminar Cuenta Permanentemente</h4>
-                  <p style="color: #5D4037; font-size: 0.88rem; line-height: 1.6; margin-bottom: 1rem;">
-                    Esta acción es <strong>irreversible</strong>. Se eliminarán de forma definitiva tu perfil de artesano, todos los proyectos publicados, las fotografías y vídeos subidos a Firebase Storage, las reseñas, comentarios y tu cuenta de acceso.
-                  </p>
-                  <button type="button" class="btn" style="background: #D32F2F; color: #FFF; border: none; font-weight: 600; padding: 0.65rem 1.4rem; border-radius: 8px; cursor: pointer;" onclick="window.appUI.openDeleteAccountModal()">
-                    <i class="fa-solid fa-trash-can"></i> Eliminar mi Cuenta y Todos mis Datos
-                  </button>
-                </div>
+          </div>
+
+          <!-- ZONA DE PELIGRO: Eliminar Cuenta & Todos los Registros -->
+          <div style="background: #FFF5F5; border: 1.5px solid #FFCDD2; padding: 1.8rem 2.2rem; border-radius: 20px;">
+            <div style="display: flex; align-items: flex-start; gap: 1.2rem; flex-wrap: wrap;">
+              <div style="width: 46px; height: 46px; border-radius: 50%; background: #FFEBEE; color: #D32F2F; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+              </div>
+              <div style="flex: 1; min-width: 260px;">
+                <h4 style="color: #C62828; font-size: 1.15rem; font-weight: 700; margin-bottom: 0.3rem;">Zona de Peligro: Eliminar Cuenta Permanentemente</h4>
+                <p style="color: #5D4037; font-size: 0.9rem; line-height: 1.6; margin-bottom: 1.2rem;">
+                  Esta acción es <strong>irreversible</strong>. Se eliminarán de forma definitiva tu perfil de artesano, todos los proyectos publicados, las fotografías y vídeos de Firebase Storage, las reseñas, comentarios y tu cuenta de acceso.
+                </p>
+                <button type="button" class="btn" style="background: #D32F2F; color: #FFF; border: none; font-weight: 700; padding: 0.75rem 1.6rem; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="window.appUI.openDeleteAccountModal()">
+                  <i class="fa-solid fa-trash-can"></i> Eliminar mi Cuenta y Todos mis Datos
+                </button>
               </div>
             </div>
-
           </div>
         </div>
 

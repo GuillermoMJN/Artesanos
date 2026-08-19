@@ -1096,6 +1096,86 @@ h1, h2, h3, h4 {
   to { transform: translateX(0); opacity: 1; }
 }
 
+/* ── Modal "Gestionar Mi Tienda" (Gran Espacio & Visualmente Agradable) ── */
+#shopManageModal .modal-card {
+  max-width: 1260px;
+  width: 95vw;
+  height: 90vh;
+  max-height: 90vh;
+  border-radius: 28px;
+  background: #FCFAF8;
+  border: 1px solid rgba(192, 108, 76, 0.15);
+  box-shadow: 0 35px 90px rgba(44, 29, 17, 0.28);
+}
+
+#shopManageModal .modal-body {
+  padding: 2.2rem 3rem 2.8rem 3rem;
+}
+
+/* Barra de pestañas segmentada moderna (Sticky para máxima comodidad) */
+.shop-tabs-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: #FCFAF8;
+  padding: 0.4rem 0 0.8rem 0;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(230, 221, 208, 0.7);
+}
+
+.shop-tabs-nav .tab-btn {
+  padding: 0.75rem 1.4rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #6D4C41;
+  background: #F0EAE1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.shop-tabs-nav .tab-btn:hover {
+  color: var(--terracotta);
+  background: #FFFFFF;
+  border-color: var(--terracotta);
+}
+
+.shop-tabs-nav .tab-btn.active {
+  color: var(--primary-dark);
+  background: #FFFFFF;
+  border-color: var(--terracotta);
+  box-shadow: 0 4px 14px rgba(62, 39, 35, 0.08);
+  font-weight: 700;
+}
+
+/* Tarjetas y Contenedores Interiores del Panel */
+.dashboard-card {
+  background: #FFFFFF;
+  border: 1px solid #EBE4DA;
+  border-radius: 20px;
+  padding: 1.8rem 2.2rem;
+  box-shadow: 0 4px 20px rgba(62, 39, 35, 0.03);
+  margin-bottom: 1.8rem;
+}
+
+.dashboard-card-title {
+  font-size: 1.2rem;
+  color: var(--primary-dark);
+  font-weight: 700;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
 /* Responsive Breakpoints */
 @media (max-width: 992px) {
   .hero-title { font-size: 3rem; }
