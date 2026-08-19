@@ -8,6 +8,7 @@ class AppController {
     this.authRepo = new FirebaseAuthRepository();
     this.artisans = [];
     this.activeCategory = 'all';
+    this.selectedLocation = 'all';
     this.searchQuery = '';
     this.sortBy = 'featured';
     this.currentUser = null;
@@ -19,6 +20,7 @@ class AppController {
     this.playFirstTimeIntro();
     this.artisans = await this.artisanRepo.getAllArtisans();
     this.updateStatsCount();
+    this.renderLocationFilterOptions();
     this.renderCategories();
     this.renderArtisans();
     this.setupEventListeners();
@@ -207,6 +209,36 @@ class AppController {
     }
   }
 
+  renderLocationFilterOptions() {
+    const select = document.getElementById('locationFilterSelect');
+    if (!select) return;
+
+    const currentVal = this.selectedLocation || 'all';
+    const locationsSet = new Set();
+
+    this.artisans.forEach(a => {
+      if (a.location && a.location.trim()) {
+        const cleanLoc = a.location.trim();
+        locationsSet.add(cleanLoc);
+      }
+    });
+
+    const sortedLocations = Array.from(locationsSet).sort((a, b) => a.localeCompare(b, 'es'));
+
+    let html = `<option value="all" ${currentVal === 'all' ? 'selected' : ''}>Todas las ubicaciones (${this.artisans.length})</option>`;
+    sortedLocations.forEach(loc => {
+      const count = this.artisans.filter(a => a.location && a.location.trim().toLowerCase() === loc.toLowerCase()).length;
+      html += `<option value="${loc}" ${currentVal === loc ? 'selected' : ''}>${loc} (${count})</option>`;
+    });
+
+    select.innerHTML = html;
+  }
+
+  filterByLocation(loc) {
+    this.selectedLocation = loc || 'all';
+    this.renderArtisans();
+  }
+
   renderArtisans() {
     const directoryGrid = document.getElementById('directoryGrid');
     const resultsCounter = document.getElementById('resultsCount');
@@ -214,12 +246,14 @@ class AppController {
 
     let filtered = this.artisans.filter(item => {
       const matchesCategory = this.activeCategory === 'all' || item.category === this.activeCategory;
+      const matchesLocation = this.selectedLocation === 'all' ||
+        (item.location && item.location.toLowerCase().includes(this.selectedLocation.toLowerCase()));
       const matchesSearch = this.searchQuery === '' ||
         item.name.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.trade.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.location.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
         item.description.toLowerCase().includes(this.searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesLocation && matchesSearch;
     });
 
     if (this.sortBy === 'rating') {
@@ -238,8 +272,8 @@ class AppController {
       directoryGrid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
           <i class="fa-solid fa-compass" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-          <h3 style="margin-bottom: 0.5rem; color: var(--primary-dark);">No encontramos artesanos con esa búsqueda</h3>
-          <p style="color: var(--text-secondary);">Prueba con otra palabra clave o selecciona otra categoría.</p>
+          <h3 style="margin-bottom: 0.5rem; color: var(--primary-dark);">No encontramos artesanos con esa búsqueda o ubicación</h3>
+          <p style="color: var(--text-secondary);">Prueba con otra palabra clave, cambia de ubicación o selecciona otra categoría.</p>
         </div>
       `;
       return;
@@ -457,6 +491,12 @@ class AppController {
       const editAllowWhatsapp = document.getElementById('editAllowWhatsapp');
       if (editAllowWhatsapp) editAllowWhatsapp.checked = p.allowWhatsapp !== false;
 
+      const editAcceptsCustomOrders = document.getElementById('editAcceptsCustomOrders');
+      if (editAcceptsCustomOrders) editAcceptsCustomOrders.checked = p.acceptsCustomOrders !== false;
+
+      const editIsVisitable = document.getElementById('editIsVisitable');
+      if (editIsVisitable) editIsVisitable.checked = p.isVisitable === true;
+
       if (editName) editName.value = p.name || '';
       if (editTrade) editTrade.value = p.trade || '';
       if (editCategory) editCategory.value = p.category || 'ceramica';
@@ -533,6 +573,9 @@ class AppController {
     document.getElementById('editingProjectIdx').value = "-1";
     document.getElementById('projectFormTitle').textContent = "Añadir Nuevo Trabajo";
     document.getElementById('projectInputTitle').value = "";
+    document.getElementById('projectInputPrice').value = "";
+    document.getElementById('projectInputMaterials').value = "";
+    document.getElementById('projectInputTimeSpent').value = "";
     document.getElementById('projectInputDesc').value = "";
     document.getElementById('projectMediaPreviewList').innerHTML = "";
     document.getElementById('fileUploadStatus').textContent = "Formatos aceptados: JPG, PNG, WEBP, MP4, MOV...";
@@ -615,12 +658,15 @@ class AppController {
     if (!this.currentArtisanProfile) return;
 
     const title = document.getElementById('projectInputTitle').value;
+    const price = (document.getElementById('projectInputPrice') && document.getElementById('projectInputPrice').value.trim()) || "";
+    const materials = (document.getElementById('projectInputMaterials') && document.getElementById('projectInputMaterials').value.trim()) || "";
+    const timeSpent = (document.getElementById('projectInputTimeSpent') && document.getElementById('projectInputTimeSpent').value.trim()) || "";
     const desc = document.getElementById('projectInputDesc').value;
     const editingIdx = parseInt(document.getElementById('editingProjectIdx').value, 10);
 
     const mediaFiles = this.tempProjectFiles || [];
     if (mediaFiles.length === 0) {
-      alert("Por favor pulsa 'Añadir archivo' y sube al menos una fotografía o vídeo para este trabajo.");
+      alert("Por favor pulsa 'Seleccionar Archivos' y sube al menos una fotografía o vídeo para este trabajo.");
       return;
     }
 
@@ -634,6 +680,9 @@ class AppController {
 
     const projectData = {
       title,
+      price,
+      materials,
+      timeSpent,
       category: this.currentArtisanProfile.categoryLabel || "Artesanía",
       date: "Publicación reciente",
       mainImage,
@@ -730,6 +779,9 @@ class AppController {
     document.getElementById('editingProjectIdx').value = idx;
     document.getElementById('projectFormTitle').textContent = "Editar Trabajo";
     document.getElementById('projectInputTitle').value = proj.title;
+    if (document.getElementById('projectInputPrice')) document.getElementById('projectInputPrice').value = proj.price || "";
+    if (document.getElementById('projectInputMaterials')) document.getElementById('projectInputMaterials').value = proj.materials || "";
+    if (document.getElementById('projectInputTimeSpent')) document.getElementById('projectInputTimeSpent').value = proj.timeSpent || "";
     document.getElementById('projectInputDesc').value = proj.desc || "";
 
     if (proj.steps) {
@@ -884,6 +936,8 @@ class AppController {
       const websiteInput = document.getElementById('inputWebsite');
       const website = websiteInput ? websiteInput.value : '';
       const description = document.getElementById('inputDescription').value;
+      const acceptsCustomOrders = document.getElementById('inputAcceptsCustomOrders') ? document.getElementById('inputAcceptsCustomOrders').checked : true;
+      const isVisitable = document.getElementById('inputIsVisitable') ? document.getElementById('inputIsVisitable').checked : false;
 
       const newArtisan = await this.artisanRepo.createArtisan({
         id: Date.now(),
@@ -897,11 +951,14 @@ class AppController {
         email: authEmail,
         website,
         description,
+        acceptsCustomOrders,
+        isVisitable,
         image: 'images/default_avatar.svg'
       });
 
       this.artisans.unshift(newArtisan);
       this.currentArtisanProfile = newArtisan;
+      this.renderLocationFilterOptions();
       this.renderCategories();
       this.renderArtisans();
       ToastComponent.show(`¡Bienvenido, ${name}! Tu cuenta y taller artesano están listos.`);
@@ -931,7 +988,9 @@ class AppController {
       website: document.getElementById('editWebsite').value,
       address: document.getElementById('editAddress').value,
       description: document.getElementById('editDescription').value,
-      allowWhatsapp: document.getElementById('editAllowWhatsapp') ? document.getElementById('editAllowWhatsapp').checked : true
+      allowWhatsapp: document.getElementById('editAllowWhatsapp') ? document.getElementById('editAllowWhatsapp').checked : true,
+      acceptsCustomOrders: document.getElementById('editAcceptsCustomOrders') ? document.getElementById('editAcceptsCustomOrders').checked : true,
+      isVisitable: document.getElementById('editIsVisitable') ? document.getElementById('editIsVisitable').checked : false
     };
 
     if (this.currentArtisanProfile.docId) {
@@ -939,6 +998,7 @@ class AppController {
         await this.artisanRepo.updateArtisan(this.currentArtisanProfile.docId, updatedData);
         this.currentArtisanProfile = { ...this.currentArtisanProfile, ...updatedData };
         this.artisans = await this.artisanRepo.getAllArtisans();
+        this.renderLocationFilterOptions();
         this.renderArtisans();
         this.closeModal('shopManageModal');
         ToastComponent.show('💾 ¡Los datos de tu taller han sido actualizados!');

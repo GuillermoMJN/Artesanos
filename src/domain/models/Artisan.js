@@ -24,9 +24,10 @@ export class Artisan {
     hours = 'Consultar al artesano',
     tags = ['Artesanal', 'Hecho a mano'],
     promo = null,
-    gallery = [],
     projects = [],
-    allowWhatsapp = true
+    allowWhatsapp = true,
+    acceptsCustomOrders = true,
+    isVisitable = false
   }) {
     this.id = id;
     this.ownerId = ownerId;
@@ -51,6 +52,8 @@ export class Artisan {
     this.gallery = gallery;
     this.projects = projects;
     this.allowWhatsapp = allowWhatsapp !== undefined ? allowWhatsapp : true;
+    this.acceptsCustomOrders = acceptsCustomOrders !== undefined ? acceptsCustomOrders : true;
+    this.isVisitable = isVisitable !== undefined ? isVisitable : false;
   }
 
   getCategoryLabel(cat) {

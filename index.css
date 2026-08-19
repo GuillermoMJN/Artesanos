@@ -1528,3 +1528,96 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ── Insignias de Funcionalidades del Taller (Encargos & Visitable) ── */
+.badge-feature {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
+  line-height: 1.2;
+}
+
+.badge-custom-orders {
+  background: rgba(197, 160, 89, 0.14);
+  color: #7D5C14;
+  border: 1px solid rgba(197, 160, 89, 0.45);
+}
+
+.badge-visitable {
+  background: rgba(192, 108, 76, 0.12);
+  color: var(--terracotta);
+  border: 1px solid rgba(192, 108, 76, 0.35);
+}
+
+/* ── Precios y Ficha Técnica de Proyectos ── */
+.project-card-price-badge {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+  background: rgba(44, 29, 17, 0.85);
+  color: #FFF;
+  backdrop-filter: blur(6px);
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.project-price-tag {
+  background: rgba(197, 160, 89, 0.18);
+  color: #7D5C14;
+  border: 1.5px solid var(--warm-gold);
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.project-tech-sheet {
+  background: #FFFFFF;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  box-shadow: 0 4px 15px rgba(62, 39, 35, 0.03);
+}
+
+.tech-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.tech-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.tech-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tech-val {
+  font-size: 0.95rem;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+

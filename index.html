@@ -150,6 +150,12 @@
         </div>
         <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
           <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <label for="locationFilterSelect" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);"><i class="fa-solid fa-location-dot"></i> Ubicación:</label>
+            <select id="locationFilterSelect" onchange="window.appUI.filterByLocation(this.value)" style="padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit; font-size: 0.9rem; color: var(--primary-dark); cursor: pointer;">
+              <option value="all">Todas las ubicaciones</option>
+            </select>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
             <label for="sortBySelect" style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);"><i class="fa-solid fa-sort"></i> Ordenar por:</label>
             <select id="sortBySelect" style="padding: 0.5rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--card-bg); font-family: inherit; font-size: 0.9rem; color: var(--primary-dark); cursor: pointer;">
               <option value="featured">Destacados</option>
@@ -404,6 +410,18 @@
               <label class="form-label">Descripción de tu trabajo e Historia *</label>
               <textarea id="inputDescription" class="form-textarea" rows="3" placeholder="Cuéntanos qué haces, qué materiales utilizas y qué hace especial a tu negocio..."></textarea>
             </div>
+
+            <!-- Opciones extra del taller -->
+            <div style="background: var(--bg-subtle); padding: 0.9rem; border-radius: 10px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.6rem; margin-top: 0.8rem;">
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--primary-dark); font-weight: 600;">
+                <input type="checkbox" id="inputAcceptsCustomOrders" checked style="width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer;">
+                <span>✨ <strong>Acepto Encargos Personalizados</strong> (Piezas y trabajos a medida bajo petición)</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--primary-dark); font-weight: 600;">
+                <input type="checkbox" id="inputIsVisitable" style="width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer;">
+                <span>🏛️ <strong>Taller Visitable</strong> (Espacio físico abierto al público o visitas concertadas)</span>
+              </label>
+            </div>
           </div>
 
           <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
@@ -540,21 +558,55 @@
               </div>
             </div>
 
-            <!-- Ajuste WhatsApp destacado -->
-            <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid rgba(37, 211, 102, 0.25); border-radius: 10px; padding: 0.75rem 1.1rem; margin-bottom: 1.1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem;">
-              <div style="display: flex; align-items: center; gap: 0.7rem;">
-                <div style="width: 32px; height: 32px; border-radius: 50%; background: #25D366; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;">
-                  <i class="fa-brands fa-whatsapp"></i>
+            <!-- Ajustes destacados del Taller -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.8rem; margin-bottom: 1.1rem;">
+              <!-- Toggle WhatsApp -->
+              <div style="background: rgba(37, 211, 102, 0.08); border: 1.5px solid rgba(37, 211, 102, 0.25); border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <div style="width: 30px; height: 30px; border-radius: 50%; background: #25D366; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;">
+                    <i class="fa-brands fa-whatsapp"></i>
+                  </div>
+                  <div>
+                    <strong style="color: var(--primary-dark); font-size: 0.82rem; display: block;">Botón de WhatsApp</strong>
+                    <span style="color: var(--text-secondary); font-size: 0.74rem;">Contacto directo a tu app.</span>
+                  </div>
                 </div>
-                <div>
-                  <strong style="color: var(--primary-dark); font-size: 0.85rem; display: block;">Botón de Contacto por WhatsApp</strong>
-                  <span style="color: var(--text-secondary); font-size: 0.78rem;">Permite que los compradores te contacten directamente a tu app de WhatsApp.</span>
-                </div>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                  <input type="checkbox" id="editAllowWhatsapp" checked style="width: 17px; height: 17px; accent-color: #25D366; cursor: pointer;">
+                </label>
               </div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.85rem; color: var(--primary-dark); font-weight: 700;">
-                <input type="checkbox" id="editAllowWhatsapp" checked style="width: 17px; height: 17px; accent-color: #25D366; cursor: pointer;">
-                Activar botón en mi perfil
-              </label>
+
+              <!-- Toggle Encargos a Medida -->
+              <div style="background: rgba(197, 160, 89, 0.1); border: 1.5px solid rgba(197, 160, 89, 0.3); border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--warm-gold); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                  </div>
+                  <div>
+                    <strong style="color: var(--primary-dark); font-size: 0.82rem; display: block;">Encargos a Medida</strong>
+                    <span style="color: var(--text-secondary); font-size: 0.74rem;">Aceptas piezas personalizadas.</span>
+                  </div>
+                </div>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                  <input type="checkbox" id="editAcceptsCustomOrders" checked style="width: 17px; height: 17px; accent-color: var(--warm-gold); cursor: pointer;">
+                </label>
+              </div>
+
+              <!-- Toggle Taller Visitable -->
+              <div style="background: rgba(192, 108, 76, 0.08); border: 1.5px solid rgba(192, 108, 76, 0.25); border-radius: 10px; padding: 0.75rem 1rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                  <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--terracotta); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; flex-shrink: 0;">
+                    <i class="fa-solid fa-store"></i>
+                  </div>
+                  <div>
+                    <strong style="color: var(--primary-dark); font-size: 0.82rem; display: block;">Taller Visitable</strong>
+                    <span style="color: var(--text-secondary); font-size: 0.74rem;">Abierto a visitas con cita o tienda.</span>
+                  </div>
+                </div>
+                <label style="display: flex; align-items: center; cursor: pointer;">
+                  <input type="checkbox" id="editIsVisitable" style="width: 17px; height: 17px; accent-color: var(--terracotta); cursor: pointer;">
+                </label>
+              </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 1rem;">
@@ -601,14 +653,31 @@
             <form id="projectEditorForm">
               <input type="hidden" id="editingProjectIdx" value="-1">
 
-              <div class="form-group">
-                <label class="form-label">Título del Trabajo o Colección *</label>
-                <input type="text" id="projectInputTitle" class="form-input" placeholder="ej. Vajilla Completa Albaicín o Colección Otoño" required>
+              <div class="form-row" style="margin-bottom: 0.8rem;">
+                <div class="form-group" style="margin-bottom: 0; flex: 2;">
+                  <label class="form-label">Título del Trabajo o Colección *</label>
+                  <input type="text" id="projectInputTitle" class="form-input" placeholder="ej. Vajilla Completa Albaicín o Colección Otoño" required>
+                </div>
+                <div class="form-group" style="margin-bottom: 0; flex: 1;">
+                  <label class="form-label">Precio Orientativo (Opcional)</label>
+                  <input type="text" id="projectInputPrice" class="form-input" placeholder="ej. Desde 45€ / 120€">
+                </div>
               </div>
 
-              <div class="form-group">
+              <div class="form-row" style="margin-bottom: 0.8rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Materiales Principales (Opcional)</label>
+                  <input type="text" id="projectInputMaterials" class="form-input" placeholder="ej. Barro rojo autóctono, Esmalte natural">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label">Tiempo de Elaboración (Opcional)</label>
+                  <input type="text" id="projectInputTimeSpent" class="form-input" placeholder="ej. 12 días de trabajo manual">
+                </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 0.9rem;">
                 <label class="form-label">Descripción del Proyecto o Proceso (Opcional)</label>
-                <textarea id="projectInputDesc" class="form-textarea" rows="2" placeholder="Explica las técnicas, materiales y el proceso de elaboración de esta pieza..."></textarea>
+                <textarea id="projectInputDesc" class="form-textarea" rows="2" placeholder="Explica las técnicas, inspiración y el proceso de elaboración de esta pieza..."></textarea>
               </div>
 
               <div class="form-group">
