@@ -33,7 +33,6 @@ import {
   EmailAuthProvider
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
-import { initialArtisansSeed } from '../mock/initialArtisansData.js';
 
 export class FirebaseArtisanRepository {
   async uploadProfileImage(file, artisanUid = 'anon') {
@@ -154,23 +153,13 @@ export class FirebaseArtisanRepository {
       }
     }
 
-    // Incluir artesanos iniciales de la semilla para garantizar disponibilidad si no se hallan en Firestore
-    const existingIds = new Set(artisans.map(a => String(a.id)));
-    for (const seedItem of initialArtisansSeed) {
-      if (!existingIds.has(String(seedItem.id))) {
-        artisans.push(new Artisan(seedItem));
-      }
-    }
-
     return artisans;
   }
 
   async getArtisanById(artisanId) {
-    const all = await this.getAllArtisans();
-    if (!artisanId) {
-      return all.length > 0 ? all[0] : (initialArtisansSeed.length > 0 ? new Artisan(initialArtisansSeed[0]) : null);
-    }
+    if (!artisanId) return null;
 
+    const all = await this.getAllArtisans();
     const found = all.find(a => String(a.id) === String(artisanId) || (a.docId && String(a.docId) === String(artisanId)));
     if (found) return found;
 
@@ -209,10 +198,7 @@ export class FirebaseArtisanRepository {
       }
     }
 
-    const seed = initialArtisansSeed.find(a => String(a.id) === String(artisanId));
-    if (seed) return new Artisan(seed);
-
-    return all.length > 0 ? all[0] : (initialArtisansSeed.length > 0 ? new Artisan(initialArtisansSeed[0]) : null);
+    return null;
   }
 
   async getArtisanByOwnerId(uid) {
