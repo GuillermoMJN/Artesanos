@@ -534,7 +534,7 @@ export class FirebaseAuthRepository {
     return user;
   }
 
-  async signInWithGoogle() {
+  async signInWithGoogle(intendedRole = 'client') {
     if (!auth) throw new Error("Firebase Auth no inicializado");
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
@@ -547,9 +547,9 @@ export class FirebaseAuthRepository {
       profile = {
         uid: user.uid,
         email: user.email || '',
-        displayName: user.displayName || 'Usuario Google',
+        displayName: user.displayName || (intendedRole === 'artisan' ? 'Artesano Google' : 'Usuario Google'),
         photoURL: user.photoURL || '',
-        role: 'client',
+        role: intendedRole,
         createdAt: new Date().toISOString()
       };
       await this.saveUserProfile(user.uid, profile);

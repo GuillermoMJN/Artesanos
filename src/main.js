@@ -797,7 +797,8 @@ class AppController {
 
   async handleGoogleLogin() {
     try {
-      const user = await this.authRepo.signInWithGoogle();
+      const role = (document.getElementById('registerAccountRole') && document.getElementById('registerAccountRole').value) || 'client';
+      const user = await this.authRepo.signInWithGoogle(role);
       this.closeModal('loginModal');
       this.closeModal('registerModal');
       const name = (user.profile && user.profile.displayName) || user.displayName || user.email;
