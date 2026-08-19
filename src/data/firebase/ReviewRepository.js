@@ -159,6 +159,9 @@ export class ReviewRepository {
       this._saveLocalProjectComment({ id: savedId, ...newComment });
     }
 
+    return { id: savedId, ...newComment };
+  }
+
   /**
    * Añade una respuesta del artesano a una reseña existente
    */

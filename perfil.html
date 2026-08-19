@@ -471,15 +471,9 @@
     import { ReviewRepository } from './src/data/firebase/ReviewRepository.js';
     import { ToastComponent } from './src/presentation/components/ToastComponent.js';
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    async function initProfilePage() {
       const urlParams = new URLSearchParams(window.location.search);
       const artisanId = urlParams.get('id');
-
-      if (!artisanId) {
-        alert('No se especificó ningún artesano.');
-        window.location.href = 'index.html';
-        return;
-      }
 
       const repo = new FirebaseArtisanRepository();
       const authRepo = new FirebaseAuthRepository();
@@ -488,13 +482,23 @@
       let currentLoggedUser = null;
       let activeProjectIdForComments = null;
 
-      const artisans = await repo.getAllArtisans();
-      const artisan = artisans.find(a => String(a.id) === String(artisanId));
+      let artisan = await repo.getArtisanById(artisanId);
 
       if (!artisan) {
-        alert('Artesano no encontrado.');
-        window.location.href = 'index.html';
-        return;
+        console.warn("Artesano no encontrado para id:", artisanId);
+        const allArtisans = await repo.getAllArtisans();
+        if (allArtisans.length > 0) {
+          artisan = allArtisans[0];
+        } else {
+          document.body.innerHTML = `
+            <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; padding: 2rem;">
+              <h2 style="color: #3E2723;">Artesano no encontrado</h2>
+              <p style="color: #6D4C41; margin-bottom: 1.5rem;">No pudimos cargar la información de este taller artesanal.</p>
+              <a href="index.html" class="btn btn-primary" style="text-decoration: none; padding: 0.8rem 1.6rem; background: #C06C4C; color: #FFF; border-radius: 8px;">← Volver al Directorio</a>
+            </div>
+          `;
+          return;
+        }
       }
 
       function isOwnerUser() {
@@ -555,15 +559,20 @@
       });
 
       // Rellenar cabecera y hero
-      document.title = `${artisan.name} | Perfil de Artesano`;
-      document.getElementById('profileAvatar').src = artisan.image;
-      document.getElementById('profileBg').style.backgroundImage = `url('${artisan.image}')`;
-      document.getElementById('profileName').textContent = artisan.name;
-      document.getElementById('profileTrade').textContent = artisan.trade;
-      document.getElementById('profileCategory').textContent = artisan.categoryLabel;
-      document.getElementById('profileDesc').textContent = artisan.description;
-      document.getElementById('profileLocation').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${artisan.location}`;
-      document.getElementById('profileExperience').innerHTML = `<i class="fa-solid fa-certificate"></i> ${artisan.experience}`;
+      const safeName = artisan.name || 'Artesano';
+      const safeImage = artisan.image || 'images/ceramics_artisan_1786534790567.png';
+      const cleanPhone = (artisan.phone || '').replace(/[^0-9]/g, '');
+      const isWhatsappAllowed = artisan.allowWhatsapp !== false && cleanPhone.length > 0;
+
+      document.title = `${safeName} | Perfil de Artesano`;
+      document.getElementById('profileAvatar').src = safeImage;
+      document.getElementById('profileBg').style.backgroundImage = `url('${safeImage}')`;
+      document.getElementById('profileName').textContent = safeName;
+      document.getElementById('profileTrade').textContent = artisan.trade || 'Artesanía';
+      document.getElementById('profileCategory').textContent = artisan.categoryLabel || 'Artesano verificado';
+      document.getElementById('profileDesc').textContent = artisan.description || '';
+      document.getElementById('profileLocation').innerHTML = `<i class="fa-solid fa-location-dot"></i> ${artisan.location || 'España'}`;
+      document.getElementById('profileExperience').innerHTML = `<i class="fa-solid fa-certificate"></i> ${artisan.experience || 'Artesano verificado'}`;
 
       function updateRatingUI(rating, count) {
         const num = Number(rating || 5.0).toFixed(1);
@@ -584,8 +593,15 @@
 
       updateRatingUI(artisan.rating, artisan.reviewsCount || 0);
 
-      // Botones contacto
-      document.getElementById('btnWhatsapp').href = `https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}`;
+      // Botón WhatsApp (solo si el artesano lo permite y tiene teléfono válido)
+      const btnWa = document.getElementById('btnWhatsapp');
+      if (isWhatsappAllowed) {
+        btnWa.href = `https://wa.me/${cleanPhone}`;
+        btnWa.style.display = 'inline-block';
+      } else {
+        btnWa.style.display = 'none';
+      }
+
       if (artisan.website) {
         const btnWeb = document.getElementById('btnWebsite');
         btnWeb.href = artisan.website;
@@ -604,36 +620,43 @@
               </div>
               <p style="color: var(--text-primary); font-size: 1rem; margin-top: 0.3rem;">${artisan.promo.details || ''}</p>
             </div>
-            <a href="https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}?text=Hola,%20quisiera%20aprovechar%20la%20oferta:%20${encodeURIComponent(artisan.promo.title)}" target="_blank" class="btn btn-gold">
-              Reclamar Oferta por WhatsApp
-            </a>
+            ${isWhatsappAllowed ? `
+              <a href="https://wa.me/${cleanPhone}?text=Hola,%20quisiera%20aprovechar%20la%20oferta:%20${encodeURIComponent(artisan.promo.title)}" target="_blank" class="btn btn-gold">
+                Reclamar Oferta por WhatsApp
+              </a>
+            ` : ''}
           </div>
         `;
       }
 
       // Proyectos y Galería Interactiva
       const projectsGrid = document.getElementById('projectsGrid');
-      const hasProjects = artisan.projects && artisan.projects.length > 0;
-      
-      const projectItems = hasProjects ? artisan.projects : (artisan.gallery && artisan.gallery.length > 0 ? artisan.gallery.map((g, i) => ({
-        id: `g_${i}`,
-        title: g.title || `Proyecto #${i + 1}`,
-        category: artisan.categoryLabel,
-        date: "Ficha del Taller",
-        mainImage: g.url || artisan.image,
-        desc: g.desc || "Fotografía original del taller y piezas elaboradas a mano.",
-        steps: [
-          { title: "Detalle del Proceso", img: g.url || artisan.image, desc: g.desc || "Elaboración en taller artesanal." }
-        ]
-      })) : [{
-        id: "p_default",
-        title: "Proceso de Elaboración Artesanal",
-        category: artisan.categoryLabel,
-        date: "Reciente",
-        mainImage: artisan.image,
-        desc: "Muestra de técnicas manuales aplicadas en la creación de cada obra.",
-        steps: [{ title: "Fase de Creación", img: artisan.image, desc: "Trabajo minucioso hecho a mano." }]
-      }];
+      let projectItems = [];
+      if (artisan.projects && artisan.projects.length > 0) {
+        projectItems = artisan.projects;
+      } else if (artisan.gallery && artisan.gallery.length > 0) {
+        projectItems = artisan.gallery.map((g, i) => ({
+          id: `g_${i}`,
+          title: g.title || `Proyecto #${i + 1}`,
+          category: artisan.categoryLabel || 'Artesanía',
+          date: "Ficha del Taller",
+          mainImage: g.url || artisan.image,
+          desc: g.desc || "Fotografía original del taller y piezas elaboradas a mano.",
+          steps: [
+            { title: "Detalle del Proceso", img: g.url || artisan.image, desc: g.desc || "Elaboración en taller artesanal." }
+          ]
+        }));
+      } else {
+        projectItems = [{
+          id: "p_default",
+          title: "Proceso de Elaboración Artesanal",
+          category: artisan.categoryLabel || 'Artesanía',
+          date: "Reciente",
+          mainImage: artisan.image,
+          desc: "Muestra de técnicas manuales aplicadas en la creación de cada obra.",
+          steps: [{ title: "Fase de Creación", img: artisan.image, desc: "Trabajo minucioso hecho a mano." }]
+        }];
+      }
 
       window.currentArtisanProjects = projectItems;
 
@@ -722,7 +745,13 @@
           }
         }
 
-        const reviews = await reviewRepo.getArtisanReviews(artisan.id);
+        let reviews = [];
+        try {
+          reviews = await reviewRepo.getArtisanReviews(artisan.id);
+        } catch (rErr) {
+          console.warn("Error leyendo reseñas:", rErr);
+          reviews = [];
+        }
 
         if (reviews.length === 0) {
           listContainer.innerHTML = `
@@ -1115,16 +1144,22 @@
       };
 
       // Bio & Info
-      document.getElementById('profileFullStory').textContent = artisan.fullStory || artisan.description;
-      document.getElementById('contactPhone').textContent = artisan.phone;
-      document.getElementById('contactEmail').textContent = artisan.email;
-      document.getElementById('contactAddress').textContent = `${artisan.address} (${artisan.location})`;
-      document.getElementById('contactHours').textContent = artisan.hours;
+      document.getElementById('profileFullStory').textContent = artisan.fullStory || artisan.description || 'Sin historia detallada registrada.';
+      document.getElementById('contactPhone').textContent = artisan.phone || 'No especificado';
+      document.getElementById('contactEmail').textContent = artisan.email || 'No especificado';
+      document.getElementById('contactAddress').textContent = `${artisan.address || 'Taller artesanal'} (${artisan.location || 'España'})`;
+      document.getElementById('contactHours').textContent = artisan.hours || 'Consultar con el artesano';
 
       if (artisan.tags) {
         document.getElementById('profileTags').innerHTML = artisan.tags.map(t => `<span class="hero-badge" style="margin:0;">#${t}</span>`).join('');
       }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initProfilePage);
+    } else {
+      initProfilePage();
+    }
   </script>
 </body>
 </html>

@@ -349,9 +349,11 @@ class AppController {
         </div>
 
         <div style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
-          <a href="https://wa.me/${artisan.phone.replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="flex: 1;">
-            <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
-          </a>
+          ${(artisan.allowWhatsapp !== false && (artisan.phone || '').replace(/[^0-9]/g, '')) ? `
+            <a href="https://wa.me/${(artisan.phone || '').replace(/[^0-9]/g, '')}" target="_blank" class="btn btn-primary" style="flex: 1;">
+              <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
+            </a>
+          ` : ''}
           ${artisan.website ? `
             <a href="${artisan.website}" target="_blank" class="btn btn-gold" style="flex: 1;">
               <i class="fa-solid fa-bag-shopping"></i> Comprar en su Web
@@ -402,6 +404,9 @@ class AppController {
       const editDescription = document.getElementById('editDescription');
       const avatarPreview = document.getElementById('avatarEditPreview');
       const btnViewProfile = document.getElementById('btnViewMyPublicProfile');
+
+      const editAllowWhatsapp = document.getElementById('editAllowWhatsapp');
+      if (editAllowWhatsapp) editAllowWhatsapp.checked = p.allowWhatsapp !== false;
 
       if (editName) editName.value = p.name || '';
       if (editTrade) editTrade.value = p.trade || '';
@@ -860,6 +865,7 @@ class AppController {
       website: document.getElementById('editWebsite').value,
       address: document.getElementById('editAddress').value,
       description: document.getElementById('editDescription').value,
+      allowWhatsapp: document.getElementById('editAllowWhatsapp') ? document.getElementById('editAllowWhatsapp').checked : true
     };
 
     if (this.currentArtisanProfile.docId) {

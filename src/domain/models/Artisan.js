@@ -25,7 +25,8 @@ export class Artisan {
     tags = ['Artesanal', 'Hecho a mano'],
     promo = null,
     gallery = [],
-    projects = []
+    projects = [],
+    allowWhatsapp = true
   }) {
     this.id = id;
     this.ownerId = ownerId;
@@ -49,6 +50,7 @@ export class Artisan {
     this.promo = promo;
     this.gallery = gallery;
     this.projects = projects;
+    this.allowWhatsapp = allowWhatsapp !== undefined ? allowWhatsapp : true;
   }
 
   getCategoryLabel(cat) {

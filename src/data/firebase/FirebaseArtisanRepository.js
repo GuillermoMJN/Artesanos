@@ -86,72 +86,133 @@ export class FirebaseArtisanRepository {
   }
 
   async getAllArtisans() {
-    if (!db) return [];
+    let artisans = [];
 
-    try {
-      const q = query(collection(db, "artisans"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        return [];
-      }
-
-      const artisans = [];
-      for (const docSnap of querySnapshot.docs) {
-        const item = docSnap.data();
-        let loadedProjects = [];
-
-        // Si el documento del artesano contiene array de referencias a proyectos (projectRefs o projectIds)
-        const refList = item.projectRefs || item.projectIds || [];
-        if (Array.isArray(refList) && refList.length > 0) {
-          for (const projId of refList) {
-            try {
-              const pRef = doc(db, "projects", projId);
-              const pSnap = await getDoc(pRef);
-              if (pSnap.exists()) {
-                loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
-              }
-            } catch (pErr) {
-              console.warn("Error leyendo proyecto referenciado:", projId, pErr);
-            }
-          }
-        } else if (item.projects && Array.isArray(item.projects)) {
-          // Soporte de compatibilidad
-          loadedProjects = item.projects;
+    if (db) {
+      try {
+        let querySnapshot;
+        try {
+          const q = query(collection(db, "artisans"), orderBy("createdAt", "desc"));
+          querySnapshot = await getDocs(q);
+        } catch (e) {
+          const q = query(collection(db, "artisans"));
+          querySnapshot = await getDocs(q);
         }
 
-        artisans.push(new Artisan({
-          id: docSnap.id,
-          ownerId: item.ownerId,
-          name: item.name,
-          trade: item.trade,
-          category: item.category,
-          categoryLabel: item.categoryLabel,
-          rating: item.rating || 5.0,
-          reviewsCount: item.reviewsCount || 12,
-          experience: item.experience || 'Artesano verificado',
-          location: item.location,
-          address: item.address,
-          phone: item.phone,
-          email: item.email,
-          website: item.website,
-          image: item.image,
-          description: item.description,
-          fullStory: item.fullStory,
-          hours: item.hours,
-          tags: item.tags,
-          promo: item.promo,
-          gallery: item.gallery,
-          projectRefs: refList,
-          projects: loadedProjects
-        }));
-      }
+        if (!querySnapshot.empty) {
+          for (const docSnap of querySnapshot.docs) {
+            const item = docSnap.data();
+            let loadedProjects = [];
 
-      return artisans;
-    } catch (err) {
-      console.warn('Error cargando artesanos desde Firestore:', err.message);
-      return [];
+            const refList = item.projectRefs || item.projectIds || [];
+            if (Array.isArray(refList) && refList.length > 0) {
+              for (const projId of refList) {
+                try {
+                  const pRef = doc(db, "projects", projId);
+                  const pSnap = await getDoc(pRef);
+                  if (pSnap.exists()) {
+                    loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
+                  }
+                } catch (pErr) {
+                  console.warn("Error leyendo proyecto referenciado:", projId, pErr);
+                }
+              }
+            } else if (item.projects && Array.isArray(item.projects)) {
+              loadedProjects = item.projects;
+            }
+
+            artisans.push(new Artisan({
+              id: docSnap.id,
+              ownerId: item.ownerId,
+              name: item.name,
+              trade: item.trade,
+              category: item.category,
+              categoryLabel: item.categoryLabel,
+              rating: item.rating || 5.0,
+              reviewsCount: item.reviewsCount || 12,
+              experience: item.experience || 'Artesano verificado',
+              location: item.location,
+              address: item.address,
+              phone: item.phone,
+              email: item.email,
+              website: item.website,
+              image: item.image,
+              description: item.description,
+              fullStory: item.fullStory,
+              hours: item.hours,
+              tags: item.tags,
+              promo: item.promo,
+              gallery: item.gallery,
+              projectRefs: refList,
+              projects: loadedProjects,
+              allowWhatsapp: item.allowWhatsapp !== undefined ? item.allowWhatsapp : true
+            }));
+          }
+        }
+      } catch (err) {
+        console.warn('Error cargando artesanos desde Firestore:', err.message);
+      }
     }
+
+    // Incluir artesanos iniciales de la semilla para garantizar disponibilidad si no se hallan en Firestore
+    const existingIds = new Set(artisans.map(a => String(a.id)));
+    for (const seedItem of initialArtisansSeed) {
+      if (!existingIds.has(String(seedItem.id))) {
+        artisans.push(new Artisan(seedItem));
+      }
+    }
+
+    return artisans;
+  }
+
+  async getArtisanById(artisanId) {
+    const all = await this.getAllArtisans();
+    if (!artisanId) {
+      return all.length > 0 ? all[0] : (initialArtisansSeed.length > 0 ? new Artisan(initialArtisansSeed[0]) : null);
+    }
+
+    const found = all.find(a => String(a.id) === String(artisanId) || (a.docId && String(a.docId) === String(artisanId)));
+    if (found) return found;
+
+    if (db) {
+      try {
+        const docRef = doc(db, "artisans", String(artisanId));
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const item = docSnap.data();
+          let loadedProjects = [];
+          const refList = item.projectRefs || item.projectIds || [];
+          if (Array.isArray(refList) && refList.length > 0) {
+            for (const projId of refList) {
+              try {
+                const pRef = doc(db, "projects", projId);
+                const pSnap = await getDoc(pRef);
+                if (pSnap.exists()) {
+                  loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
+                }
+              } catch (e) {}
+            }
+          } else if (item.projects && Array.isArray(item.projects)) {
+            loadedProjects = item.projects;
+          }
+
+          return new Artisan({
+            id: docSnap.id,
+            docId: docSnap.id,
+            ...item,
+            projects: loadedProjects,
+            allowWhatsapp: item.allowWhatsapp !== undefined ? item.allowWhatsapp : true
+          });
+        }
+      } catch (err) {
+        console.warn("Error buscando artesano por id:", artisanId, err);
+      }
+    }
+
+    const seed = initialArtisansSeed.find(a => String(a.id) === String(artisanId));
+    if (seed) return new Artisan(seed);
+
+    return all.length > 0 ? all[0] : (initialArtisansSeed.length > 0 ? new Artisan(initialArtisansSeed[0]) : null);
   }
 
   async getArtisanByOwnerId(uid) {
@@ -181,7 +242,7 @@ export class FirebaseArtisanRepository {
             loadedProjects = data.projects;
           }
 
-          found = { docId: docSnap.id, ...data, projects: loadedProjects, projectRefs: refList };
+          found = { docId: docSnap.id, id: docSnap.id, ...data, projects: loadedProjects, projectRefs: refList, allowWhatsapp: data.allowWhatsapp !== undefined ? data.allowWhatsapp : true };
           break;
         }
       }
@@ -211,10 +272,12 @@ export class FirebaseArtisanRepository {
           description: newArtisan.description,
           fullStory: newArtisan.fullStory,
           image: newArtisan.image,
+          allowWhatsapp: newArtisan.allowWhatsapp !== false,
           projectRefs: [],
           createdAt: new Date()
         });
         newArtisan.id = docRef.id;
+        newArtisan.docId = docRef.id;
       } catch (err) {
         console.error('Error al guardar artesano en Firestore:', err);
       }
