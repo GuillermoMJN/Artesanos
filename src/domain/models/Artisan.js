@@ -55,6 +55,8 @@ export class Artisan {
 
   getCategoryLabel(cat) {
     const labels = {
+      pintura: 'Pintura & Ilustración',
+      escultura: 'Escultura & Modelado',
       ceramica: 'Cerámica & Barro',
       tejido: 'Textil & Telar',
       herreria: 'Herrería & Forja',

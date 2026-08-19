@@ -171,6 +171,8 @@ class AppController {
 
     const categories = [
       { id: 'all', name: 'Todas', icon: 'fa-solid fa-border-all', count: this.artisans.length },
+      { id: 'pintura', name: 'Pintura & Ilustración', icon: 'fa-solid fa-palette', count: this.getCategoryCount('pintura') },
+      { id: 'escultura', name: 'Escultura & Modelado', icon: 'fa-solid fa-monument', count: this.getCategoryCount('escultura') },
       { id: 'ceramica', name: 'Cerámica & Barro', icon: 'fa-solid fa-whiskey-glass', count: this.getCategoryCount('ceramica') },
       { id: 'tejido', name: 'Textil & Telar', icon: 'fa-solid fa-scroll', count: this.getCategoryCount('tejido') },
       { id: 'herreria', name: 'Herrería & Forja', icon: 'fa-solid fa-hammer', count: this.getCategoryCount('herreria') },
