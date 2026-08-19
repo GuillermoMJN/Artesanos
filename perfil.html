@@ -594,6 +594,16 @@
         return;
       }
 
+      function escapeHtml(str) {
+        if (!str || typeof str !== 'string') return '';
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
+      }
+
       function isOwnerUser() {
         if (!currentLoggedUser || !artisan) return false;
         return currentLoggedUser.uid === artisan.ownerId || (artisan.ownerId && artisan.ownerId.includes(currentLoggedUser.uid));
@@ -871,15 +881,20 @@
           const hasReply = rev.reply && rev.reply.text;
           const replyDateStr = hasReply && rev.reply.createdAt ? new Date(rev.reply.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '';
 
+          const safeUserName = escapeHtml(rev.userName || 'Usuario');
+          const safeComment = escapeHtml(rev.comment || '');
+          const safeReplyText = hasReply ? escapeHtml(rev.reply.text || '') : '';
+          const safeReplyArtisanName = hasReply ? escapeHtml(rev.reply.artisanName || artisan.name || 'Taller') : '';
+
           return `
             <div class="review-card" id="reviewCard_${rev.id}">
               <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.6rem; flex-wrap: wrap; gap: 0.5rem;">
                 <div style="display: flex; align-items: center; gap: 0.8rem;">
                   <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--terracotta); color: #FFF; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem;">
-                    ${(rev.userName || 'U').charAt(0).toUpperCase()}
+                    ${safeUserName.charAt(0).toUpperCase()}
                   </div>
                   <div>
-                    <h4 style="font-size: 1.05rem; color: var(--primary-dark); margin: 0;">${rev.userName || 'Usuario'}</h4>
+                    <h4 style="font-size: 1.05rem; color: var(--primary-dark); margin: 0;">${safeUserName}</h4>
                     <span style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
                   </div>
                 </div>
@@ -887,19 +902,19 @@
                   ${stars}
                 </div>
               </div>
-              <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; margin: 0; margin-top: 0.5rem;">${rev.comment}</p>
+              <p style="color: var(--text-secondary); line-height: 1.6; font-size: 0.95rem; margin: 0; margin-top: 0.5rem;">${safeComment}</p>
 
               <!-- Respuesta del Artesano si existe -->
               ${hasReply ? `
                 <div style="margin-top: 1rem; margin-left: 1.5rem; background: var(--bg-subtle); border-left: 3px solid var(--terracotta); border-radius: 8px; padding: 0.9rem 1.2rem;">
                   <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem; flex-wrap: wrap; gap: 0.4rem;">
                     <span style="font-size: 0.85rem; font-weight: 700; color: var(--terracotta); display: flex; align-items: center; gap: 0.4rem;">
-                      <i class="fa-solid fa-reply"></i> Respuesta de ${rev.reply.artisanName || artisan.name}
+                      <i class="fa-solid fa-reply"></i> Respuesta de ${safeReplyArtisanName}
                       <span class="hero-badge" style="margin: 0; padding: 0.1rem 0.5rem; font-size: 0.7rem; background: var(--terracotta); color: #FFF; border: none;">Taller</span>
                     </span>
                     <span style="font-size: 0.75rem; color: var(--text-muted);">${replyDateStr}</span>
                   </div>
-                  <p style="color: var(--primary-dark); font-size: 0.88rem; line-height: 1.5; margin: 0;">${rev.reply.text}</p>
+                  <p style="color: var(--primary-dark); font-size: 0.88rem; line-height: 1.5; margin: 0;">${safeReplyText}</p>
                   ${isOwner ? `
                     <button type="button" style="background: none; border: none; font-size: 0.78rem; color: var(--text-muted); cursor: pointer; margin-top: 0.4rem; padding: 0; display: inline-flex; align-items: center; gap: 0.3rem;" onclick="window.toggleReviewReplyForm('${rev.id}')">
                       <i class="fa-solid fa-pen"></i> Modificar respuesta
@@ -1065,27 +1080,32 @@
           const hasReply = c.reply && c.reply.text;
           const replyDateStr = hasReply && c.reply.createdAt ? new Date(c.reply.createdAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }) : '';
 
+          const safeUserName = escapeHtml(c.userName || 'Usuario');
+          const safeComment = escapeHtml(c.comment || '');
+          const safeReplyText = hasReply ? escapeHtml(c.reply.text || '') : '';
+          const safeReplyArtisanName = hasReply ? escapeHtml(c.reply.artisanName || artisan.name || 'Artesano') : '';
+
           return `
             <div class="comment-bubble" style="margin-bottom: 0.9rem;">
               <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
                 <strong style="color: var(--primary-dark); font-size: 0.9rem;">
-                  <i class="fa-solid fa-user-circle" style="color: var(--terracotta);"></i> ${c.userName || 'Usuario'}
+                  <i class="fa-solid fa-user-circle" style="color: var(--terracotta);"></i> ${safeUserName}
                 </strong>
                 <span style="color: var(--text-muted); font-size: 0.75rem;">${dateStr}</span>
               </div>
-              <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0; line-height: 1.4;">${c.comment}</p>
+              <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0; line-height: 1.4;">${safeComment}</p>
 
               <!-- Respuesta del Artesano en el proyecto si existe -->
               ${hasReply ? `
                 <div style="margin-top: 0.6rem; margin-left: 1.2rem; background: #FFFFFF; border-left: 3px solid var(--warm-gold); border-radius: 6px; padding: 0.6rem 0.9rem; border: 1px solid var(--border-color);">
                   <div style="display: flex; justify-content: space-between; margin-bottom: 0.2rem;">
                     <strong style="color: var(--terracotta); font-size: 0.82rem; display: flex; align-items: center; gap: 0.3rem;">
-                      <i class="fa-solid fa-reply"></i> ${c.reply.artisanName || artisan.name}
+                      <i class="fa-solid fa-reply"></i> ${safeReplyArtisanName}
                       <span style="font-size: 0.68rem; background: var(--warm-gold); color: #FFF; padding: 0.1rem 0.4rem; border-radius: 4px;">Artesano</span>
                     </strong>
                     <span style="color: var(--text-muted); font-size: 0.72rem;">${replyDateStr}</span>
                   </div>
-                  <p style="color: var(--primary-dark); font-size: 0.84rem; margin: 0; line-height: 1.4;">${c.reply.text}</p>
+                  <p style="color: var(--primary-dark); font-size: 0.84rem; margin: 0; line-height: 1.4;">${safeReplyText}</p>
                 </div>
               ` : ''}
 

@@ -1,19 +1,44 @@
 rules_version = '2';
 
-// Reglas de Seguridad para Firebase Storage en "Arte y Sanos"
+// Reglas de Seguridad Estrictas para Firebase Storage en "Arte y Sanos"
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // Ruta estructurada: artesanos/{artisanUid}/projects/{projectUid}/{fileName}
-    match /artesanos/{artisanUid}/projects/{projectUid}/{allPaths=**} {
-      allow read: if true;
-      allow write, create, delete: if true;
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(artisanUid) {
+      return isAuthenticated() && request.auth.uid == artisanUid;
     }
 
-    // Regla global por defecto para la aplicación
-    match /{allPaths=**} {
+    function isValidImageOrVideo() {
+      return request.resource.contentType.matches('image/.*') || request.resource.contentType.matches('video/.*');
+    }
+
+    function isValidSize() {
+      return request.resource.size < 25 * 1024 * 1024; // Máximo 25 MB por archivo
+    }
+
+    // Ruta de Avatar del artesano: artesanos/{artisanUid}/avatar/{fileName}
+    match /artesanos/{artisanUid}/avatar/{fileName} {
       allow read: if true;
-      allow write, create, delete: if true;
+      allow write: if isOwner(artisanUid) && isValidImageOrVideo() && isValidSize();
+      allow delete: if isOwner(artisanUid);
+    }
+
+    // Ruta estructurada de proyectos: artesanos/{artisanUid}/projects/{projectUid}/{fileName}
+    match /artesanos/{artisanUid}/projects/{projectUid}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(artisanUid) && isValidImageOrVideo() && isValidSize();
+      allow delete: if isOwner(artisanUid);
+    }
+
+    // Carpeta de fallback para subidas generales del artesano
+    match /artesanos/{artisanUid}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(artisanUid) && isValidImageOrVideo() && isValidSize();
+      allow delete: if isOwner(artisanUid);
     }
   }
 }
