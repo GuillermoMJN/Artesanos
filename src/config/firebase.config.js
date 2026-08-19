@@ -29,7 +29,9 @@ import {
   deleteUser,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { 
   getStorage, 
@@ -97,6 +99,8 @@ export {
   reauthenticateWithCredential,
   EmailAuthProvider,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
   // Storage exports
   ref,
   uploadBytes,

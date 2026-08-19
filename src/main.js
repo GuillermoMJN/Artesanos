@@ -795,6 +795,21 @@ class AppController {
     }
   }
 
+  async handleGoogleLogin() {
+    try {
+      const user = await this.authRepo.signInWithGoogle();
+      this.closeModal('loginModal');
+      this.closeModal('registerModal');
+      const name = (user.profile && user.profile.displayName) || user.displayName || user.email;
+      ToastComponent.show(`¡Bienvenido, ${name}! Sesión iniciada con Google.`);
+    } catch (err) {
+      if (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request') {
+        return;
+      }
+      alert(`Error al conectar con Google: ${err.message}`);
+    }
+  }
+
   async handleLogout() {
     await this.authRepo.logout();
     this.currentUser = null;

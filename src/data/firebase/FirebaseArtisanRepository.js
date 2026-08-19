@@ -30,7 +30,9 @@ import {
   updateProfile,
   deleteUser,
   reauthenticateWithCredential,
-  EmailAuthProvider
+  EmailAuthProvider,
+  GoogleAuthProvider,
+  signInWithPopup
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
 
@@ -529,6 +531,31 @@ export class FirebaseAuthRepository {
     const credential = await signInWithEmailAndPassword(auth, email, password);
     const user = credential.user;
     user.profile = await this.getUserProfile(user.uid);
+    return user;
+  }
+
+  async signInWithGoogle() {
+    if (!auth) throw new Error("Firebase Auth no inicializado");
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // Verificar si ya existe perfil del usuario
+    let profile = await this.getUserProfile(user.uid);
+    if (!profile) {
+      profile = {
+        uid: user.uid,
+        email: user.email || '',
+        displayName: user.displayName || 'Usuario Google',
+        photoURL: user.photoURL || '',
+        role: 'client',
+        createdAt: new Date().toISOString()
+      };
+      await this.saveUserProfile(user.uid, profile);
+    }
+
+    user.profile = profile;
     return user;
   }
 
