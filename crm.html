@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal CRM Administrativo | Arte y Sanos</title>
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="index.css">
+
+  <style>
+    .crm-wrapper {
+      min-height: 100vh;
+      background: #FDFBF7;
+      display: flex;
+      flex-direction: column;
+    }
+    .crm-header {
+      background: var(--primary-dark);
+      color: #FFF;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-md);
+    }
+    .crm-nav {
+      background: #FFF;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 2rem;
+      display: flex;
+      gap: 1.5rem;
+    }
+    .crm-nav-item {
+      padding: 1rem 0.5rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-size: 0.95rem;
+    }
+    .crm-nav-item:hover, .crm-nav-item.active {
+      color: var(--terracotta);
+      border-bottom-color: var(--terracotta);
+    }
+    .crm-badge-count {
+      background: var(--terracotta);
+      color: #FFF;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 10px;
+    }
+    .crm-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .crm-stat-card {
+      background: #FFF;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .crm-stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="crm-wrapper">
+
+    <!-- Pantalla de Bloqueo / PIN de Acceso Administrativo -->
+    <div id="crmLockScreen" style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+      <div class="modal-card" style="max-width: 440px; width: 100%; border-top: 5px solid var(--terracotta); text-align: center; padding: 2.5rem 2rem;">
+        <div style="width: 60px; height: 60px; border-radius: 50%; background: var(--bg-subtle); color: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1.2rem;">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h2 style="font-size: 1.5rem; color: var(--primary-dark); margin-bottom: 0.4rem;">Acceso al CRM Administrativo</h2>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 1.5rem;">Introduce la clave maestra o PIN de administrador para gestionar las verificaciones y soporte.</p>
+
+        <form id="crmLoginForm">
+          <div class="form-group" style="margin-bottom: 1.2rem; text-align: left;">
+            <label class="form-label">PIN / Contraseña de Administrador *</label>
+            <input type="password" id="crmPinInput" class="form-input" placeholder="••••••••••••" required autofocus style="text-align: center; letter-spacing: 2px;">
+          </div>
+          <div id="crmLoginError" style="display: none; color: #D32F2F; font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600;"></div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+            <i class="fa-solid fa-lock-open"></i> Desbloquear CRM
+          </button>
+        </form>
+        <div style="margin-top: 1.5rem;">
+          <a href="index.html" style="color: var(--text-muted); font-size: 0.85rem; text-decoration: none;">← Volver a la página principal</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Control CRM (Se muestra tras validar clave) -->
+    <div id="crmDashboard" style="display: none; flex: 1;">
+      <!-- Cabecera -->
+      <header class="crm-header">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="index.html" class="logo" style="color: #FFF; text-decoration: none;">
+            <i class="fa-solid fa-hands-holding" style="color: var(--warm-gold);"></i> Arte y Sanos
+          </a>
+          <span style="background: rgba(255,255,255,0.15); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.5px;">
+            PORTAL CRM ADMIN
+          </span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <a href="index.html" target="_blank" class="btn btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; background: rgba(255,255,255,0.1); color: #FFF; border-color: rgba(255,255,255,0.2);">
+            <i class="fa-solid fa-external-link"></i> Ver Web Pública
+          </a>
+          <button id="btnCrmLogout" class="btn btn-secondary" style="padding: 0.45rem 0.9rem; font-size: 0.82rem; background: #D32F2F; color: #FFF; border: none;">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Bloquear / Salir
+          </button>
+        </div>
+      </header>
+
+      <!-- Navegación de Pestañas -->
+      <nav class="crm-nav">
+        <button id="btn_tabVerifications" class="crm-nav-item active" onclick="switchCrmTab('tabVerifications')">
+          <i class="fa-solid fa-certificate"></i> Verificaciones de Artesanos
+          <span id="badgeNavVerif" class="crm-badge-count" style="display: none;">0</span>
+        </button>
+        <button id="btn_tabTickets" class="crm-nav-item" onclick="switchCrmTab('tabTickets')">
+          <i class="fa-solid fa-headset"></i> Incidencias & Asistencia
+          <span id="badgeNavTickets" class="crm-badge-count" style="display: none;">0</span>
+        </button>
+        <button id="btn_tabArtisans" class="crm-nav-item" onclick="switchCrmTab('tabArtisans')">
+          <i class="fa-solid fa-store"></i> Directorio de Talleres
+        </button>
+      </nav>
+
+      <!-- Contenido Principal -->
+      <main class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+        
+        <!-- Métricas Rápidas -->
+        <div class="crm-stats-grid">
+          <div class="crm-stat-card">
+            <div class="crm-stat-icon" style="background: rgba(245, 127, 23, 0.15); color: #F57F17;">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </div>
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-muted); display: block;">Verificaciones Pendientes</span>
+              <strong id="statPendingVerifications" style="font-size: 1.6rem; color: var(--primary-dark);">0</strong>
+            </div>
+          </div>
+          <div class="crm-stat-card">
+            <div class="crm-stat-icon" style="background: rgba(211, 47, 47, 0.15); color: #D32F2F;">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-muted); display: block;">Incidencias Abiertas</span>
+              <strong id="statOpenTickets" style="font-size: 1.6rem; color: var(--primary-dark);">0</strong>
+            </div>
+          </div>
+          <div class="crm-stat-card">
+            <div class="crm-stat-icon" style="background: rgba(192, 108, 76, 0.15); color: var(--terracotta);">
+              <i class="fa-solid fa-store"></i>
+            </div>
+            <div>
+              <span style="font-size: 0.82rem; color: var(--text-muted); display: block;">Talleres Registrados</span>
+              <strong id="statTotalArtisans" style="font-size: 1.6rem; color: var(--primary-dark);">0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- PESTAÑA 1: SOLICITUDES DE VERIFICACIÓN -->
+        <section id="tabVerifications" class="crm-tab-content" style="display: block;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); margin: 0;">
+                Solicitudes de Verificación
+              </h2>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.2rem 0 0 0;">
+                Revisa y valida la documentación de artesanos para otorgarles la insignia de Artesano Certificado.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              <input type="text" id="searchVerificationsInput" class="form-input" placeholder="Buscar por taller, nombre o email..." style="width: 260px; font-size: 0.85rem;">
+              <select id="filterVerifStatus" class="form-select" style="width: 170px; font-size: 0.85rem;">
+                <option value="all">Todos los estados</option>
+                <option value="pending">Pendientes</option>
+                <option value="in_review">En Revisión</option>
+                <option value="approved">Aprobados</option>
+                <option value="rejected">Rechazados</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="verificationsListContainer">
+            <!-- Renderizado dinámico desde CrmPageController.js -->
+          </div>
+        </section>
+
+        <!-- PESTAÑA 2: INCIDENCIAS & TICKETS DE ASISTENCIA -->
+        <section id="tabTickets" class="crm-tab-content" style="display: none;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+              <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); margin: 0;">
+                Centro de Incidencias & Asistencia
+              </h2>
+              <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.2rem 0 0 0;">
+                Mensajes, consultas de clientes y reportes de incidencias recibidos a través del botón de asistencia.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap;">
+              <input type="text" id="searchTicketsInput" class="form-input" placeholder="Buscar en mensajes..." style="width: 220px; font-size: 0.85rem;">
+              <select id="filterTicketCategory" class="form-select" style="width: 160px; font-size: 0.85rem;">
+                <option value="all">Todas las categorías</option>
+                <option value="incidencia">Incidencias</option>
+                <option value="consulta">Consultas</option>
+                <option value="verificacion">Verificaciones</option>
+                <option value="sugerencia">Sugerencias</option>
+              </select>
+              <select id="filterTicketStatus" class="form-select" style="width: 150px; font-size: 0.85rem;">
+                <option value="all">Todos los estados</option>
+                <option value="open">Abiertos / Nuevos</option>
+                <option value="in_progress">En Gestión</option>
+                <option value="resolved">Resueltos</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="ticketsListContainer">
+            <!-- Renderizado dinámico desde CrmPageController.js -->
+          </div>
+        </section>
+
+        <!-- PESTAÑA 3: DIRECTORIO GLOBAL DE ARTESANOS -->
+        <section id="tabArtisans" class="crm-tab-content" style="display: none;">
+          <div style="margin-bottom: 1.5rem;">
+            <h2 style="font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--primary-dark); margin: 0;">
+              Directorio de Talleres & Comercios
+            </h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.2rem 0 0 0;">
+              Listado completo de talleres registrados en la base de datos de Arte y Sanos.
+            </p>
+          </div>
+
+          <div id="artisansSummaryContainer" style="background: #FFF; border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;">
+            <!-- Renderizado dinámico de tabla -->
+          </div>
+        </section>
+
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Contenedor para Notificaciones Toast -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Script Modular CRM -->
+  <script type="module" src="src/crm.js"></script>
+</body>
+</html>

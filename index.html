@@ -473,6 +473,27 @@
           </div>
         </div>
 
+        <!-- Banner de Verificación de Artesano -->
+        <div id="artisanVerificationBanner" style="background: linear-gradient(135deg, rgba(197,160,89,0.15), rgba(192,108,76,0.1)); border: 1.5px solid var(--warm-gold); border-radius: 12px; padding: 1rem 1.4rem; margin-bottom: 1.2rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.9rem;">
+            <div style="width: 42px; height: 42px; border-radius: 50%; background: var(--warm-gold); color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; box-shadow: 0 4px 10px rgba(197,160,89,0.3);">
+              <i class="fa-solid fa-certificate"></i>
+            </div>
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                <strong style="color: var(--primary-dark); font-size: 0.98rem;">Insignia de Artesano Certificado</strong>
+                <span id="shopVerifBadgeStatus" style="font-size: 0.72rem; background: var(--warm-gold); color: #FFF; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 700;">Oficio Registrado</span>
+              </div>
+              <p style="color: var(--text-secondary); font-size: 0.82rem; margin: 0.1rem 0 0 0; line-height: 1.4;">
+                Aumenta la confianza de tus clientes solicitando la verificación oficial de tu taller artesanal.
+              </p>
+            </div>
+          </div>
+          <button type="button" class="btn btn-gold" onclick="window.appUI.openVerificationModal()" style="font-size: 0.85rem; padding: 0.5rem 1.1rem; display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 8px;">
+            <i class="fa-solid fa-shield-check"></i> Verificar Cuenta
+          </button>
+        </div>
+
         <!-- Pestañas del Panel (Barra Segmentada) -->
         <div class="shop-tabs-nav">
           <button class="tab-btn active" onclick="window.appUI.switchShopTab('tabGeneral')" id="btnTabGeneral">
@@ -987,6 +1008,148 @@
             </button>
             <button type="submit" id="btnConfirmDeleteAccount" class="btn" style="flex: 1.3; background: #D32F2F; color: #FFF; border: none; font-weight: 700; cursor: pointer;">
               <i class="fa-solid fa-trash"></i> Confirmar Eliminación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón Flotante de Asistencia / Incidencias -->
+  <button id="btnFloatingSupport" onclick="window.appUI.openSupportModal()" style="position: fixed; bottom: 1.8rem; right: 1.8rem; z-index: 999; background: var(--primary-dark); color: #FFF; border: none; border-radius: 30px; padding: 0.75rem 1.3rem; display: flex; align-items: center; gap: 0.6rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9rem; box-shadow: 0 6px 20px rgba(62,39,35,0.35); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='translateY(0)'">
+    <i class="fa-solid fa-headset" style="color: var(--warm-gold); font-size: 1.1rem;"></i> Asistencia & Contacto
+  </button>
+
+  <!-- Modal 1: Formulario de Solicitud de Verificación de Artesano -->
+  <div class="modal-overlay" id="artisanVerificationModal" style="z-index: 5100;">
+    <div class="modal-card" style="max-width: 580px; border-top: 5px solid var(--warm-gold);">
+      <button class="modal-close" onclick="window.appUI.closeModal('artisanVerificationModal')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body" style="padding: 2.2rem;">
+        <div style="display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(197,160,89,0.18); color: var(--warm-gold-hover); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-certificate"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 1.35rem; color: var(--primary-dark); margin: 0; font-family: 'Playfair Display', serif;">Solicitar Verificación de Taller</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Taller: <strong id="verifWorkshopNameDisplay" style="color: var(--terracotta);">Mi Taller</strong></span>
+          </div>
+        </div>
+
+        <div style="background: var(--bg-subtle); border-left: 3px solid var(--warm-gold); padding: 0.9rem 1.1rem; border-radius: 0 8px 8px 0; font-size: 0.86rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1.5rem;">
+          <i class="fa-solid fa-circle-info" style="color: var(--warm-gold);"></i> 
+          Al solicitar la verificación, nuestro equipo revisará tu oficio, piezas artesanales y autenticidad para otorgarte la insignia de <strong>Artesano Certificado ✓</strong>.
+        </div>
+
+        <form id="artisanVerificationForm">
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">Nombre y Apellidos de la persona de contacto *</label>
+            <input type="text" id="verifContactName" class="form-input" placeholder="ej. María Carmen Delgado Navarro" required>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Correo Electrónico de Contacto *</label>
+              <input type="email" id="verifContactEmail" class="form-input" placeholder="contacto@tallerartesano.es" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Teléfono / WhatsApp *</label>
+              <input type="tel" id="verifContactPhone" class="form-input" placeholder="+34 600 000 000" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="form-label">Detalles adicionales o trayectoria artesanal (Opcional)</label>
+            <textarea id="verifNotes" class="form-textarea" rows="3" placeholder="Cuéntanos brevemente sobre tus años de oficio, técnicas tradicionales que empleas, certificados o enlaces adicionales..."></textarea>
+          </div>
+
+          <div style="display: flex; gap: 0.8rem; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="window.appUI.closeModal('artisanVerificationModal')">
+              Cancelar
+            </button>
+            <button type="submit" id="btnSubmitVerification" class="btn btn-gold" style="font-weight: 700; padding: 0.7rem 1.4rem;">
+              <i class="fa-solid fa-paper-plane"></i> Enviar Solicitud de Verificación
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Confirmación Exitosa de Solicitud de Verificación -->
+  <div class="modal-overlay" id="verificationSuccessModal" style="z-index: 5200;">
+    <div class="modal-card" style="max-width: 500px; text-align: center; border-top: 5px solid #2E7D32;">
+      <div class="modal-body" style="padding: 2.5rem 2rem;">
+        <div style="width: 65px; height: 65px; border-radius: 50%; background: #E8F5E9; color: #2E7D32; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.2rem;">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--primary-dark); margin-bottom: 0.6rem;">¡Solicitud Enviada con Éxito!</h3>
+        <p id="verifSuccessDetailText" style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1.8rem;">
+          Nos pondremos en contacto contigo lo antes posible para gestionar la verificación de tu cuenta como <strong>Artesano Certificado</strong>.
+        </p>
+        <button type="button" class="btn btn-primary" onclick="window.appUI.closeModal('verificationSuccessModal')" style="width: 100%; justify-content: center; padding: 0.8rem;">
+          <i class="fa-solid fa-check"></i> Entendido
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Centro de Asistencia, Contacto e Incidencias -->
+  <div class="modal-overlay" id="supportContactModal" style="z-index: 5100;">
+    <div class="modal-card" style="max-width: 580px; border-top: 5px solid var(--terracotta);">
+      <button class="modal-close" onclick="window.appUI.closeModal('supportContactModal')">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body" style="padding: 2.2rem;">
+        <div style="display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.2rem;">
+          <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(192,108,76,0.15); color: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0;">
+            <i class="fa-solid fa-headset"></i>
+          </div>
+          <div>
+            <h3 style="font-size: 1.35rem; color: var(--primary-dark); margin: 0; font-family: 'Playfair Display', serif;">Centro de Asistencia & Contacto</h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Estamos aquí para ayudarte a resolver cualquier duda o incidencia.</span>
+          </div>
+        </div>
+
+        <form id="supportContactForm">
+          <div class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Tu Nombre *</label>
+              <input type="text" id="supportSenderName" class="form-input" placeholder="ej. David García" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Tu Correo Electrónico *</label>
+              <input type="email" id="supportSenderEmail" class="form-input" placeholder="tu@correo.com" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">Tipo de Consulta / Asistencia *</label>
+            <select id="supportCategorySelect" class="form-select" required>
+              <option value="incidencia">⚠️ Incidencia Técnica o Problema en la Web</option>
+              <option value="consulta">💬 Consulta General sobre la Plataforma</option>
+              <option value="verificacion">🏅 Duda sobre Verificación de Artesano</option>
+              <option value="sugerencia">💡 Sugerencia o Idea de Mejora</option>
+            </select>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">Asunto *</label>
+            <input type="text" id="supportSubject" class="form-input" placeholder="ej. Problema al subir fotos de un trabajo" required>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="form-label">Describe tu mensaje o incidencia *</label>
+            <textarea id="supportMessage" class="form-textarea" rows="4" placeholder="Explica detalladamente lo que ocurre para poder ayudarte lo antes posible..." required></textarea>
+          </div>
+
+          <div style="display: flex; gap: 0.8rem; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="window.appUI.closeModal('supportContactModal')">
+              Cancelar
+            </button>
+            <button type="submit" id="btnSubmitSupport" class="btn btn-primary" style="font-weight: 700; padding: 0.7rem 1.4rem;">
+              <i class="fa-solid fa-paper-plane"></i> Enviar Mensaje
             </button>
           </div>
         </form>

@@ -1,14 +1,17 @@
 import { FirebaseArtisanRepository } from './data/firebase/FirebaseArtisanRepository.js';
 import { FirebaseAuthRepository } from './data/firebase/FirebaseAuthRepository.js';
 import { FirebaseStorageRepository } from './data/firebase/FirebaseStorageRepository.js';
+import { FirebaseCrmRepository } from './data/firebase/FirebaseCrmRepository.js';
 import { GetArtisansUseCase } from './domain/usecases/GetArtisansUseCase.js';
 import { AuthUseCases } from './domain/usecases/AuthUseCases.js';
 import { ManageShopUseCases } from './domain/usecases/ManageShopUseCases.js';
+import { CrmUseCases } from './domain/usecases/CrmUseCases.js';
 import { HeaderController } from './presentation/controllers/HeaderController.js';
 import { AuthController } from './presentation/controllers/AuthController.js';
 import { DirectoryController } from './presentation/controllers/DirectoryController.js';
 import { ShopManageController } from './presentation/controllers/ShopManageController.js';
 import { UserAccountController } from './presentation/controllers/UserAccountController.js';
+import { SupportController } from './presentation/controllers/SupportController.js';
 import { IntroAnimationComponent } from './presentation/components/IntroAnimationComponent.js';
 import { setupModalDismissListeners, closeModal } from './core/utils/domUtils.js';
 
@@ -21,11 +24,13 @@ class MainApp {
     this.artisanRepo = new FirebaseArtisanRepository();
     this.authRepo = new FirebaseAuthRepository();
     this.storageRepo = new FirebaseStorageRepository();
+    this.crmRepo = new FirebaseCrmRepository();
 
     // 2. Capa de Dominio / Casos de Uso (Domain Use Cases)
     this.getArtisansUseCase = new GetArtisansUseCase(this.artisanRepo);
     this.authUseCases = new AuthUseCases(this.authRepo, this.artisanRepo);
     this.manageShopUseCases = new ManageShopUseCases(this.artisanRepo, this.storageRepo);
+    this.crmUseCases = new CrmUseCases(this.crmRepo, this.artisanRepo);
 
     // Estado centralizado
     this.currentUser = null;
@@ -68,6 +73,11 @@ class MainApp {
         this.headerController.updateAuthUI(updatedUser, this.currentArtisanProfile);
       }
     );
+
+    this.supportController = new SupportController(
+      this.crmUseCases,
+      this.authUseCases
+    );
   }
 
   async init() {
@@ -78,6 +88,7 @@ class MainApp {
     this.authController.init();
     this.shopManageController.init();
     this.userAccountController.init();
+    this.supportController.init();
 
     await this.directoryController.init();
     this.setupAuthObserver();
@@ -117,7 +128,16 @@ class MainApp {
 
     this.shopManageController.setCurrentState(this.currentUser, this.currentArtisanProfile);
     this.userAccountController.setCurrentUser(this.currentUser);
+    this.supportController.setCurrentState(this.currentUser, this.currentArtisanProfile);
     this.headerController.updateAuthUI(this.currentUser, this.currentArtisanProfile);
+
+    // Actualizar badge de verificación en el panel de taller
+    const badgeStatusEl = document.getElementById('shopVerifBadgeStatus');
+    if (badgeStatusEl && this.currentArtisanProfile) {
+      const isCert = this.currentArtisanProfile.experience && this.currentArtisanProfile.experience.includes('Certificado');
+      badgeStatusEl.textContent = isCert ? 'Certificado ✓' : 'Oficio Registrado';
+      badgeStatusEl.style.background = isCert ? '#2E7D32' : 'var(--warm-gold)';
+    }
   }
 
   async refreshArtisansData() {
@@ -125,6 +145,7 @@ class MainApp {
     if (this.currentUser) {
       this.currentArtisanProfile = await this.artisanRepo.getArtisanByOwnerId(this.currentUser.uid);
       this.shopManageController.setCurrentState(this.currentUser, this.currentArtisanProfile);
+      this.supportController.setCurrentState(this.currentUser, this.currentArtisanProfile);
     }
   }
 
@@ -152,6 +173,9 @@ class MainApp {
   openUserAccountModal() { this.userAccountController.openUserAccountModal(); }
   switchUserTab(tabId) { this.userAccountController.switchUserTab(tabId); }
   openDeleteAccountModal() { this.userAccountController.openDeleteAccountModal(); }
+
+  openVerificationModal() { this.supportController.openVerificationModal(); }
+  openSupportModal(category) { this.supportController.openSupportModal(category); }
 }
 
 // Inicialización de la aplicación
