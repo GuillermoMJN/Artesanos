@@ -71,7 +71,7 @@ body.intro-active {
   height: 100vh;
   z-index: 9999;
   pointer-events: none;
-  display: flex;
+  display: none;
   justify-content: center;
   align-items: center;
 }

@@ -12,6 +12,8 @@ export class IntroAnimationComponent {
       return;
     }
 
+    introOverlay.style.display = 'flex';
+    document.body.classList.add('intro-active');
     sessionStorage.setItem('arteysanos_visited', 'true');
 
     setTimeout(() => {
