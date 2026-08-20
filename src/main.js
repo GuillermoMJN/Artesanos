@@ -176,6 +176,7 @@ class MainApp {
 
   openVerificationModal() { this.supportController.openVerificationModal(); }
   openSupportModal(category) { this.supportController.openSupportModal(category); }
+  handleAvatarChange(event) { this.shopManageController.handleAvatarChange(event); }
 }
 
 // Inicialización de la aplicación
