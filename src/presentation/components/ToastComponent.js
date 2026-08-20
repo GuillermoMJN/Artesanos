@@ -1,7 +1,11 @@
+/**
+ * Componente para notificaciones flotantes (Toast)
+ */
 export class ToastComponent {
-  static show(message) {
+  static show(message, duration = 4000) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
+
     const toast = document.createElement('div');
     toast.className = 'toast';
     toast.innerHTML = `
@@ -13,6 +17,6 @@ export class ToastComponent {
     setTimeout(() => {
       toast.style.animation = 'slideInRight 0.4s reverse forwards';
       setTimeout(() => toast.remove(), 400);
-    }, 4000);
+    }, duration);
   }
 }

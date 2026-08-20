@@ -1,90 +1,36 @@
 import { 
   db, 
-  auth, 
   storage,
   ref,
-  uploadBytes, 
-  getDownloadURL,
   deleteObject,
   listAll,
   collection, 
   getDocs, 
-  getDoc,
+  getDoc, 
   addDoc, 
   setDoc,
   doc, 
   updateDoc, 
   deleteDoc,
-  arrayUnion, 
-  arrayRemove, 
   query, 
-  where,
-  orderBy,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged,
-  sendEmailVerification,
-  updatePassword,
-  updateEmail,
-  updateProfile,
-  deleteUser,
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  GoogleAuthProvider,
-  signInWithPopup,
-  reauthenticateWithPopup
+  orderBy
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
+import { IArtisanRepository } from '../../domain/repositories/IArtisanRepository.js';
+import { FirebaseStorageRepository } from './FirebaseStorageRepository.js';
 
-export class FirebaseArtisanRepository {
+export class FirebaseArtisanRepository extends IArtisanRepository {
+  constructor() {
+    super();
+    this.storageRepo = new FirebaseStorageRepository();
+  }
+
   async uploadProfileImage(file, artisanUid = 'anon') {
-    const safeArtisan = (artisanUid || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeFileName = `avatar_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const storagePath = `artesanos/${safeArtisan}/avatar/${safeFileName}`;
-
-    if (storage) {
-      try {
-        const storageRef = ref(storage, storagePath);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        return downloadUrl;
-      } catch (err) {
-        console.warn("Subida de avatar a Firebase Storage diferida, usando DataURL:", err);
-      }
-    }
-
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => resolve('');
-      reader.readAsDataURL(file);
-    });
+    return await this.storageRepo.uploadProfileImage(file, artisanUid);
   }
 
   async uploadFile(file, artisanUid = 'anon', projectUid = 'default') {
-    const safeArtisan = (artisanUid || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeProject = (projectUid || 'default').replace(/[^a-zA-Z0-9_-]/g, '_');
-    const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-    const storagePath = `artesanos/${safeArtisan}/projects/${safeProject}/${safeFileName}`;
-
-    if (storage) {
-      try {
-        const storageRef = ref(storage, storagePath);
-        const snapshot = await uploadBytes(storageRef, file);
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        return downloadUrl;
-      } catch (err) {
-        console.warn("Subida Firebase Storage diferida, usando DataURL:", err);
-      }
-    }
-
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => resolve('');
-      reader.readAsDataURL(file);
-    });
+    return await this.storageRepo.uploadFile(file, artisanUid, projectUid);
   }
 
   async getAllArtisans() {
@@ -101,267 +47,208 @@ export class FirebaseArtisanRepository {
           querySnapshot = await getDocs(q);
         }
 
-        if (!querySnapshot.empty) {
-          for (const docSnap of querySnapshot.docs) {
-            const item = docSnap.data();
-            let loadedProjects = [];
-
-            const refList = item.projectRefs || item.projectIds || [];
-            if (Array.isArray(refList) && refList.length > 0) {
-              for (const projId of refList) {
-                try {
-                  const pRef = doc(db, "projects", projId);
-                  const pSnap = await getDoc(pRef);
-                  if (pSnap.exists()) {
-                    loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
-                  }
-                } catch (pErr) {
-                  console.warn("Error leyendo proyecto referenciado:", projId, pErr);
-                }
-              }
-            } else if (item.projects && Array.isArray(item.projects)) {
-              loadedProjects = item.projects;
-            }
-
-            artisans.push(new Artisan({
-              id: docSnap.id,
-              ownerId: item.ownerId,
-              name: item.name,
-              trade: item.trade,
-              category: item.category,
-              categoryLabel: item.categoryLabel,
-              rating: item.rating || 5.0,
-              reviewsCount: item.reviewsCount || 12,
-              experience: item.experience || 'Artesano verificado',
-              location: item.location,
-              address: item.address,
-              phone: item.phone,
-              email: item.email,
-              website: item.website,
-              image: item.image,
-              description: item.description,
-              fullStory: item.fullStory,
-              hours: item.hours,
-              tags: item.tags,
-              promo: item.promo,
-              gallery: item.gallery,
-              projectRefs: refList,
-              projects: loadedProjects,
-              allowWhatsapp: item.allowWhatsapp !== undefined ? item.allowWhatsapp : true
-            }));
-          }
-        }
+        querySnapshot.forEach((docSnapshot) => {
+          artisans.push(new Artisan({ docId: docSnapshot.id, ...docSnapshot.data() }));
+        });
       } catch (err) {
-        console.warn('Error cargando artesanos desde Firestore:', err.message);
+        console.warn("Lectura de Firestore no disponible, usando almacenamiento local:", err.message);
+        artisans = this._getLocalArtisans();
       }
+    } else {
+      artisans = this._getLocalArtisans();
+    }
+
+    if (artisans.length === 0) {
+      artisans = this._getLocalArtisans();
     }
 
     return artisans;
   }
 
-  async getArtisanById(artisanId) {
-    if (!artisanId) return null;
-
-    const all = await this.getAllArtisans();
-    const found = all.find(a => String(a.id) === String(artisanId) || (a.docId && String(a.docId) === String(artisanId)));
-    if (found) return found;
+  async getArtisanById(id) {
+    if (!id) return null;
 
     if (db) {
       try {
-        const docRef = doc(db, "artisans", String(artisanId));
+        const docRef = doc(db, "artisans", String(id));
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const item = docSnap.data();
-          let loadedProjects = [];
-          const refList = item.projectRefs || item.projectIds || [];
-          if (Array.isArray(refList) && refList.length > 0) {
-            for (const projId of refList) {
-              try {
-                const pRef = doc(db, "projects", projId);
-                const pSnap = await getDoc(pRef);
-                if (pSnap.exists()) {
-                  loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
-                }
-              } catch (e) {}
-            }
-          } else if (item.projects && Array.isArray(item.projects)) {
-            loadedProjects = item.projects;
-          }
-
-          return new Artisan({
-            id: docSnap.id,
-            docId: docSnap.id,
-            ...item,
-            projects: loadedProjects,
-            allowWhatsapp: item.allowWhatsapp !== undefined ? item.allowWhatsapp : true
-          });
+          return new Artisan({ docId: docSnap.id, ...docSnap.data() });
         }
       } catch (err) {
-        console.warn("Error buscando artesano por id:", artisanId, err);
+        console.warn("Búsqueda por docId falló, buscando en colección:", err.message);
+      }
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "artisans"));
+        for (const docSnapshot of querySnapshot.docs) {
+          const data = docSnapshot.data();
+          if (String(data.id) === String(id) || docSnapshot.id === String(id)) {
+            return new Artisan({ docId: docSnapshot.id, ...data });
+          }
+        }
+      } catch (err) {
+        console.warn("Búsqueda en Firestore falló, usando local:", err.message);
       }
     }
 
-    return null;
+    const localArtisans = this._getLocalArtisans();
+    const found = localArtisans.find(a => String(a.id) === String(id));
+    return found ? new Artisan(found) : null;
   }
 
-  async getArtisanByOwnerId(uid) {
-    if (!db || !uid) return null;
-    try {
-      const q = query(collection(db, "artisans"));
-      const querySnapshot = await getDocs(q);
-      let found = null;
+  async getArtisanByOwnerId(ownerId) {
+    if (!ownerId) return null;
 
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
-        if (data.ownerId === uid) {
-          let loadedProjects = [];
-          const refList = data.projectRefs || data.projectIds || [];
-
-          if (Array.isArray(refList) && refList.length > 0) {
-            for (const projId of refList) {
-              try {
-                const pRef = doc(db, "projects", projId);
-                const pSnap = await getDoc(pRef);
-                if (pSnap.exists()) {
-                  loadedProjects.push({ id: pSnap.id, ...pSnap.data() });
-                }
-              } catch (e) {}
-            }
-          } else if (data.projects && Array.isArray(data.projects)) {
-            loadedProjects = data.projects;
+    if (db) {
+      try {
+        const querySnapshot = await getDocs(collection(db, "artisans"));
+        for (const docSnapshot of querySnapshot.docs) {
+          const data = docSnapshot.data();
+          if (data.ownerId === ownerId) {
+            return new Artisan({ docId: docSnapshot.id, ...data });
           }
-
-          found = { docId: docSnap.id, id: docSnap.id, ...data, projects: loadedProjects, projectRefs: refList, allowWhatsapp: data.allowWhatsapp !== undefined ? data.allowWhatsapp : true };
-          break;
         }
+      } catch (err) {
+        console.warn("Error buscando por ownerId en Firestore:", err.message);
       }
-
-      return found;
-    } catch (err) {
-      console.error('Error buscando artesano por ownerId:', err);
-      return null;
     }
+
+    const localArtisans = this._getLocalArtisans();
+    const found = localArtisans.find(a => a.ownerId === ownerId);
+    return found ? new Artisan(found) : null;
   }
 
   async createArtisan(artisanData) {
-    const newArtisan = new Artisan(artisanData);
+    let savedArtisan = { ...artisanData, createdAt: new Date().toISOString() };
+
     if (db) {
       try {
         const docRef = await addDoc(collection(db, "artisans"), {
-          ownerId: newArtisan.ownerId,
-          name: newArtisan.name,
-          trade: newArtisan.trade,
-          category: newArtisan.category,
-          categoryLabel: newArtisan.categoryLabel,
-          location: newArtisan.location,
-          address: newArtisan.address,
-          phone: newArtisan.phone,
-          email: newArtisan.email,
-          website: newArtisan.website,
-          description: newArtisan.description,
-          fullStory: newArtisan.fullStory,
-          image: newArtisan.image,
-          allowWhatsapp: newArtisan.allowWhatsapp !== false,
-          projectRefs: [],
+          ...savedArtisan,
           createdAt: new Date()
         });
-        newArtisan.id = docRef.id;
-        newArtisan.docId = docRef.id;
+        savedArtisan.docId = docRef.id;
       } catch (err) {
-        console.error('Error al guardar artesano en Firestore:', err);
+        console.warn("No se pudo guardar en Firestore, guardando en local:", err.message);
       }
     }
-    return newArtisan;
+
+    this._saveLocalArtisan(savedArtisan);
+    return new Artisan(savedArtisan);
   }
 
   async updateArtisan(docId, updatedData) {
-    if (!db || !docId) return;
-    const refDoc = doc(db, "artisans", docId);
-    await updateDoc(refDoc, updatedData);
+    if (db && docId) {
+      try {
+        const artisanRef = doc(db, "artisans", docId);
+        await updateDoc(artisanRef, {
+          ...updatedData,
+          updatedAt: new Date()
+        });
+      } catch (err) {
+        console.warn("No se pudo actualizar en Firestore, actualizando local:", err.message);
+      }
+    }
+
+    this._updateLocalArtisan(docId, updatedData);
+    return true;
   }
 
-  // --- MÉTODOS PARA LA COLECCIÓN INDEPENDIENTE 'projects' ---
+  async deleteArtisan(docId) {
+    if (db && docId) {
+      try {
+        await deleteDoc(doc(db, "artisans", docId));
+      } catch (err) {
+        console.warn("Error borrando de Firestore:", err.message);
+      }
+    }
+    this._deleteLocalArtisan(docId);
+    return true;
+  }
 
   async createProject(artisanDocId, projectData) {
-    if (!db) return null;
+    const projectWithMeta = {
+      ...projectData,
+      id: `proj_${Date.now()}`,
+      artisanDocId: artisanDocId || null,
+      createdAt: new Date().toISOString()
+    };
 
-    try {
-      // 1. Crear documento en la colección independiente 'projects'
-      const projDocRef = await addDoc(collection(db, "projects"), {
-        artisanDocId: artisanDocId,
-        title: projectData.title,
-        desc: projectData.desc || '',
-        category: projectData.category || 'Artesanía',
-        date: projectData.date || 'Reciente',
-        mainImage: projectData.mainImage || '',
-        steps: projectData.steps || [],
-        createdAt: new Date()
-      });
+    if (db) {
+      try {
+        const docRef = await addDoc(collection(db, "projects"), {
+          ...projectWithMeta,
+          createdAt: new Date()
+        });
+        projectWithMeta.id = docRef.id;
+      } catch (err) {
+        console.warn("No se pudo crear en colección 'projects', guardando en array del artesano:", err.message);
+      }
 
-      const newProjectId = projDocRef.id;
-
-      // 2. Añadir la referencia (ID) del proyecto al array 'projectRefs' en el documento del artesano
-      const artisanRef = doc(db, "artisans", artisanDocId);
-      await updateDoc(artisanRef, {
-        projectRefs: arrayUnion(newProjectId)
-      });
-
-      return { id: newProjectId, ...projectData };
-    } catch (err) {
-      console.error("Error creando documento en colección 'projects':", err);
-      throw err;
+      if (artisanDocId) {
+        try {
+          const artisanSnap = await getDoc(doc(db, "artisans", artisanDocId));
+          if (artisanSnap.exists()) {
+            const artData = artisanSnap.data();
+            const projects = artData.projects || [];
+            projects.unshift(projectWithMeta);
+            await updateDoc(doc(db, "artisans", artisanDocId), { projects });
+          }
+        } catch (err) {
+          console.warn("Error actualizando array 'projects' del artesano en Firestore:", err.message);
+        }
+      }
     }
+
+    return projectWithMeta;
   }
 
   async updateProject(projectId, projectData) {
-    if (!db || !projectId) return;
-
-    try {
-      const projRef = doc(db, "projects", projectId);
-      await updateDoc(projRef, {
-        title: projectData.title,
-        desc: projectData.desc || '',
-        category: projectData.category || 'Artesanía',
-        mainImage: projectData.mainImage || '',
-        steps: projectData.steps || [],
-        updatedAt: new Date()
-      });
-    } catch (err) {
-      console.error("Error actualizando documento en colección 'projects':", err);
-      throw err;
+    if (db && projectId) {
+      try {
+        const projRef = doc(db, "projects", projectId);
+        await updateDoc(projRef, {
+          ...projectData,
+          updatedAt: new Date()
+        });
+      } catch (err) {
+        console.warn("No se pudo actualizar proyecto en Firestore 'projects':", err.message);
+      }
     }
+    return projectData;
   }
 
   async deleteProject(artisanDocId, projectId) {
-    if (!db) return;
+    if (!projectId) return;
 
-    try {
-      // 1. Eliminar el documento de la colección 'projects'
-      if (projectId) {
-        const projRef = doc(db, "projects", projectId);
-        await deleteDoc(projRef);
+    if (db) {
+      try {
+        await deleteDoc(doc(db, "projects", projectId));
+      } catch (err) {
+        console.warn("Error borrando proyecto de colección 'projects':", err.message);
       }
 
-      // 2. Eliminar la referencia del array 'projectRefs' del documento del artesano
-      if (artisanDocId && projectId) {
-        const artisanRef = doc(db, "artisans", artisanDocId);
-        await updateDoc(artisanRef, {
-          projectRefs: arrayRemove(projectId)
-        });
+      if (artisanDocId) {
+        try {
+          const artisanRef = doc(db, "artisans", artisanDocId);
+          const snap = await getDoc(artisanRef);
+          if (snap.exists()) {
+            const data = snap.data();
+            const filteredProjects = (data.projects || []).filter(p => p.id !== projectId);
+            await updateDoc(artisanRef, { projects: filteredProjects });
+          }
+        } catch (err) {
+          console.warn("Error eliminando proyecto del array del artesano:", err.message);
+        }
       }
-    } catch (err) {
-      console.error("Error eliminando documento de colección 'projects':", err);
-      throw err;
     }
   }
 
-  // --- BORRADO EN CASCADA COMPLETO DEL ARTESANO Y ARCHIVOS ---
   async deleteArtisanCascade(artisanDocId, artisanUid) {
     if (!db && !storage) return;
 
-    console.log(`Iniciando borrado en cascada para artesano ${artisanDocId} (UID: ${artisanUid})`);
-
-    // 1. Eliminar todos los proyectos asociados en 'projects'
+    // 1. Eliminar proyectos asociados en 'projects'
     try {
       if (artisanDocId) {
         const projSnap = await getDocs(query(collection(db, "projects")));
@@ -432,282 +319,51 @@ export class FirebaseArtisanRepository {
       const folderRef = ref(storage, folderPath);
       const res = await listAll(folderRef);
 
-      // Eliminar archivos
       for (const itemRef of res.items) {
         try {
           await deleteObject(itemRef);
         } catch (e) {}
       }
 
-      // Recursividad en subcarpetas
       for (const prefixRef of res.prefixes) {
         await this._deleteStorageFolder(prefixRef.fullPath);
       }
     } catch (e) {
-      // Ignorar si la carpeta no existe o no tiene elementos
+      // Silenciar si no existe
     }
   }
-}
 
-export class FirebaseAuthRepository {
-  onAuthChange(callback) {
-    if (!auth) return;
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userProfile = await this.getUserProfile(user.uid);
-        user.profile = userProfile;
-      }
-      callback(user);
-    });
-  }
-
-  async getUserProfile(uid) {
-    if (!uid) return null;
-    if (db) {
-      try {
-        const uSnap = await getDoc(doc(db, "users", uid));
-        if (uSnap.exists()) {
-          return uSnap.data();
-        }
-      } catch (e) {
-        console.warn("No se pudo leer perfil en Firestore:", e.message);
-      }
-    }
+  // --- Fallback en LocalStorage ---
+  _getLocalArtisans() {
     try {
-      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
-      return localUsers[uid] || null;
+      const data = localStorage.getItem('arteysanos_artisans');
+      return data ? JSON.parse(data).map(a => new Artisan(a)) : [];
     } catch {
-      return null;
+      return [];
     }
   }
 
-  async saveUserProfile(uid, data) {
-    if (!uid) return;
-    if (db) {
-      try {
-        const uRef = doc(db, "users", uid);
-        await updateDoc(uRef, { ...data, updatedAt: new Date() }).catch(async () => {
-          await setDoc(uRef, { ...data, createdAt: new Date() });
-        });
-      } catch (e) {
-        console.warn("Guardado de usuario en Firestore diferido:", e.message);
-      }
-    }
-    try {
-      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
-      localUsers[uid] = { ...(localUsers[uid] || {}), ...data };
-      localStorage.setItem('arteysanos_users', JSON.stringify(localUsers));
-    } catch (e) {
-      console.error(e);
+  _saveLocalArtisan(artisan) {
+    const list = this._getLocalArtisans();
+    list.unshift(artisan);
+    localStorage.setItem('arteysanos_artisans', JSON.stringify(list));
+  }
+
+  _updateLocalArtisan(docIdOrId, updatedData) {
+    const list = this._getLocalArtisans();
+    const idx = list.findIndex(a => a.docId === docIdOrId || String(a.id) === String(docIdOrId));
+    if (idx !== -1) {
+      list[idx] = { ...list[idx], ...updatedData };
+      localStorage.setItem('arteysanos_artisans', JSON.stringify(list));
     }
   }
 
-  async signUp(email, password, displayName = '', role = 'artisan') {
-    if (!auth) throw new Error("Firebase Auth no inicializado");
-    const credential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = credential.user;
-
-    const profileData = {
-      uid: user.uid,
-      email: user.email,
-      displayName: displayName || (role === 'artisan' ? 'Artesano' : 'Usuario'),
-      role: role,
-      createdAt: new Date().toISOString()
-    };
-
-    await this.saveUserProfile(user.uid, profileData);
-    user.profile = profileData;
-
-    try {
-      await sendEmailVerification(user);
-    } catch (e) {
-      console.warn("No se pudo enviar email de verificación:", e.message);
-    }
-
-    return user;
-  }
-
-  async signIn(email, password) {
-    if (!auth) throw new Error("Firebase Auth no inicializado");
-    const credential = await signInWithEmailAndPassword(auth, email, password);
-    const user = credential.user;
-    user.profile = await this.getUserProfile(user.uid);
-    return user;
-  }
-
-  async signInWithGoogle(intendedRole = 'client') {
-    if (!auth) throw new Error("Firebase Auth no inicializado");
-    const provider = new GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    // Verificar si ya existe perfil del usuario
-    let profile = await this.getUserProfile(user.uid);
-    if (!profile) {
-      profile = {
-        uid: user.uid,
-        email: user.email || '',
-        displayName: user.displayName || (intendedRole === 'artisan' ? 'Artesano' : 'Usuario'),
-        photoURL: user.photoURL || '',
-        role: intendedRole,
-        createdAt: new Date().toISOString()
-      };
-      await this.saveUserProfile(user.uid, profile);
-    }
-
-    user.profile = profile;
-
-    // Si es artesano y no tiene ficha de tienda aún, crearla automáticamente
-    if (profile.role === 'artisan') {
-      const artisanRepo = new FirebaseArtisanRepository();
-      const existingArtisan = await artisanRepo.getArtisanByOwnerId(user.uid);
-      if (!existingArtisan) {
-        const artisanName = profile.displayName || user.displayName || 'Taller de Artesanía';
-        await artisanRepo.createArtisan({
-          id: Date.now(),
-          ownerId: user.uid,
-          name: artisanName,
-          trade: 'Artesanía & Oficios',
-          category: 'ceramica',
-          categoryLabel: 'Cerámica & Barro',
-          location: 'España',
-          address: 'Taller Artesanal',
-          phone: '',
-          email: user.email || '',
-          website: '',
-          description: 'Taller artesanal en Arte y Sanos. Pulsa en "Gestionar mi tienda" para personalizar tu historia, oficio y catálogo.',
-          image: profile.photoURL || user.photoURL || 'images/default_avatar.svg',
-          acceptsCustomOrders: true,
-          isVisitable: false
-        });
-      }
-    }
-
-    return user;
-  }
-
-  async logout() {
-    if (!auth) return;
-    await signOut(auth);
-  }
-
-  // --- MÉTODOS DE SEGURIDAD Y GESTIÓN DE CUENTA ---
-
-  async changePassword(currentPassword, newPassword) {
-    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    if (!currentPassword) throw new Error("Debes indicar tu contraseña actual");
-    if (!newPassword || newPassword.length < 6) throw new Error("La nueva contraseña debe tener al menos 6 caracteres");
-
-    // 1. Reautenticación por seguridad
-    const user = auth.currentUser;
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
-    await reauthenticateWithCredential(user, credential);
-
-    // 2. Actualizar contraseña
-    await updatePassword(user, newPassword);
-  }
-
-  async changeEmail(currentPassword, newEmail) {
-    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    if (!currentPassword) throw new Error("Debes indicar tu contraseña actual");
-    if (!newEmail || !newEmail.includes('@')) throw new Error("Correo electrónico no válido");
-
-    const user = auth.currentUser;
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
-    await reauthenticateWithCredential(user, credential);
-
-    // Actualizar en Firebase Auth
-    await updateEmail(user, newEmail);
-
-    // Actualizar en Firestore users
-    await this.saveUserProfile(user.uid, { email: newEmail });
-
-    // Actualizar en artisans si aplica
-    if (db) {
-      try {
-        const artisanRepo = new FirebaseArtisanRepository();
-        const artisan = await artisanRepo.getArtisanByOwnerId(user.uid);
-        if (artisan && artisan.docId) {
-          await artisanRepo.updateArtisan(artisan.docId, { email: newEmail });
-        }
-      } catch (e) {}
-    }
-  }
-
-  async updateAvatar(file, artisanDocId = null) {
-    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    const user = auth.currentUser;
-    const artisanRepo = new FirebaseArtisanRepository();
-    const photoUrl = await artisanRepo.uploadProfileImage(file, user.uid);
-
-    await updateProfile(user, { photoURL: photoUrl });
-    await this.saveUserProfile(user.uid, { photoURL: photoUrl });
-
-    if (artisanDocId) {
-      await artisanRepo.updateArtisan(artisanDocId, { image: photoUrl });
-    }
-
-    return photoUrl;
-  }
-
-  async updateDisplayName(displayName) {
-    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    const user = auth.currentUser;
-    const cleanName = (displayName || '').trim();
-    if (!cleanName) throw new Error("El nombre no puede estar vacío");
-
-    await updateProfile(user, { displayName: cleanName });
-    await this.saveUserProfile(user.uid, { displayName: cleanName });
-    if (user.profile) user.profile.displayName = cleanName;
-    return cleanName;
-  }
-
-  async deleteAccountCascade(currentPassword = null) {
-    if (!auth || !auth.currentUser) throw new Error("No hay una sesión activa");
-    const user = auth.currentUser;
-    const uid = user.uid;
-    const isGoogleAuth = user.providerData && user.providerData.some(p => p.providerId === 'google.com');
-
-    // 1. Reautenticación de seguridad en Firebase Auth
-    if (isGoogleAuth) {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({ prompt: 'select_account' });
-      await reauthenticateWithPopup(user, provider);
-    } else {
-      if (!currentPassword) throw new Error("Debes ingresar tu contraseña actual para confirmar la eliminación de la cuenta");
-      const credential = EmailAuthProvider.credential(user.email, currentPassword);
-      await reauthenticateWithCredential(user, credential);
-    }
-
-    // 2. Localizar y borrar artesano, proyectos, reseñas, comentarios y archivos en Storage
-    const artisanRepo = new FirebaseArtisanRepository();
-    try {
-      const artisan = await artisanRepo.getArtisanByOwnerId(uid);
-      if (artisan) {
-        await artisanRepo.deleteArtisanCascade(artisan.docId, uid);
-      }
-    } catch (artErr) {
-      console.warn("Error en borrado en cascada de artesano:", artErr);
-    }
-
-    // 3. Borrar perfil en colección 'users'
-    if (db) {
-      try {
-        await deleteDoc(doc(db, "users", uid));
-      } catch (uErr) {
-        console.warn("Error borrando perfil de usuario en users:", uErr);
-      }
-    }
-
-    // 4. Limpiar datos locales
-    try {
-      const localUsers = JSON.parse(localStorage.getItem('arteysanos_users') || '{}');
-      delete localUsers[uid];
-      localStorage.setItem('arteysanos_users', JSON.stringify(localUsers));
-    } catch (e) {}
-
-    // 5. Eliminar la cuenta del usuario en Firebase Authentication
-    await deleteUser(user);
+  _deleteLocalArtisan(docIdOrId) {
+    const list = this._getLocalArtisans();
+    const filtered = list.filter(a => a.docId !== docIdOrId && String(a.id) !== String(docIdOrId));
+    localStorage.setItem('arteysanos_artisans', JSON.stringify(filtered));
   }
 }
+
+// Re-exportar FirebaseAuthRepository para compatibilidad retroactiva
+export { FirebaseAuthRepository } from './FirebaseAuthRepository.js';

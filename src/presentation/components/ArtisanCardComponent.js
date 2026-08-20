@@ -1,26 +1,40 @@
+import { escapeHtml } from '../../core/utils/domUtils.js';
+import { DEFAULT_AVATAR_PATH } from '../../core/utils/constants.js';
+
+/**
+ * Componente para renderizar la tarjeta de un artesano en el directorio
+ */
 export class ArtisanCardComponent {
   static render(artisan) {
     const hasCustomOrders = artisan.acceptsCustomOrders !== false;
     const isVisitable = artisan.isVisitable === true;
+    const safeName = escapeHtml(artisan.name);
+    const safeTrade = escapeHtml(artisan.trade);
+    const safeCategory = escapeHtml(artisan.categoryLabel);
+    const safeDesc = escapeHtml(artisan.description);
+    const safeLocation = escapeHtml(artisan.location || 'España');
+    const safeExperience = escapeHtml(artisan.experience || 'Artesano verificado');
+    const imageSrc = artisan.image || DEFAULT_AVATAR_PATH;
+    const ratingDisplay = Number(artisan.rating || 5.0).toFixed(1);
 
     return `
       <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${artisan.id}', '_blank')">
         <div class="artisan-img-wrapper">
-          <img src="${artisan.image || 'images/default_avatar.svg'}" alt="${artisan.name}" class="artisan-img" loading="lazy">
-          <span class="artisan-badge">${artisan.categoryLabel}</span>
+          <img src="${imageSrc}" alt="${safeName}" class="artisan-img" loading="lazy">
+          <span class="artisan-badge">${safeCategory}</span>
           <div class="artisan-rating">
             <i class="fa-solid fa-star"></i>
-            <span>${artisan.rating}</span>
+            <span>${ratingDisplay}</span>
           </div>
           ${artisan.promo && artisan.promo.active ? `
             <div class="promo-badge">
-              <i class="fa-solid fa-tag"></i> ${artisan.promo.title}
+              <i class="fa-solid fa-tag"></i> ${escapeHtml(artisan.promo.title)}
             </div>
           ` : ''}
         </div>
         <div class="artisan-body">
-          <h3 class="artisan-name">${artisan.name}</h3>
-          <div class="artisan-trade">${artisan.trade}</div>
+          <h3 class="artisan-name">${safeName}</h3>
+          <div class="artisan-trade">${safeTrade}</div>
           
           <div class="artisan-badges-row" style="display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.6rem;">
             ${hasCustomOrders ? `
@@ -35,10 +49,10 @@ export class ArtisanCardComponent {
             ` : ''}
           </div>
 
-          <p class="artisan-desc">${artisan.description}</p>
+          <p class="artisan-desc">${safeDesc}</p>
           <div class="artisan-meta">
-            <span><i class="fa-solid fa-location-dot"></i> ${artisan.location}</span>
-            <span><i class="fa-solid fa-certificate"></i> ${artisan.experience}</span>
+            <span><i class="fa-solid fa-location-dot"></i> ${safeLocation}</span>
+            <span><i class="fa-solid fa-certificate"></i> ${safeExperience}</span>
           </div>
           <div class="artisan-footer">
             <a href="perfil.html?id=${artisan.id}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; text-decoration: none; text-align: center; display: block;" onclick="event.stopPropagation();">
@@ -50,4 +64,3 @@ export class ArtisanCardComponent {
     `;
   }
 }
-
