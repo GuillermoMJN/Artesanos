@@ -331,21 +331,27 @@ export class ChatWidgetComponent {
       });
 
       this.openChat();
-      this.openConversationById(conv.id, artisanUid);
+      // Pasar datos del artesano directamente para no depender de que el listener los haya cargado
+      this.openConversationById(conv.id, artisanUid, {
+        name: artisanName || 'Taller Artesanal',
+        avatar: artisanAvatar || 'images/default_avatar.svg'
+      });
     } catch (err) {
       ToastComponent.show(`Error al abrir chat: ${err.message}`, 'error');
     }
   }
 
-  openConversationById(conversationId, otherUid) {
+  openConversationById(conversationId, otherUid, fallbackDetails = null) {
     this.activeConversationId = conversationId;
     const conv = this.conversations.find(c => c.id === conversationId);
-    const details = conv && conv.participantDetails && conv.participantDetails[otherUid] ? conv.participantDetails[otherUid] : { name: 'Taller Artesanal', avatar: 'images/default_avatar.svg' };
+    const details = (conv && conv.participantDetails && conv.participantDetails[otherUid])
+      ? conv.participantDetails[otherUid]
+      : (fallbackDetails || { name: 'Taller Artesanal', avatar: 'images/default_avatar.svg' });
     
     this.activeOtherParticipant = {
       uid: otherUid,
-      name: details.name,
-      avatar: details.avatar
+      name: details.name || 'Taller Artesanal',
+      avatar: details.avatar || 'images/default_avatar.svg'
     };
 
     // Marcar como leída

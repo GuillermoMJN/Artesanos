@@ -12,7 +12,9 @@ import {
   doc, 
   updateDoc, 
   deleteDoc,
-  query, 
+  query,
+  where,
+  limit,
   orderBy
 } from '../../config/firebase.config.js';
 import { Artisan } from '../../domain/models/Artisan.js';
@@ -69,13 +71,13 @@ export class FirebaseArtisanRepository extends IArtisanRepository {
     if (!id) return null;
     const strId = String(id).trim();
 
-    // 1. Comprobar primero en caché / local para renderizado instantáneo
+    // 1. Comprobar primero en caché local para respuesta rápida
     const localArtisans = this._getLocalArtisans();
-    const localFound = localArtisans.find(a => String(a.docId) === strId || String(a.id) === strId || String(a.ownerId) === strId);
+    const localFound = localArtisans.find(a => String(a.docId) === strId || String(a.id) === strId);
 
     if (db) {
       try {
-        // Intento directo por document ID (tiempo de respuesta de pocos ms)
+        // Intento 1: por document ID directo de Firestore (la forma más rápida)
         const docRef = doc(db, "artisans", strId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
@@ -83,18 +85,29 @@ export class FirebaseArtisanRepository extends IArtisanRepository {
           this._updateLocalArtisan(docSnap.id, art);
           return art;
         }
+      } catch (err) {
+        console.warn("Búsqueda por docId falló:", err.message);
+      }
 
-        // Intento por campo numérico o string 'id'
-        const q = query(collection(db, "artisans"), where("id", "==", isNaN(Number(strId)) ? strId : Number(strId)), limit(1));
-        const qSnap = await getDocs(q);
-        if (!qSnap.empty) {
-          const d = qSnap.docs[0];
-          const art = new Artisan({ docId: d.id, ...d.data() });
-          this._updateLocalArtisan(d.id, art);
-          return art;
+      try {
+        // Intento 2: buscar por campo 'id' numérico
+        const numId = Number(strId);
+        if (!isNaN(numId)) {
+          const q = query(collection(db, "artisans"), where("id", "==", numId), limit(1));
+          const qSnap = await getDocs(q);
+          if (!qSnap.empty) {
+            const d = qSnap.docs[0];
+            const art = new Artisan({ docId: d.id, ...d.data() });
+            this._updateLocalArtisan(d.id, art);
+            return art;
+          }
         }
+      } catch (err) {
+        console.warn("Búsqueda por campo id numérico falló:", err.message);
+      }
 
-        // Intento por campo 'id' como string
+      try {
+        // Intento 3: buscar por campo 'id' como string
         const qStr = query(collection(db, "artisans"), where("id", "==", strId), limit(1));
         const qStrSnap = await getDocs(qStr);
         if (!qStrSnap.empty) {
@@ -104,7 +117,22 @@ export class FirebaseArtisanRepository extends IArtisanRepository {
           return art;
         }
       } catch (err) {
-        console.warn("Búsqueda en Firestore falló, usando local:", err.message);
+        console.warn("Búsqueda por campo id string falló:", err.message);
+      }
+
+      try {
+        // Último recurso: recorrer todos (solo si todo lo anterior falla)
+        const allSnap = await getDocs(collection(db, "artisans"));
+        for (const d of allSnap.docs) {
+          const data = d.data();
+          if (d.id === strId || String(data.id) === strId) {
+            const art = new Artisan({ docId: d.id, ...data });
+            this._updateLocalArtisan(d.id, art);
+            return art;
+          }
+        }
+      } catch (err) {
+        console.warn("Búsqueda completa en colección falló:", err.message);
       }
     }
 
