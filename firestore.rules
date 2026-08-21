@@ -57,5 +57,21 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isOwner(userId);
     }
+
+    // 6. CONVERSACIONES DE MENSAJERÍA INSTANTÁNEA: Solo participantes pueden leer y escribir
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participants;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow delete: if isAuthenticated() && request.auth.uid in resource.data.participants;
+
+      // Subcolección de mensajes dentro de la conversación
+      match /messages/{messageId} {
+        allow read: if isAuthenticated();
+        allow create: if isAuthenticated() && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
+      }
+    }
   }
 }
+

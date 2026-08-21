@@ -14,6 +14,9 @@ import {
   query, 
   where,
   orderBy,
+  limit,
+  onSnapshot,
+  serverTimestamp,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import { 
@@ -86,6 +89,9 @@ export {
   query,
   where,
   orderBy,
+  limit,
+  onSnapshot,
+  serverTimestamp,
   writeBatch,
   // Auth exports
   createUserWithEmailAndPassword,

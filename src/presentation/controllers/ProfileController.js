@@ -10,11 +10,12 @@ import { LightboxComponent } from '../components/LightboxComponent.js';
  * Controlador de la Página de Perfil Público del Artesano (perfil.html)
  */
 export class ProfileController {
-  constructor(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases) {
+  constructor(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases, chatWidget = null) {
     this.getArtisansUseCase = getArtisansUseCase;
     this.authUseCases = authUseCases;
     this.reviewUseCases = reviewUseCases;
     this.manageShopUseCases = manageShopUseCases;
+    this.chatWidget = chatWidget;
     this.artisan = null;
     this.currentLoggedUser = null;
     this.activeProjectIdForComments = null;
@@ -62,6 +63,9 @@ export class ProfileController {
   setupAuthListener() {
     this.authUseCases.onAuthStateChanged(async (user) => {
       this.currentLoggedUser = user;
+      if (this.chatWidget) {
+        this.chatWidget.setCurrentUser(user);
+      }
       const navContainer = document.getElementById('perfilNavAuth');
       const authorInput = document.getElementById('reviewAuthorName');
       const projAuthorInput = document.getElementById('projectCommentAuthor');
@@ -184,6 +188,21 @@ export class ProfileController {
     }
 
     this.updateRatingUI(a.rating, a.reviewsCount || 0);
+
+    // Botón Chat Directo
+    const btnChat = document.getElementById('btnChatDirect');
+    if (btnChat) {
+      btnChat.addEventListener('click', () => {
+        if (this.chatWidget) {
+          this.chatWidget.openConversationWithArtisan({
+            artisanUid: a.ownerId || a.id,
+            artisanDocId: a.docId || a.id,
+            artisanName: a.name,
+            artisanAvatar: a.image || DEFAULT_AVATAR_PATH
+          });
+        }
+      });
+    }
 
     // Botón WhatsApp
     const btnWa = document.getElementById('btnWhatsapp');
@@ -344,18 +363,37 @@ export class ProfileController {
       techSheet.style.display = 'none';
     }
 
-    // WhatsApp para esta pieza
+    // Contacto directo (Chat y WhatsApp) para esta pieza
     const cleanPhone = cleanPhoneNumber(this.artisan.phone);
     const isWhatsappAllowed = this.artisan.allowWhatsapp !== false && cleanPhone.length > 0;
     const waContainer = document.getElementById('modalProjWhatsappContainer');
     const waBtn = document.getElementById('modalProjWhatsappBtn');
-    if (waContainer && waBtn) {
-      if (isWhatsappAllowed) {
-        const pieceMsg = `¡Hola! He visto tu trabajo "${proj.title}" en Arte y Sanos y me gustaría pedirte información o consultar presupuesto.`;
-        waBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pieceMsg)}`;
-        waContainer.style.display = 'block';
-      } else {
-        waContainer.style.display = 'none';
+    const chatProjBtn = document.getElementById('modalProjChatBtn');
+
+    if (waContainer) {
+      waContainer.style.display = 'flex';
+      if (waBtn) {
+        if (isWhatsappAllowed) {
+          const pieceMsg = `¡Hola! He visto tu trabajo "${proj.title}" en Arte y Sanos y me gustaría pedirte información o consultar presupuesto.`;
+          waBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pieceMsg)}`;
+          waBtn.style.display = 'inline-flex';
+        } else {
+          waBtn.style.display = 'none';
+        }
+      }
+
+      if (chatProjBtn) {
+        chatProjBtn.onclick = () => {
+          if (this.chatWidget) {
+            this.chatWidget.openConversationWithArtisan({
+              artisanUid: this.artisan.ownerId || this.artisan.id,
+              artisanDocId: this.artisan.docId || this.artisan.id,
+              artisanName: this.artisan.name,
+              artisanAvatar: this.artisan.image || DEFAULT_AVATAR_PATH,
+              initialContext: proj.title
+            });
+          }
+        };
       }
     }
 

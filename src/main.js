@@ -2,10 +2,12 @@ import { FirebaseArtisanRepository } from './data/firebase/FirebaseArtisanReposi
 import { FirebaseAuthRepository } from './data/firebase/FirebaseAuthRepository.js';
 import { FirebaseStorageRepository } from './data/firebase/FirebaseStorageRepository.js';
 import { FirebaseCrmRepository } from './data/firebase/FirebaseCrmRepository.js';
+import { FirebaseChatRepository } from './data/firebase/FirebaseChatRepository.js';
 import { GetArtisansUseCase } from './domain/usecases/GetArtisansUseCase.js';
 import { AuthUseCases } from './domain/usecases/AuthUseCases.js';
 import { ManageShopUseCases } from './domain/usecases/ManageShopUseCases.js';
 import { CrmUseCases } from './domain/usecases/CrmUseCases.js';
+import { ChatUseCases } from './domain/usecases/ChatUseCases.js';
 import { HeaderController } from './presentation/controllers/HeaderController.js';
 import { AuthController } from './presentation/controllers/AuthController.js';
 import { DirectoryController } from './presentation/controllers/DirectoryController.js';
@@ -14,6 +16,7 @@ import { UserAccountController } from './presentation/controllers/UserAccountCon
 import { SupportController } from './presentation/controllers/SupportController.js';
 import { IntroAnimationComponent } from './presentation/components/IntroAnimationComponent.js';
 import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
+import { ChatWidgetComponent } from './presentation/components/ChatWidgetComponent.js';
 import { setupModalDismissListeners, closeModal } from './core/utils/domUtils.js';
 
 /**
@@ -26,16 +29,21 @@ class MainApp {
     this.authRepo = new FirebaseAuthRepository();
     this.storageRepo = new FirebaseStorageRepository();
     this.crmRepo = new FirebaseCrmRepository();
+    this.chatRepo = new FirebaseChatRepository();
 
     // 2. Capa de Dominio / Casos de Uso (Domain Use Cases)
     this.getArtisansUseCase = new GetArtisansUseCase(this.artisanRepo);
     this.authUseCases = new AuthUseCases(this.authRepo, this.artisanRepo);
     this.manageShopUseCases = new ManageShopUseCases(this.artisanRepo, this.storageRepo);
     this.crmUseCases = new CrmUseCases(this.crmRepo, this.artisanRepo);
+    this.chatUseCases = new ChatUseCases(this.chatRepo);
 
     // Estado centralizado
     this.currentUser = null;
     this.currentArtisanProfile = null;
+
+    // Componentes globales
+    this.chatWidget = new ChatWidgetComponent(this.chatUseCases);
 
     // 3. Capa de Presentación / Controladores (Presentation Controllers)
     this.headerController = new HeaderController({
@@ -86,6 +94,9 @@ class MainApp {
     CookieBannerComponent.init();
     setupModalDismissListeners();
 
+    this.chatWidget.init();
+    window.chatWidgetUI = this.chatWidget;
+
     this.headerController.init();
     this.authController.init();
     this.shopManageController.init();
@@ -132,6 +143,7 @@ class MainApp {
       this.currentArtisanProfile = null;
     }
 
+    this.chatWidget.setCurrentUser(this.currentUser);
     this.shopManageController.setCurrentState(this.currentUser, this.currentArtisanProfile);
     this.userAccountController.setCurrentUser(this.currentUser);
     this.supportController.setCurrentState(this.currentUser, this.currentArtisanProfile);
