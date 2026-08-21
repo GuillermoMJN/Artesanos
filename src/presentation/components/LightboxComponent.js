@@ -9,21 +9,24 @@ export class LightboxComponent {
     const overlayEl = document.getElementById('lightboxCaptionOverlay');
     const titleEl = document.getElementById('lightboxTitle');
     const descEl = document.getElementById('lightboxDescription');
-    if (!container) return;
+    if (!container || !mediaUrl) return;
 
-    const isVideo = (mediaUrl || '').endsWith('.mp4') || (mediaUrl || '').endsWith('.webm') || (mediaUrl || '').endsWith('.mov');
+    const isVideo = String(mediaUrl).endsWith('.mp4') || String(mediaUrl).endsWith('.webm') || String(mediaUrl).endsWith('.mov');
+
+    const hasTitle = Boolean(title && String(title).trim().length > 0);
+    const hasDesc = Boolean(description && String(description).trim().length > 0);
+    const hasText = hasTitle || hasDesc;
+    const mediaMaxHeight = hasText ? '68vh' : '82vh';
+    const mediaBorderRadius = hasText ? '14px 14px 0 0' : '14px';
 
     if (isVideo) {
-      container.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 90vw; max-height: 82vh; border-radius: 12px; display: block;"></video>`;
+      container.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 90vw; max-height: ${mediaMaxHeight}; border-radius: ${mediaBorderRadius}; display: block; object-fit: contain;"></video>`;
     } else {
-      container.innerHTML = `<img src="${mediaUrl}" alt="${escapeHtml(title || 'Foto')}" style="max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 12px; display: block;">`;
+      container.innerHTML = `<img src="${mediaUrl}" alt="${escapeHtml(title || 'Fotografía Artesanal')}" style="max-width: 90vw; max-height: ${mediaMaxHeight}; object-fit: contain; border-radius: ${mediaBorderRadius}; display: block;">`;
     }
 
-    const hasTitle = Boolean(title && title.trim().length > 0);
-    const hasDesc = Boolean(description && description.trim().length > 0);
-
     if (overlayEl) {
-      if (hasTitle || hasDesc) {
+      if (hasText) {
         overlayEl.style.display = 'block';
         if (titleEl) {
           titleEl.textContent = title || '';
@@ -47,4 +50,5 @@ export class LightboxComponent {
     if (container) container.innerHTML = '';
   }
 }
+
 

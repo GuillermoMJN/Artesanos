@@ -439,7 +439,7 @@ export class CrmPageController {
     try {
       // 1. Actualizar el artesano en la base de datos
       await this.artisanRepository.updateArtisan(artisanDocId, {
-        experience: currentlyCertified ? 'Artesano de la comunidad' : 'Artesano Certificado ✓',
+        experience: currentlyCertified ? '' : 'Artesano Certificado ✓',
         isVerified: !currentlyCertified
       });
 

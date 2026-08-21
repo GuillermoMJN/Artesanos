@@ -82,7 +82,7 @@ export class AuthController {
 
     try {
       const user = await this.authUseCases.signIn(email, password);
-      closeModal('loginModal');
+      closeModal('loginModal', true);
       ToastComponent.show(`¡Bienvenido de nuevo, ${user.email}!`);
       if (typeof this.onAuthSuccess === 'function') await this.onAuthSuccess(user);
     } catch (err) {
@@ -97,8 +97,8 @@ export class AuthController {
         role = (document.getElementById('registerAccountRole') && document.getElementById('registerAccountRole').value) || 'client';
       }
       const user = await this.authUseCases.signInWithGoogle(role);
-      closeModal('loginModal');
-      closeModal('registerModal');
+      closeModal('loginModal', true);
+      closeModal('registerModal', true);
 
       const name = (user.profile && user.profile.displayName) || user.displayName || user.email;
       const roleLabel = (user.profile && user.profile.role === 'artisan') ? 'Artesano / Taller' : 'Usuario / Cliente';
@@ -169,7 +169,7 @@ export class AuthController {
       ToastComponent.show(`¡Bienvenido, ${displayName}! Tu cuenta de usuario está lista.`);
     }
 
-    closeModal('registerModal');
+    closeModal('registerModal', true);
     e.target.reset();
     if (typeof this.onAuthSuccess === 'function') await this.onAuthSuccess(createdUser);
   }

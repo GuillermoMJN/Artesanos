@@ -8,6 +8,7 @@ import { ManageShopUseCases } from './domain/usecases/ManageShopUseCases.js';
 import { ReviewUseCases } from './domain/usecases/ReviewUseCases.js';
 import { ProfileController } from './presentation/controllers/ProfileController.js';
 import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
+import { setupModalDismissListeners } from './core/utils/domUtils.js';
 
 // Inicialización con Inyección de Dependencias
 const artisanRepo = new FirebaseArtisanRepository();
@@ -24,6 +25,7 @@ const profileController = new ProfileController(getArtisansUseCase, authUseCases
 
 const startProfile = () => {
   CookieBannerComponent.init();
+  setupModalDismissListeners();
   profileController.init();
 };
 

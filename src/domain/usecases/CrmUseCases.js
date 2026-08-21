@@ -44,7 +44,7 @@ export class CrmUseCases {
     } else if (status === 'rejected' && artisanDocId && this.artisanRepository) {
       try {
         await this.artisanRepository.updateArtisan(artisanDocId, {
-          experience: 'Artesano de la comunidad',
+          experience: '',
           isVerified: false
         });
       } catch (e) {}

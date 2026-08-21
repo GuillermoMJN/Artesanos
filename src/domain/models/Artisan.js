@@ -15,7 +15,7 @@ export class Artisan {
     categoryLabel,
     rating = 5.0,
     reviewsCount = 1,
-    experience = 'Artesano verificado',
+    experience = '',
     location,
     address,
     phone,
@@ -44,7 +44,7 @@ export class Artisan {
     this.categoryLabel = categoryLabel || this.getCategoryLabel(this.category);
     this.rating = Number(rating) || 5.0;
     this.reviewsCount = Number(reviewsCount) || 0;
-    this.experience = experience || 'Artesano verificado';
+    this.experience = experience || '';
     this.location = location || 'España';
     this.address = address || '';
     this.phone = phone || '';

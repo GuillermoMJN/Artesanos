@@ -362,7 +362,7 @@
           <div class="profile-meta-chips">
             <span class="profile-chip" id="profileLocation"><i class="fa-solid fa-location-dot"></i> Ubicación</span>
             <span class="profile-chip" id="profileRating"><i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> 5.0</span>
-            <span class="profile-chip" id="profileExperience"><i class="fa-solid fa-certificate"></i> Experiencia</span>
+            <span class="profile-chip" id="profileExperience" style="display: none;"><i class="fa-solid fa-certificate"></i> Certificado</span>
           </div>
         </div>
         <div class="profile-actions-box">
@@ -420,201 +420,6 @@
           <i class="fa-solid fa-address-card" style="color: var(--terracotta);"></i> Información de Contacto
         </h3>
         <div class="contact-info-box">
-          <div class="contact-item">
-            <i class="fa-solid fa-phone"></i>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Teléfono / WhatsApp</div>
-              <strong id="contactPhone" style="color: var(--primary-dark);"></strong>
-            </div>
-          </div>
-          <div class="contact-item">
-            <i class="fa-solid fa-envelope"></i>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Email</div>
-              <strong id="contactEmail" style="color: var(--primary-dark);"></strong>
-            </div>
-          </div>
-          <div class="contact-item">
-            <i class="fa-solid fa-location-dot"></i>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Dirección física</div>
-              <strong id="contactAddress" style="color: var(--primary-dark);"></strong>
-            </div>
-          </div>
-          <div class="contact-item">
-            <i class="fa-solid fa-clock"></i>
-            <div>
-              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Horario del taller</div>
-              <strong id="contactHours" style="color: var(--primary-dark);"></strong>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SECCIÓN DE RESEÑAS Y VALORACIONES GLOBALES DEL ARTESANO -->
-    <section id="reviewsSection" style="margin-bottom: 4rem;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;">
-        <div>
-          <span class="section-tag"><i class="fa-solid fa-star"></i> Opiniones Reales</span>
-          <h2 style="font-family: 'Playfair Display', serif; font-size: 2.1rem; color: var(--primary-dark);">Reseñas y Valoración del Artesano</h2>
-          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.3rem;">La puntuación media se calcula únicamente con las valoraciones directas a este artesano.</p>
-        </div>
-      </div>
-
-      <!-- Resumen Global de Puntuación -->
-      <div class="profile-rating-summary-grid">
-        <div class="profile-rating-score-side">
-          <div style="font-size: 3.5rem; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-dark); line-height: 1;" id="summaryScoreNum">5.0</div>
-          <div style="color: var(--warm-gold); font-size: 1.3rem; margin: 0.5rem 0;" id="summaryScoreStars">
-            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-          </div>
-          <p style="color: var(--text-muted); font-size: 0.9rem;" id="summaryScoreCount">Basado en 0 opiniones</p>
-        </div>
-
-        <div>
-          <h4 style="color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.15rem;">¿Has visitado este taller o comprado sus piezas?</h4>
-          <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1rem;">
-            Comparte tu experiencia para ayudar a otros amantes de la artesanía a descubrir el trabajo de este creador.
-          </p>
-          <a href="#newReviewBox" class="btn btn-primary" style="display: inline-block;">
-            <i class="fa-solid fa-pen-nib"></i> Escribir una Reseña
-          </a>
-        </div>
-      </div>
-
-      <!-- Formulario para Añadir Nueva Reseña -->
-      <div id="newReviewBox" style="background: var(--bg-subtle); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2.5rem;">
-        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.2rem;">
-          <i class="fa-solid fa-comment-dots" style="color: var(--terracotta);"></i> Deja tu Valoración y Comentario
-        </h3>
-
-        <form id="artisanReviewForm">
-          <div style="margin-bottom: 1.2rem;">
-            <label class="form-label" style="margin-bottom: 0.4rem;">Tu Puntuación General *</label>
-            <div class="star-rating-select" id="starRatingSelect">
-              <i class="fa-solid fa-star active" data-value="1"></i>
-              <i class="fa-solid fa-star active" data-value="2"></i>
-              <i class="fa-solid fa-star active" data-value="3"></i>
-              <i class="fa-solid fa-star active" data-value="4"></i>
-              <i class="fa-solid fa-star active" data-value="5"></i>
-            </div>
-            <input type="hidden" id="reviewRatingInput" value="5">
-          </div>
-
-          <div id="guestReviewerFields" class="form-row" style="margin-bottom: 1rem;">
-            <div class="form-group">
-              <label class="form-label">Tu Nombre o Alias *</label>
-              <input type="text" id="reviewAuthorName" class="form-input" placeholder="ej. Lucía Morales" required>
-            </div>
-          </div>
-
-          <div class="form-group" style="margin-bottom: 1.5rem;">
-            <label class="form-label">Tu Opinión sobre el Artesano *</label>
-            <textarea id="reviewCommentText" class="form-textarea" rows="4" placeholder="Describe tu experiencia, calidad del trabajo, trato recibido, etc..." required></textarea>
-          </div>
-
-          <button type="submit" id="btnSubmitReview" class="btn btn-primary">
-            <i class="fa-solid fa-paper-plane"></i> Publicar Reseña
-          </button>
-        </form>
-      </div>
-
-      <!-- Listado de Reseñas Publicadas -->
-      <div id="reviewsListContainer" style="display: flex; flex-direction: column; gap: 1.2rem;">
-        <!-- Se inyectan dinámicamente -->
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Modal Detalle de Proyecto Individual con Comentarios Independientes -->
-  <div class="modal-overlay" id="projectDetailModal">
-    <div class="modal-card" style="max-width: 850px;">
-      <button class="modal-close" onclick="closeProjectModal()">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
-      <div class="modal-body" style="padding: 2rem;">
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-          <span class="hero-badge" id="modalProjCategory" style="margin: 0;"><i class="fa-solid fa-folder"></i> Proyecto</span>
-          <span id="modalProjPriceBadge" class="project-price-tag" style="display: none;"></span>
-        </div>
-
-        <h2 id="modalProjTitle" style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--primary-dark); margin-bottom: 0.3rem;">Título del Proyecto</h2>
-        <p id="modalProjDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.2rem;"><i class="fa-regular fa-calendar-lines"></i> Fecha</p>
-
-        <!-- Ficha Técnica del Proyecto (Materiales, Tiempo, Precio) -->
-        <div id="modalProjTechSheet" class="project-tech-sheet" style="display: none; margin-bottom: 1.5rem;">
-          <div class="tech-sheet-grid">
-            <div id="techItemPrice" class="tech-item" style="display: none;">
-              <span class="tech-label"><i class="fa-solid fa-tag"></i> Precio Orientativo</span>
-              <strong id="modalProjPrice" class="tech-val"></strong>
-            </div>
-            <div id="techItemMaterials" class="tech-item" style="display: none;">
-              <span class="tech-label"><i class="fa-solid fa-layer-group"></i> Materiales Nobles</span>
-              <strong id="modalProjMaterials" class="tech-val"></strong>
-            </div>
-            <div id="techItemTime" class="tech-item" style="display: none;">
-              <span class="tech-label"><i class="fa-solid fa-clock"></i> Tiempo de Elaboración</span>
-              <strong id="modalProjTimeSpent" class="tech-val"></strong>
-            </div>
-          </div>
-        </div>
-
-        <p id="modalProjDesc" style="color: var(--text-secondary); line-height: 1.7; font-size: 1.05rem; margin-bottom: 1.8rem; background: var(--bg-subtle); padding: 1.2rem; border-radius: var(--radius-sm); border-left: 4px solid var(--terracotta);"></p>
-
-        <!-- Botón de consulta directa por WhatsApp para esta pieza -->
-        <div id="modalProjWhatsappContainer" style="margin-bottom: 2rem; display: none;">
-          <a id="modalProjWhatsappBtn" href="#" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: center; font-size: 0.95rem; padding: 0.85rem 1.4rem;">
-            <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Preguntar o Pedir Presupuesto de esta Pieza por WhatsApp
-          </a>
-        </div>
-
-        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem;">
-          <i class="fa-solid fa-camera-retro" style="color: var(--terracotta);"></i> Proceso de Desarrollo & Galería
-        </h3>
-
-        <div id="modalProjSteps" style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem;">
-          <!-- Fotos y pasos del proyecto -->
-        </div>
-
-        <!-- SECCIÓN DE COMENTARIOS DEL PROYECTO -->
-        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
-
-        <div style="margin-bottom: 1.5rem;">
-          <h4 style="font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fa-solid fa-comments" style="color: var(--terracotta);"></i> Preguntas y Comentarios sobre esta Pieza
-          </h4>
-          <p style="color: var(--text-secondary); font-size: 0.88rem;">Comentarios de la comunidad sobre este proyecto en particular (no alteran la media de estrellas del artesano).</p>
-        </div>
-
-        <!-- Lista de Comentarios del Proyecto -->
-        <div id="projectCommentsList" style="margin-bottom: 1.5rem; max-height: 250px; overflow-y: auto;">
-          <!-- Dinámico -->
-        </div>
-
-        <!-- Formulario para Comentar en el Proyecto -->
-        <form id="projectCommentForm" style="display: flex; flex-direction: column; gap: 0.8rem; background: var(--bg-subtle); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
-          <div style="display: flex; gap: 0.8rem;">
-            <input type="text" id="projectCommentAuthor" class="form-input" placeholder="Tu Nombre o Alias *" required style="flex: 1;">
-          </div>
-          <div style="display: flex; gap: 0.8rem;">
-            <input type="text" id="projectCommentText" class="form-input" placeholder="Escribe tu comentario o consulta sobre esta obra..." required style="flex: 1;">
-            <button type="submit" class="btn btn-primary" style="white-space: nowrap; padding: 0.7rem 1.4rem;">
-              <i class="fa-solid fa-paper-plane"></i> Enviar
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
-  <div class="modal-overlay" id="lightboxModal" style="z-index: 4000; background: rgba(0, 0, 0, 0.9);">
-    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #FFF;">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-    <div style="max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
           <div class="contact-item">
             <i class="fa-solid fa-phone"></i>
             <div>
@@ -805,19 +610,20 @@
   </div>
 
   <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
-  <div class="modal-overlay" id="lightboxModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999 !important; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); padding: 1.5rem; display: flex; align-items: center; justify-content: center;" onclick="closeLightboxModal()">
-    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.25); color: #FFF; border: none; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; z-index: 1000000;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">
+  <div class="modal-overlay" id="lightboxModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999 !important; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(8px); padding: 1.5rem; display: flex; align-items: center; justify-content: center;" onclick="closeLightboxModal()">
+    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.25); color: #FFF; border: none; font-size: 1.4rem; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; z-index: 1000000;" onmouseover="this.style.background='rgba(255,255,255,0.45)'; this.style.transform='scale(1.08)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'; this.style.transform='scale(1)'">
       <i class="fa-solid fa-xmark"></i>
     </button>
     
-    <div id="lightboxWrapper" style="position: relative; max-width: 92vw; max-height: 90vh; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.8); z-index: 1000000;" onclick="event.stopPropagation();">
+    <div id="lightboxWrapper" style="position: relative; max-width: 90vw; max-height: 92vh; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 16px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.85); background: #161B26; border: 1px solid rgba(255,255,255,0.12);" onclick="event.stopPropagation();">
       
-      <div id="lightboxMediaContainer" style="max-width: 100%; max-height: 85vh; display: flex; justify-content: center; align-items: center; background: #000;"></div>
+      <!-- Contenedor multimedia (foto grande o vídeo) -->
+      <div id="lightboxMediaContainer" style="max-width: 100%; max-height: 70vh; display: flex; justify-content: center; align-items: center; background: #0b0e14; overflow: hidden;"></div>
       
-      <!-- Overlay superpuesto en la parte inferior de la foto con título y descripción legibles -->
-      <div id="lightboxCaptionOverlay" style="display: none; position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.65) 70%, transparent 100%); padding: 2rem 1.8rem 1.4rem; color: #FFFFFF; text-align: left; pointer-events: none;">
-        <h4 id="lightboxTitle" style="color: #FFF; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.35rem 0; font-family: 'Playfair Display', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></h4>
-        <p id="lightboxDescription" style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; line-height: 1.5; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.6); max-width: 900px;"></p>
+      <!-- Bloque inferior con título y descripción sobre fondo 100% opaco para máxima legibilidad -->
+      <div id="lightboxCaptionOverlay" style="display: none; width: 100%; background: #161B26; border-top: 1px solid rgba(255,255,255,0.12); padding: 1.25rem 2rem; color: #FFFFFF; text-align: left; box-sizing: border-box;">
+        <h4 id="lightboxTitle" style="color: #FFFFFF; font-size: 1.3rem; font-weight: 700; margin: 0 0 0.4rem 0; font-family: 'Playfair Display', serif; letter-spacing: 0.3px;"></h4>
+        <p id="lightboxDescription" style="color: #E2E8F0; font-size: 0.95rem; line-height: 1.6; margin: 0; max-width: 850px; font-weight: 400;"></p>
       </div>
 
     </div>

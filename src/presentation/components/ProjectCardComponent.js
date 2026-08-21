@@ -24,15 +24,15 @@ export class ProjectCardComponent {
             </button>
           </div>
         ` : ''}
-        <div style="position: relative; cursor: pointer; background: #FFFFFF;" onclick="window.openProjectModal(${index})">
+        <div style="position: relative; cursor: pointer; background: #FFFFFF;" onclick="window.openLightboxForProject(${index})" title="Haz clic para ampliar la foto">
           <img src="${project.mainImage}" alt="${safeTitle}" class="project-media" loading="lazy" style="opacity: 0; transition: opacity 0.6s ease;" onload="this.style.opacity='1';">
           ${hasPrice ? `
             <span class="project-card-price-badge">
               <i class="fa-solid fa-tag"></i> ${safePrice}
             </span>
           ` : ''}
-          <span class="hero-badge" style="position: absolute; bottom: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.65); color: #FFF; border: none; font-size: 0.75rem;">
-            <i class="fa-solid fa-expand"></i> Ver Detalles
+          <span class="hero-badge" style="position: absolute; bottom: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.72); color: #FFF; border: none; font-size: 0.78rem; font-weight: 600; padding: 0.35rem 0.75rem; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
+            <i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar Foto
           </span>
         </div>
         <div class="project-body" style="cursor: pointer; flex: 1; display: flex; flex-direction: column;" onclick="window.openProjectModal(${index})">
@@ -48,26 +48,23 @@ export class ProjectCardComponent {
           ` : ''}
 
           <div style="margin-top: auto; padding-top: 0.8rem; color: var(--warm-gold-hover); font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.4rem;">
-            Ver fotos del desarrollo (${numSteps} imágenes) <i class="fa-solid fa-arrow-right"></i>
+            Ver ficha técnica y detalles (${numSteps} fotos) <i class="fa-solid fa-arrow-right"></i>
           </div>
         </div>
       </div>
     `;
   }
 
-  static renderStepCard(step) {
+  static renderStepCard(step, stepIdx = 0, projIdx = 0) {
     const safeTitle = escapeHtml(step.title || '');
     const safeDesc = escapeHtml(step.desc || '');
     const cleanImg = escapeHtml(step.img);
 
-    const jsTitle = (step.title || '').replace(/'/g, "\\'");
-    const jsDesc = (step.desc || '').replace(/'/g, "\\'");
-
     return `
-      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="window.openLightboxModal('${cleanImg}', '${jsTitle}', '${jsDesc}')">
+      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="window.openLightboxStep(${projIdx}, ${stepIdx})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
         <div style="position: relative; height: 180px; overflow: hidden; background: #FAF7F2;">
           <img src="${cleanImg}" alt="${safeTitle || 'Foto'}" style="width: 100%; height: 100%; object-fit: cover;">
-          <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
+          <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.7); color: #FFF; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
         </div>
         ${(step.title || step.desc) ? `
           <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
@@ -79,3 +76,4 @@ export class ProjectCardComponent {
     `;
   }
 }
+

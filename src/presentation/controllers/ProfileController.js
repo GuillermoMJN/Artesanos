@@ -23,6 +23,8 @@ export class ProfileController {
   }
 
   async init() {
+    this.bindGlobalWindowMethods();
+
     const urlParams = new URLSearchParams(window.location.search);
     const artisanId = urlParams.get('id');
 
@@ -39,7 +41,6 @@ export class ProfileController {
     this.renderProjectsGrid();
     this.renderContactInfo();
     this.setupProjectCommentForm();
-    this.bindGlobalWindowMethods();
   }
 
   renderNotFound() {
@@ -157,7 +158,15 @@ export class ProfileController {
     if (catEl) catEl.textContent = a.categoryLabel || 'Artesano verificado';
     if (descEl) descEl.textContent = a.description || '';
     if (locEl) locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${escapeHtml(a.location || 'España')}`;
-    if (expEl) expEl.innerHTML = `<i class="fa-solid fa-certificate"></i> ${escapeHtml(a.experience || 'Artesano verificado')}`;
+    if (expEl) {
+      const isCert = a.experience && a.experience.toLowerCase().includes('certificado');
+      if (isCert) {
+        expEl.innerHTML = `<i class="fa-solid fa-certificate" style="color: var(--warm-gold);"></i> ${escapeHtml(a.experience)}`;
+        expEl.style.display = 'inline-flex';
+      } else {
+        expEl.style.display = 'none';
+      }
+    }
 
     // Insignias meta chips
     const chipsContainer = document.querySelector('.profile-meta-chips');
@@ -357,12 +366,16 @@ export class ProfileController {
     stepsContainer.style.gap = '1.2rem';
 
     if (proj.steps && proj.steps.length > 0) {
-      stepsContainer.innerHTML = proj.steps.map(step => ProjectCardComponent.renderStepCard(step)).join('');
+      stepsContainer.innerHTML = proj.steps.map((step, stepIdx) => ProjectCardComponent.renderStepCard(step, stepIdx, idx)).join('');
     } else {
-      const fallbackDesc = (proj.desc || '').replace(/'/g, "\\'");
       stepsContainer.innerHTML = `
-        <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="window.openLightboxModal('${proj.mainImage}', '${safeTitle.replace(/'/g, "\\'")}', '${fallbackDesc}')">
-          <img src="${proj.mainImage}" alt="${safeTitle}" style="width: 100%; height: 220px; object-fit: cover;">
+        <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.04); transition: transform 0.2s ease;" onclick="window.openLightboxForProject(${idx})" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+          <div style="position: relative; height: 220px; overflow: hidden; background: #000;">
+            <img src="${proj.mainImage}" alt="${safeTitle}" style="width: 100%; height: 100%; object-fit: cover;">
+            <span style="position: absolute; bottom: 0.8rem; right: 0.8rem; background: rgba(0,0,0,0.75); color: #FFF; padding: 0.35rem 0.8rem; border-radius: 6px; font-size: 0.82rem; font-weight: 600;">
+              <i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar Foto
+            </span>
+          </div>
         </div>
       `;
     }
@@ -371,8 +384,8 @@ export class ProfileController {
     openModal('projectDetailModal');
   }
 
-  closeProjectModal() {
-    closeModal('projectDetailModal');
+  closeProjectModal(force = false) {
+    return closeModal('projectDetailModal', force);
   }
 
   async renderProjectComments(projectId) {
@@ -653,6 +666,21 @@ export class ProfileController {
     window.openProjectModal = (idx) => this.openProjectModal(idx);
     window.closeProjectModal = () => this.closeProjectModal();
     window.openLightboxModal = (url, title, desc) => LightboxComponent.open(url, title, desc);
+    window.openLightboxForProject = (idx) => {
+      const proj = this.currentProjects && this.currentProjects[idx];
+      if (!proj) return;
+      LightboxComponent.open(proj.mainImage, proj.title, proj.desc);
+    };
+    window.openLightboxStep = (projIdx, stepIdx) => {
+      const proj = this.currentProjects && this.currentProjects[projIdx];
+      if (!proj) return;
+      const step = proj.steps && proj.steps[stepIdx];
+      if (!step) {
+        LightboxComponent.open(proj.mainImage, proj.title, proj.desc);
+        return;
+      }
+      LightboxComponent.open(step.img, step.title || proj.title, step.desc || proj.desc);
+    };
     window.closeLightboxModal = () => LightboxComponent.close();
     window.profileOpenNewProjectModal = () => this.openNewProjectModal();
     window.profileCloseProjectModal = () => this.closeProjectModalEditor();
@@ -731,8 +759,8 @@ export class ProfileController {
     openModal('profileProjectModal');
   }
 
-  closeProjectModalEditor() {
-    closeModal('profileProjectModal');
+  closeProjectModalEditor(force = false) {
+    return closeModal('profileProjectModal', force);
   }
 
   editProjectFromProfile(idx) {
@@ -887,7 +915,7 @@ export class ProfileController {
       }
 
       this.renderProjectsGrid();
-      this.closeProjectModalEditor();
+      this.closeProjectModalEditor(true);
       ToastComponent.show(editIndex >= 0 ? '✅ Obra actualizada con éxito.' : '✨ ¡Nuevo proyecto publicado en tu perfil!');
     } catch (err) {
       ToastComponent.show(`Error al guardar: ${err.message}`, 'error');

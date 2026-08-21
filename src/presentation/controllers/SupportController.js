@@ -89,7 +89,7 @@ export class SupportController {
         additionalNotes
       });
 
-      closeModal('artisanVerificationModal');
+      closeModal('artisanVerificationModal', true);
       e.target.reset();
 
       // Mostrar confirmación
@@ -160,7 +160,7 @@ export class SupportController {
         message
       });
 
-      closeModal('supportContactModal');
+      closeModal('supportContactModal', true);
       e.target.reset();
 
       ToastComponent.show('📨 ¡Mensaje de asistencia recibido! Nuestro equipo te responderá a la brevedad.');

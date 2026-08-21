@@ -489,7 +489,7 @@ export class ShopManageController {
         this.currentArtisanProfile = newArtisan;
       }
 
-      closeModal('shopManageModal');
+      closeModal('shopManageModal', true);
       if (typeof this.onShopUpdated === 'function') await this.onShopUpdated();
       ToastComponent.show('💾 ¡Los datos de tu taller han sido actualizados con éxito!');
     } catch (err) {
@@ -515,7 +515,7 @@ export class ShopManageController {
       try {
         await this.manageShopUseCases.updatePromo(targetDocId, promoData);
         this.currentArtisanProfile.promo = promoData;
-        closeModal('shopManageModal');
+        closeModal('shopManageModal', true);
         if (typeof this.onShopUpdated === 'function') await this.onShopUpdated();
         ToastComponent.show('🏷️ ¡Promoción de tu taller actualizada!');
       } catch (err) {

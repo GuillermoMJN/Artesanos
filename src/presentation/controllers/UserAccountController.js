@@ -120,7 +120,7 @@ export class UserAccountController {
     const newName = document.getElementById('inputUserDisplayName').value;
     try {
       await this.authUseCases.updateDisplayName(newName);
-      closeModal('userAccountModal');
+      closeModal('userAccountModal', true);
       if (typeof this.onUserUpdated === 'function') await this.onUserUpdated(this.currentUser);
       ToastComponent.show(`👤 Perfil actualizado: ${newName}`);
     } catch (err) {
@@ -200,9 +200,9 @@ export class UserAccountController {
     try {
       await this.authUseCases.deleteAccountCascade(isGoogleAuth ? null : pass);
 
-      closeModal('deleteAccountModal');
-      closeModal('shopManageModal');
-      closeModal('userAccountModal');
+      closeModal('deleteAccountModal', true);
+      closeModal('shopManageModal', true);
+      closeModal('userAccountModal', true);
 
       if (typeof this.onAccountDeleted === 'function') await this.onAccountDeleted();
       ToastComponent.show('👋 Tu cuenta y todos los datos asociados han sido eliminados.');
