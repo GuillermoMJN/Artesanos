@@ -17,10 +17,10 @@ export class ArtisanCardComponent {
     const isCertified = safeExperience.toLowerCase().includes('certificado');
     const imageSrc = artisan.image || DEFAULT_AVATAR_PATH;
     const ratingDisplay = Number(artisan.rating || 5.0).toFixed(1);
-    const isNew = typeof artisan.isNew === 'function' ? artisan.isNew() : false;
+    const targetProfileId = artisan.docId || artisan.id;
 
     return `
-      <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${artisan.id}', '_blank')">
+      <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${targetProfileId}', '_blank')">
         <div class="artisan-img-wrapper" style="background: #FFFFFF;">
           <img src="${imageSrc}" alt="${safeName}" class="artisan-img" loading="lazy" style="opacity: 0; transition: opacity 0.6s ease;" onload="this.style.opacity='1';">
           <span class="artisan-badge">${safeCategory}</span>
@@ -62,7 +62,7 @@ export class ArtisanCardComponent {
             ${isCertified ? `<span><i class="fa-solid fa-certificate" style="color: var(--warm-gold);"></i> ${escapeHtml(safeExperience)}</span>` : ''}
           </div>
           <div class="artisan-footer">
-            <a href="perfil.html?id=${artisan.id}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; text-decoration: none; text-align: center; display: block;" onclick="event.stopPropagation();">
+            <a href="perfil.html?id=${targetProfileId}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; text-decoration: none; text-align: center; display: block;" onclick="event.stopPropagation();">
               Ver Perfil Completo & Proyectos <i class="fa-solid fa-arrow-right"></i>
             </a>
           </div>

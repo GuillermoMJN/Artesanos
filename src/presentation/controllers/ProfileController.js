@@ -159,9 +159,15 @@ export class ProfileController {
     if (bgEl) bgEl.style.backgroundImage = `url('${safeImage}')`;
     if (nameEl) nameEl.textContent = a.name;
     if (tradeEl) tradeEl.textContent = a.trade || 'Artesanía';
-    if (catEl) catEl.textContent = a.categoryLabel || 'Artesano verificado';
+    if (catEl) {
+      catEl.innerHTML = `<i class="fa-solid fa-tag"></i> ${escapeHtml(a.categoryLabel || 'Artesano')}`;
+      catEl.style.display = 'inline-flex';
+    }
     if (descEl) descEl.textContent = a.description || '';
-    if (locEl) locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${escapeHtml(a.location || 'España')}`;
+    if (locEl) {
+      locEl.innerHTML = `<i class="fa-solid fa-location-dot"></i> ${escapeHtml(a.location || 'España')}`;
+      locEl.style.display = 'inline-flex';
+    }
     if (expEl) {
       const isCert = a.experience && a.experience.toLowerCase().includes('certificado');
       if (isCert) {
@@ -237,6 +243,7 @@ export class ProfileController {
 
     if (profileRating) {
       profileRating.innerHTML = `<i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> ${num} (${count} opiniones)`;
+      profileRating.style.display = 'inline-flex';
     }
     if (scoreNum) scoreNum.textContent = num;
     if (scoreCount) scoreCount.textContent = `Basado en ${count} opinión(es)`;

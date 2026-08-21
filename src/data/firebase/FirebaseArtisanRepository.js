@@ -67,34 +67,48 @@ export class FirebaseArtisanRepository extends IArtisanRepository {
 
   async getArtisanById(id) {
     if (!id) return null;
+    const strId = String(id).trim();
+
+    // 1. Comprobar primero en caché / local para renderizado instantáneo
+    const localArtisans = this._getLocalArtisans();
+    const localFound = localArtisans.find(a => String(a.docId) === strId || String(a.id) === strId || String(a.ownerId) === strId);
 
     if (db) {
       try {
-        const docRef = doc(db, "artisans", String(id));
+        // Intento directo por document ID (tiempo de respuesta de pocos ms)
+        const docRef = doc(db, "artisans", strId);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          return new Artisan({ docId: docSnap.id, ...docSnap.data() });
+          const art = new Artisan({ docId: docSnap.id, ...docSnap.data() });
+          this._updateLocalArtisan(docSnap.id, art);
+          return art;
         }
-      } catch (err) {
-        console.warn("Búsqueda por docId falló, buscando en colección:", err.message);
-      }
 
-      try {
-        const querySnapshot = await getDocs(collection(db, "artisans"));
-        for (const docSnapshot of querySnapshot.docs) {
-          const data = docSnapshot.data();
-          if (String(data.id) === String(id) || docSnapshot.id === String(id)) {
-            return new Artisan({ docId: docSnapshot.id, ...data });
-          }
+        // Intento por campo numérico o string 'id'
+        const q = query(collection(db, "artisans"), where("id", "==", isNaN(Number(strId)) ? strId : Number(strId)), limit(1));
+        const qSnap = await getDocs(q);
+        if (!qSnap.empty) {
+          const d = qSnap.docs[0];
+          const art = new Artisan({ docId: d.id, ...d.data() });
+          this._updateLocalArtisan(d.id, art);
+          return art;
+        }
+
+        // Intento por campo 'id' como string
+        const qStr = query(collection(db, "artisans"), where("id", "==", strId), limit(1));
+        const qStrSnap = await getDocs(qStr);
+        if (!qStrSnap.empty) {
+          const d = qStrSnap.docs[0];
+          const art = new Artisan({ docId: d.id, ...d.data() });
+          this._updateLocalArtisan(d.id, art);
+          return art;
         }
       } catch (err) {
         console.warn("Búsqueda en Firestore falló, usando local:", err.message);
       }
     }
 
-    const localArtisans = this._getLocalArtisans();
-    const found = localArtisans.find(a => String(a.id) === String(id));
-    return found ? new Artisan(found) : null;
+    return localFound ? new Artisan(localFound) : null;
   }
 
   async getArtisanByOwnerId(ownerId) {

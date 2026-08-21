@@ -349,19 +349,19 @@
     <div class="container">
       <div class="profile-header-card">
         <div class="profile-avatar-wrapper">
-          <img id="profileAvatar" src="" alt="Artesano" class="profile-avatar">
+          <img id="profileAvatar" src="images/default_avatar.svg" alt="Artesano" class="profile-avatar">
         </div>
         <div class="profile-info" style="flex: 1; padding-top: 0.8rem;">
-          <h1 id="profileName" style="margin-bottom: 0.6rem;">Nombre del Artesano</h1>
+          <h1 id="profileName" style="margin-bottom: 0.6rem; min-height: 2.3rem;"></h1>
           <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.2rem; margin-top: 0.4rem;">
-            <span class="hero-badge" id="profileCategory" style="margin: 0;"><i class="fa-solid fa-tag"></i> Categoría</span>
-            <div class="profile-trade" id="profileTrade" style="margin: 0;">Especialidad</div>
+            <span class="hero-badge" id="profileCategory" style="margin: 0; display: none;"><i class="fa-solid fa-tag"></i></span>
+            <div class="profile-trade" id="profileTrade" style="margin: 0;"></div>
           </div>
           <p id="profileDesc" style="max-width: 650px; color: rgba(255,255,255,0.85); line-height: 1.6;"></p>
           
           <div class="profile-meta-chips">
-            <span class="profile-chip" id="profileLocation"><i class="fa-solid fa-location-dot"></i> Ubicación</span>
-            <span class="profile-chip" id="profileRating"><i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> 5.0</span>
+            <span class="profile-chip" id="profileLocation" style="display: none;"><i class="fa-solid fa-location-dot"></i></span>
+            <span class="profile-chip" id="profileRating" style="display: none;"><i class="fa-solid fa-star" style="color: var(--warm-gold);"></i> 5.0</span>
             <span class="profile-chip" id="profileExperience" style="display: none;"><i class="fa-solid fa-certificate"></i> Certificado</span>
           </div>
         </div>
