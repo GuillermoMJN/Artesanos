@@ -11,7 +11,7 @@ import { ChatUseCases } from './domain/usecases/ChatUseCases.js';
 import { ProfileController } from './presentation/controllers/ProfileController.js';
 import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
 import { ChatWidgetComponent } from './presentation/components/ChatWidgetComponent.js';
-import { setupModalDismissListeners } from './core/utils/domUtils.js';
+import { setupModalDismissListeners, closeModal } from './core/utils/domUtils.js';
 import { injectAllModals } from './presentation/components/ModalsInjector.js';
 import { AuthController } from './presentation/controllers/AuthController.js';
 import { ShopManageController } from './presentation/controllers/ShopManageController.js';
@@ -55,10 +55,7 @@ window.appUI = {
   openRegisterModal: () => authController.openRegisterModal(),
   openShopManageModal: () => shopManageController.openShopManageModal(),
   openUserAccountModal: () => userAccountController.openUserAccountModal(),
-  closeModal: (modalId) => {
-    const m = document.getElementById(modalId);
-    if (m) m.classList.remove('open');
-  }
+  closeModal: (modalId, force = false) => closeModal(modalId, force)
 };
 
 const profileController = new ProfileController(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases, chatWidget);

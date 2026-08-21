@@ -1,3 +1,5 @@
+import { showConfirmModal } from './confirmModal.js';
+
 /**
  * Utilidades para manipulación segura y accesible del DOM
  */
@@ -85,20 +87,45 @@ export function hasUnsavedModalChanges(modalElOrId) {
   return false;
 }
 
+// Modales específicos que requieren confirmación antes de descartar cambios
+const MODALS_REQUIRING_CONFIRMATION = [
+  'shopManageModal',      // Gestión de tienda / perfil de taller
+  'profileProjectModal',  // Crear / Editar nuevo proyecto desde el perfil
+  'projectDetailModal'    // Detalle / Gestión de proyecto
+];
+
 /**
- * Cierra un modal. Si force = false y hay información rellenada/modificada,
- * solicita confirmación al usuario antes de cerrar.
+ * Cierra un modal. Si force = false y el modal está en la lista de confirmación y tiene cambios,
+ * muestra un modal emergente personalizado de confirmación.
  * @param {string} modalId - ID del modal a cerrar
  * @param {boolean} force - Si es true, omite la confirmación (ej. tras guardar con éxito)
- * @returns {boolean} - true si el modal se cerró, false si el usuario canceló
+ * @returns {Promise<boolean>|boolean} - true si el modal se cerró, false si se canceló
  */
-export function closeModal(modalId, force = false) {
+export async function closeModal(modalId, force = false) {
   const el = document.getElementById(modalId);
   if (!el) return false;
 
-  if (!force && hasUnsavedModalChanges(el)) {
-    const confirmClose = window.confirm("¿Seguro que quieres cerrar? Se perderán los datos no guardados.");
-    if (!confirmClose) {
+  // Solo pedir confirmación personalizada si es uno de los modales designados y tiene cambios
+  if (!force && MODALS_REQUIRING_CONFIRMATION.includes(modalId) && hasUnsavedModalChanges(el)) {
+    let title = '¿Seguro que quieres cerrar?';
+    let message = 'Tienes información o cambios sin guardar en este formulario. Si cierras ahora, se perderán todos los datos no guardados.';
+    
+    if (modalId === 'profileProjectModal') {
+      title = '¿Descartar este proyecto?';
+      message = 'Las fotos y los detalles introducidos para esta obra se perderán si sales sin guardar.';
+    } else if (modalId === 'shopManageModal') {
+      title = '¿Cerrar Gestión de Tienda?';
+      message = 'Hay cambios sin guardar en los datos o promociones de tu taller. ¿Deseas salir igualmente?';
+    }
+
+    const userConfirmed = await showConfirmModal({
+      title,
+      message,
+      acceptText: 'Sí, Salir',
+      cancelText: 'Seguir Editando'
+    });
+
+    if (!userConfirmed) {
       return false;
     }
   }
@@ -113,44 +140,46 @@ export function closeModal(modalId, force = false) {
 }
 
 export function setupModalDismissListeners(onModalClosed = null) {
-  // Cerrar al hacer click fuera del contenido del modal (en el backdrop del overlay)
+  // 1. Cerrar al hacer clic en el fondo exterior (backdrop) de cualquier modal
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     if (overlay.dataset.dismissSetup === 'true') return;
     overlay.dataset.dismissSetup = 'true';
 
-    overlay.addEventListener('click', (e) => {
+    overlay.addEventListener('click', async (e) => {
+      // Si el clic fue directamente en el overlay (fondo oscuro) y no en la tarjeta
       if (e.target === overlay) {
-        const closed = closeModal(overlay.id, false);
+        const closed = await closeModal(overlay.id, false);
         if (closed && typeof onModalClosed === 'function') onModalClosed(overlay.id);
       }
     });
   });
 
-  // Cerrar al pulsar botones de cierre .modal-close o data-modal-close
+  // 2. Cerrar al pulsar botones de cierre .modal-close o [data-modal-close]
   document.querySelectorAll('.modal-close, [data-modal-close]').forEach(btn => {
     if (btn.dataset.dismissSetup === 'true') return;
     btn.dataset.dismissSetup = 'true';
 
-    btn.addEventListener('click', (e) => {
+    btn.addEventListener('click', async (e) => {
       const modal = btn.closest('.modal-overlay');
       if (modal) {
         e.preventDefault();
         e.stopPropagation();
-        const closed = closeModal(modal.id, false);
+        const closed = await closeModal(modal.id, false);
         if (closed && typeof onModalClosed === 'function') onModalClosed(modal.id);
       }
     });
   });
 
-  // Cerrar al pulsar Escape
+  // 3. Cerrar al pulsar la tecla Escape
   if (!window._modalEscapeListenerSetup) {
     window._modalEscapeListenerSetup = true;
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', async (e) => {
       if (e.key === 'Escape') {
         const activeModals = Array.from(document.querySelectorAll('.modal-overlay.active'));
         if (activeModals.length > 0) {
+          // Tomar el modal superior
           const topModal = activeModals[activeModals.length - 1];
-          const closed = closeModal(topModal.id, false);
+          const closed = await closeModal(topModal.id, false);
           if (closed && typeof onModalClosed === 'function') onModalClosed(topModal.id);
         }
       }
