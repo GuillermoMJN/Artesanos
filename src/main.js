@@ -104,6 +104,12 @@ class MainApp {
     this.supportController.init();
 
     await this.directoryController.init();
+    
+    // Señalizar al sistema de transición que los artesanos están 100% renderizados
+    if (typeof window.finishPageLoad === 'function') {
+      window.finishPageLoad();
+    }
+
     this.setupAuthObserver();
   }
 
