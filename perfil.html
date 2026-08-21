@@ -318,22 +318,9 @@
         padding: 0.75rem 0.9rem;
       }
     }
-
-    /* ──── Transición blanca de carga ──── */
-    #pageWhiteOverlay {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      background: #FFFFFF;
-      opacity: 1;
-      transition: opacity 0.4s ease;
-      pointer-events: none;
-    }
-    #pageWhiteOverlay.fade-out {
-      opacity: 0;
-    }
-
-    /* Fade-in del contenido al terminar de cargar */
+    
+    /* El fade-in del contenido principal lo sigue manejando el CSS propio si se quiere, 
+       pero ahora el overlay blanco principal lo gestiona src/pageTransition.js */
     #profilePageContent {
       opacity: 0;
       transition: opacity 0.45s ease;
@@ -342,12 +329,11 @@
       opacity: 1;
     }
   </style>
+  <script src="src/pageTransition.js"></script>
 </head>
 
-<body style="background: #FAF7F2;">
+<body class="is-loading-async" style="background: #FAF7F2;">
 
-  <!-- Pantalla blanca de transición -->
-  <div id="pageWhiteOverlay"></div>
 
   <!-- Contenido principal envuelto para fade-in -->
   <div id="profilePageContent">

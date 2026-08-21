@@ -63,13 +63,12 @@ export class ProfileController {
   }
 
   _showContent() {
-    // Fade-out del overlay blanco
-    const overlay = document.getElementById('pageWhiteOverlay');
-    if (overlay) {
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.remove(), 450);
+    // Señalizar a la transición global que la página asíncrona está lista para quitar el blanco
+    if (typeof window.finishPageLoad === 'function') {
+      window.finishPageLoad();
     }
-    // Fade-in del contenido
+    
+    // Fade-in del contenido de la página de perfil
     const content = document.getElementById('profilePageContent');
     if (content) {
       requestAnimationFrame(() => content.classList.add('loaded'));
