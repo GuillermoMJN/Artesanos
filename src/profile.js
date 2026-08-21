@@ -12,6 +12,8 @@ import { ProfileController } from './presentation/controllers/ProfileController.
 import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
 import { ChatWidgetComponent } from './presentation/components/ChatWidgetComponent.js';
 import { setupModalDismissListeners } from './core/utils/domUtils.js';
+import { injectAuthModals } from './presentation/components/AuthModalsInjector.js';
+import { AuthController } from './presentation/controllers/AuthController.js';
 
 // Inicialización con Inyección de Dependencias
 const artisanRepo = new FirebaseArtisanRepository();
@@ -29,11 +31,31 @@ const chatUseCases = new ChatUseCases(chatRepo);
 const chatWidget = new ChatWidgetComponent(chatUseCases);
 window.chatWidgetUI = chatWidget;
 
+// Inyectar modales de auth (Login y Registro) dinámicamente
+injectAuthModals();
+
+// Crear controlador de auth
+const authController = new AuthController(authUseCases, manageShopUseCases, () => {
+  // Cuando inicie sesión, recargamos la página para actualizar la UI del perfil
+  window.location.reload();
+});
+
+// Simular window.appUI para que ChatWidgetComponent y otros botones puedan abrir el login modal
+window.appUI = {
+  openLoginModal: () => authController.openLoginModal(),
+  openRegisterModal: () => authController.openRegisterModal(),
+  closeModal: (modalId) => {
+    const m = document.getElementById(modalId);
+    if (m) m.classList.remove('open');
+  }
+};
+
 const profileController = new ProfileController(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases, chatWidget);
 
 const startProfile = () => {
   CookieBannerComponent.init();
   setupModalDismissListeners();
+  authController.init();
   chatWidget.init();
   profileController.init();
 };
