@@ -134,16 +134,23 @@ export class SupportController {
 
   async handleSupportSubmit(e) {
     e.preventDefault();
+    const form = e.target || document.getElementById('supportContactForm');
+    if (!form) return;
 
-    const senderName = document.getElementById('supportSenderName').value.trim();
-    const senderEmail = document.getElementById('supportSenderEmail').value.trim();
-    const category = document.getElementById('supportCategorySelect').value;
-    const subject = document.getElementById('supportSubject').value.trim();
-    const message = document.getElementById('supportMessage').value.trim();
+    const senderName = (form.querySelector('#supportSenderName') || document.getElementById('supportSenderName'))?.value.trim() || '';
+    const senderEmail = (form.querySelector('#supportSenderEmail') || document.getElementById('supportSenderEmail'))?.value.trim() || '';
+    const category = (form.querySelector('#supportCategorySelect') || document.getElementById('supportCategorySelect'))?.value || 'incidencia';
+    const subject = (form.querySelector('#supportSubject') || document.getElementById('supportSubject'))?.value.trim() || 'Incidencia Web';
+    const message = (form.querySelector('#supportMessage') || document.getElementById('supportMessage'))?.value.trim() || '';
+
+    if (!senderName || !senderEmail || !message) {
+      ToastComponent.show('Por favor completa todos los campos requeridos.', 'error');
+      return;
+    }
 
     const role = (this.currentUser && this.currentUser.profile && this.currentUser.profile.role) || (this.currentArtisan ? 'artisan' : (this.currentUser ? 'client' : 'guest'));
 
-    const btnSubmit = document.getElementById('btnSubmitSupport');
+    const btnSubmit = form.querySelector('#btnSubmitSupport') || document.getElementById('btnSubmitSupport');
     if (btnSubmit) {
       btnSubmit.disabled = true;
       btnSubmit.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Enviando...`;
@@ -161,7 +168,7 @@ export class SupportController {
       });
 
       closeModal('supportContactModal', true);
-      e.target.reset();
+      form.reset();
 
       ToastComponent.show('📨 ¡Mensaje de asistencia recibido! Nuestro equipo te responderá a la brevedad.');
     } catch (err) {
