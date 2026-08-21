@@ -144,13 +144,13 @@ export class ProfileController {
                 <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
               </span>
               ${isArtisan ? `
-                <a href="index.html?manage=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <button type="button" onclick="window.appUI.openShopManageModal()" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
                   <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
-                </a>
+                </button>
               ` : `
-                <a href="index.html?account=true" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+                <button type="button" onclick="window.appUI.openUserAccountModal()" class="btn btn-primary" style="padding: 0.45rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
                   <i class="fa-solid fa-user-gear"></i> Mi Cuenta
-                </a>
+                </button>
               `}
               <button class="btn btn-secondary" id="btnPerfilLogout" style="padding: 0.45rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión

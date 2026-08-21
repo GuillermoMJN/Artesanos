@@ -12,8 +12,10 @@ import { ProfileController } from './presentation/controllers/ProfileController.
 import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
 import { ChatWidgetComponent } from './presentation/components/ChatWidgetComponent.js';
 import { setupModalDismissListeners } from './core/utils/domUtils.js';
-import { injectAuthModals } from './presentation/components/AuthModalsInjector.js';
+import { injectAllModals } from './presentation/components/ModalsInjector.js';
 import { AuthController } from './presentation/controllers/AuthController.js';
+import { ShopManageController } from './presentation/controllers/ShopManageController.js';
+import { UserAccountController } from './presentation/controllers/UserAccountController.js';
 
 // Inicialización con Inyección de Dependencias
 const artisanRepo = new FirebaseArtisanRepository();
@@ -31,19 +33,28 @@ const chatUseCases = new ChatUseCases(chatRepo);
 const chatWidget = new ChatWidgetComponent(chatUseCases);
 window.chatWidgetUI = chatWidget;
 
-// Inyectar modales de auth (Login y Registro) dinámicamente
-injectAuthModals();
+// Inyectar todos los modales (Login, Registro, Shop Manage, User Account, etc.)
+injectAllModals();
 
-// Crear controlador de auth
+// Crear controladores de modales
 const authController = new AuthController(authUseCases, manageShopUseCases, () => {
-  // Cuando inicie sesión, recargamos la página para actualizar la UI del perfil
+  window.location.reload();
+});
+const shopManageController = new ShopManageController(manageShopUseCases, authUseCases, () => {
+  window.location.reload();
+});
+const userAccountController = new UserAccountController(authUseCases, () => {
+  window.location.href = 'index.html';
+}, () => {
   window.location.reload();
 });
 
-// Simular window.appUI para que ChatWidgetComponent y otros botones puedan abrir el login modal
+// Simular window.appUI para que los botones puedan abrir los modales localmente
 window.appUI = {
   openLoginModal: () => authController.openLoginModal(),
   openRegisterModal: () => authController.openRegisterModal(),
+  openShopManageModal: () => shopManageController.openShopManageModal(),
+  openUserAccountModal: () => userAccountController.openUserAccountModal(),
   closeModal: (modalId) => {
     const m = document.getElementById(modalId);
     if (m) m.classList.remove('open');
@@ -56,6 +67,8 @@ const startProfile = () => {
   CookieBannerComponent.init();
   setupModalDismissListeners();
   authController.init();
+  shopManageController.init();
+  userAccountController.init();
   chatWidget.init();
   profileController.init();
 };
