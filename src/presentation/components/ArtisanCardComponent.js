@@ -17,6 +17,7 @@ export class ArtisanCardComponent {
     const isCertified = safeExperience.toLowerCase().includes('certificado');
     const imageSrc = artisan.image || DEFAULT_AVATAR_PATH;
     const ratingDisplay = Number(artisan.rating || 5.0).toFixed(1);
+    const isNew = typeof artisan.isNew === 'function' ? artisan.isNew() : false;
     const targetProfileId = artisan.docId || artisan.id;
 
     return `

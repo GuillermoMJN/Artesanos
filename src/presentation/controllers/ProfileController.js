@@ -29,19 +29,46 @@ export class ProfileController {
     const urlParams = new URLSearchParams(window.location.search);
     const artisanId = urlParams.get('id');
 
-    this.artisan = await this.getArtisansUseCase.getById(artisanId);
-
-    if (!this.artisan) {
-      this.renderNotFound();
+    if (!artisanId) {
+      this.renderDiagnostic('Sin ID en la URL', 'No se encontró ?id=... en la URL. Vuelve al directorio y pulsa en un artesano.', null);
       return;
     }
 
+    let artisan = null;
+    let errorMsg = null;
+    try {
+      artisan = await this.getArtisansUseCase.getById(artisanId);
+    } catch (err) {
+      errorMsg = err.message || String(err);
+    }
+
+    if (!artisan) {
+      this.renderDiagnostic(
+        'Artesano no encontrado',
+        `ID buscado: "${artisanId}"${errorMsg ? `\nError: ${errorMsg}` : '\nFirestore no devolvió ningún resultado para este ID.'}`,
+        artisanId
+      );
+      return;
+    }
+
+    this.artisan = artisan;
     this.setupAuthListener();
     this.renderHeaderAndHero();
     this.renderPromoBanner();
     this.renderProjectsGrid();
     this.renderContactInfo();
     this.setupProjectCommentForm();
+  }
+
+  renderDiagnostic(title, detail, artisanId) {
+    document.body.innerHTML = `
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; padding: 2rem; background: #FAF7F2;">
+        <h2 style="color: #3E2723; margin-bottom: 0.5rem;">${title}</h2>
+        <pre style="background: #FFF3E0; border: 1px solid #E6DDD0; border-radius: 8px; padding: 1rem 1.5rem; max-width: 600px; text-align: left; white-space: pre-wrap; word-break: break-all; color: #5D4037; font-size: 0.85rem; margin-bottom: 1.5rem;">${detail}</pre>
+        ${artisanId ? `<p style="color:#888;font-size:0.8rem;margin-bottom:1rem;">Si ves este mensaje, cópialo y compártelo para depurar.</p>` : ''}
+        <a href="index.html" style="text-decoration: none; padding: 0.8rem 1.6rem; background: #C06C4C; color: #FFF; border-radius: 8px; font-weight: 700;">← Volver al Directorio</a>
+      </div>
+    `;
   }
 
   renderNotFound() {
