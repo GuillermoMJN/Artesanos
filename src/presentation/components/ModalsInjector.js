@@ -686,7 +686,7 @@ export function injectAllModals() {
   </div>
 
   <!-- Botón Flotante de Asistencia / Incidencias -->
-  <button id="btnFloatingSupport" onclick="window.appUI.openSupportModal()" style="position: fixed; bottom: 1.8rem; right: 1.8rem; z-index: 999; background: var(--primary-dark); color: #FFF; border: none; border-radius: 30px; padding: 0.75rem 1.3rem; display: flex; align-items: center; gap: 0.6rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 0.9rem; box-shadow: 0 6px 20px rgba(62,39,35,0.35); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease;" onmouseenter="this.style.transform='translateY(-3px)'" onmouseleave="this.style.transform='translateY(0)'">
+  <button id="btnFloatingSupport" onclick="window.appUI.openSupportModal()" aria-label="Asistencia y Contacto">
     <i class="fa-solid fa-headset" style="color: var(--warm-gold); font-size: 1.1rem;"></i> Asistencia & Contacto
   </button>
 

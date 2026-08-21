@@ -1696,3 +1696,64 @@ h1, h2, h3, h4 {
   font-weight: 700;
 }
 
+/* ── Botones Flotantes: Asistencia y Chat (Posicionamiento armonioso) ── */
+#btnFloatingSupport {
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 6.8rem !important; /* Colocado a la izquierda del botón circular de chat */
+  z-index: 3900 !important;
+  background: var(--primary-dark);
+  color: #FFF;
+  border: none;
+  border-radius: 30px;
+  padding: 0.75rem 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 6px 20px rgba(62, 39, 35, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+#btnFloatingSupport:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(62, 39, 35, 0.45);
+  background: #2C1D11;
+}
+
+#chatFloatingButton {
+  position: fixed !important;
+  bottom: 2rem !important;
+  right: 1.8rem !important;
+  z-index: 4000 !important;
+}
+
+#chatWindowContainer {
+  position: fixed !important;
+  bottom: 6.6rem !important;
+  right: 1.8rem !important;
+  z-index: 4000 !important;
+}
+
+@media (max-width: 768px) {
+  #btnFloatingSupport {
+    bottom: 6rem !important; /* En móviles apilados verticalmente para no chocar */
+    right: 1.5rem !important;
+    padding: 0.6rem 1rem !important;
+    font-size: 0.82rem !important;
+  }
+  #chatFloatingButton {
+    bottom: 1.5rem !important;
+    right: 1.5rem !important;
+  }
+  #chatWindowContainer {
+    bottom: 5.5rem !important;
+    right: 1rem !important;
+    width: calc(100vw - 2rem) !important;
+  }
+}
+
+
