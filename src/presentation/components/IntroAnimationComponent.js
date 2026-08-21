@@ -1,35 +1,23 @@
 /**
- * Componente de animación de bienvenida (intro) para primera visita de la sesión
+ * Transición de entrada suave: pantalla blanca que desaparece al cargar
  */
 export class IntroAnimationComponent {
   static play() {
-    const hasVisited = sessionStorage.getItem('arteysanos_visited');
     const introOverlay = document.getElementById('introOverlay');
+    if (!introOverlay) return;
 
-    if (hasVisited || !introOverlay) {
-      document.body.classList.remove('intro-active');
-      if (introOverlay) introOverlay.style.display = 'none';
-      return;
-    }
+    // Pantalla blanca simple con fade-out inmediato al cargar
+    introOverlay.style.cssText = `
+      position: fixed; inset: 0; z-index: 9999;
+      background: #FFFFFF; opacity: 1;
+      transition: opacity 0.45s ease; pointer-events: none;
+    `;
 
-    introOverlay.style.display = 'flex';
-    document.body.classList.add('intro-active');
-    sessionStorage.setItem('arteysanos_visited', 'true');
-
-    setTimeout(() => {
-      const introLine = introOverlay.querySelector('.intro-line');
-      if (introLine) {
-        introLine.style.animation = 'none';
-        introLine.style.transition = 'opacity 1s ease-out';
-        introLine.style.opacity = '0';
-      }
-
-      introOverlay.classList.add('open');
-      document.body.classList.remove('intro-active');
-
-      setTimeout(() => {
-        introOverlay.style.display = 'none';
-      }, 1200);
-    }, 700);
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        introOverlay.style.opacity = '0';
+        setTimeout(() => introOverlay.remove(), 500);
+      });
+    });
   }
 }

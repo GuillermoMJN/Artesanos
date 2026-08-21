@@ -319,47 +319,24 @@
       }
     }
 
-    /* ──── Pantalla de Carga ──── */
-    #profileLoadingOverlay {
+    /* ──── Transición blanca de carga ──── */
+    #pageWhiteOverlay {
       position: fixed;
       inset: 0;
       z-index: 9999;
-      background: #FAF7F2;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #FFFFFF;
       opacity: 1;
-      transition: opacity 0.45s ease;
-    }
-    #profileLoadingOverlay.hidden {
-      opacity: 0;
+      transition: opacity 0.4s ease;
       pointer-events: none;
     }
-    .profile-spinner {
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      border: 4px solid rgba(192, 108, 76, 0.2);
-      border-top-color: #C06C4C;
-      animation: profileSpin 0.85s linear infinite;
-    }
-    @keyframes profileSpin { to { transform: rotate(360deg); } }
-    .profile-loader-logo {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.35rem;
-      color: #3E2723;
-      letter-spacing: 0.02em;
-    }
-    .profile-loader-sub {
-      font-size: 0.82rem;
-      color: #9E8C81;
-      margin-top: -0.5rem;
+    #pageWhiteOverlay.fade-out {
+      opacity: 0;
     }
 
     /* Fade-in del contenido al terminar de cargar */
     #profilePageContent {
       opacity: 0;
-      transition: opacity 0.5s ease;
+      transition: opacity 0.45s ease;
     }
     #profilePageContent.loaded {
       opacity: 1;
@@ -369,17 +346,8 @@
 
 <body style="background: #FAF7F2;">
 
-  <!-- Pantalla de Carga del Perfil -->
-  <div id="profileLoadingOverlay">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1.2rem;">
-      <div style="width:64px;height:64px;border-radius:50%;background:rgba(192,108,76,0.1);display:flex;align-items:center;justify-content:center;">
-        <i class="fa-solid fa-hands-holding" style="font-size:1.8rem;color:#C06C4C;"></i>
-      </div>
-      <div class="profile-spinner"></div>
-      <span class="profile-loader-logo">Arte y Sanos</span>
-      <span class="profile-loader-sub">Cargando perfil del artesano...</span>
-    </div>
-  </div>
+  <!-- Pantalla blanca de transición -->
+  <div id="pageWhiteOverlay"></div>
 
   <!-- Contenido principal envuelto para fade-in -->
   <div id="profilePageContent">
