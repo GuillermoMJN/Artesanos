@@ -263,16 +263,28 @@ export class CrmPageController {
     const container = document.getElementById('ticketsListContainer');
     if (!container) return;
     const query = (document.getElementById('searchTicketsInput')?.value || '').toLowerCase().trim();
-    const statusFilter = document.getElementById('filterTicketStatus')?.value || 'all';
-    const categoryFilter = document.getElementById('filterTicketCategory')?.value || 'all';
+    const statusFilter = (document.getElementById('filterTicketStatus')?.value || 'all').toLowerCase();
+    const categoryFilter = (document.getElementById('filterTicketCategory')?.value || 'all').toLowerCase();
+
+    const normalizeCat = (cat) => {
+      if (!cat) return 'incidencia';
+      const c = String(cat).toLowerCase().trim();
+      if (c.includes('incidenc') || c.includes('tecnic') || c.includes('problem')) return 'incidencia';
+      if (c.includes('consult') || c.includes('general')) return 'consulta';
+      if (c.includes('verific') || c.includes('certific')) return 'verificacion';
+      if (c.includes('sugeren') || c.includes('idea') || c.includes('mejor')) return 'sugerencia';
+      return c;
+    };
 
     const filtered = this.tickets.filter(t => {
       const q = !query || (t.senderName || '').toLowerCase().includes(query) ||
         (t.senderEmail || '').toLowerCase().includes(query) ||
         (t.subject || '').toLowerCase().includes(query) ||
         (t.message || '').toLowerCase().includes(query);
-      const s = statusFilter === 'all' || t.status === statusFilter;
-      const c = categoryFilter === 'all' || t.category === categoryFilter;
+      const s = statusFilter === 'all' || (t.status || '').toLowerCase() === statusFilter;
+      
+      const tNormCat = normalizeCat(t.category);
+      const c = categoryFilter === 'all' || tNormCat === categoryFilter || (t.category || '').toLowerCase() === categoryFilter;
       return q && s && c;
     });
 
