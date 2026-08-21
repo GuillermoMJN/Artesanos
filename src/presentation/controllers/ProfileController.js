@@ -10,14 +10,16 @@ import { LightboxComponent } from '../components/LightboxComponent.js';
  * Controlador de la Página de Perfil Público del Artesano (perfil.html)
  */
 export class ProfileController {
-  constructor(getArtisansUseCase, authUseCases, reviewUseCases) {
+  constructor(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases) {
     this.getArtisansUseCase = getArtisansUseCase;
     this.authUseCases = authUseCases;
     this.reviewUseCases = reviewUseCases;
+    this.manageShopUseCases = manageShopUseCases;
     this.artisan = null;
     this.currentLoggedUser = null;
     this.activeProjectIdForComments = null;
     this.currentProjects = [];
+    this.tempProjectFiles = [];
   }
 
   async init() {
@@ -108,9 +110,13 @@ export class ProfileController {
           }
         }
 
-        if (btnOwnerManage && this.isOwnerUser()) {
-          btnOwnerManage.style.display = 'inline-block';
+        const btnOwnerNewProject = document.getElementById('btnOwnerNewProject');
+        if (this.isOwnerUser()) {
+          if (btnOwnerManage) btnOwnerManage.style.display = 'inline-block';
+          if (btnOwnerNewProject) btnOwnerNewProject.style.display = 'inline-block';
         }
+
+        this.renderProjectsGrid();
       }
 
       await this.renderReviewsSection();
@@ -134,7 +140,17 @@ export class ProfileController {
     const locEl = document.getElementById('profileLocation');
     const expEl = document.getElementById('profileExperience');
 
-    if (avatarEl) avatarEl.src = safeImage;
+    if (avatarEl) {
+      avatarEl.classList.remove('loaded');
+      avatarEl.onload = () => {
+        avatarEl.classList.add('loaded');
+      };
+      // Si la imagen ya estuviera en caché del navegador
+      if (avatarEl.complete && avatarEl.naturalWidth > 0) {
+        avatarEl.classList.add('loaded');
+      }
+      avatarEl.src = safeImage;
+    }
     if (bgEl) bgEl.style.backgroundImage = `url('${safeImage}')`;
     if (nameEl) nameEl.textContent = a.name;
     if (tradeEl) tradeEl.textContent = a.trade || 'Artesanía';
@@ -263,7 +279,8 @@ export class ProfileController {
     this.currentProjects = projectItems;
     window.currentArtisanProjects = projectItems;
 
-    projectsGrid.innerHTML = projectItems.map((proj, idx) => ProjectCardComponent.renderCard(proj, idx)).join('');
+    const isOwner = this.isOwnerUser();
+    projectsGrid.innerHTML = projectItems.map((proj, idx) => ProjectCardComponent.renderCard(proj, idx, isOwner)).join('');
   }
 
   async openProjectModal(idx) {
@@ -636,6 +653,12 @@ export class ProfileController {
     window.closeProjectModal = () => this.closeProjectModal();
     window.openLightboxModal = (url, cap) => LightboxComponent.open(url, cap);
     window.closeLightboxModal = () => LightboxComponent.close();
+    window.profileOpenNewProjectModal = () => this.openNewProjectModal();
+    window.profileCloseProjectModal = () => this.closeProjectModalEditor();
+    window.profileEditProject = (idx) => this.editProjectFromProfile(idx);
+    window.profileDeleteProject = (idx) => this.deleteProjectFromProfile(idx);
+    window.profileHandleFilesSelected = (e) => this.handleProjectFilesSelected(e);
+    window.profileRemoveMedia = (idx) => this.removeProjectMedia(idx);
 
     window.toggleReviewReplyForm = (revId) => {
       const el = document.getElementById(`replyFormContainer_${revId}`);
@@ -690,5 +713,186 @@ export class ProfileController {
         alert('Error al responder comentario: ' + err.message);
       }
     };
+
+    document.getElementById('profileProjectForm')?.addEventListener('submit', (e) => this.handleSaveProjectSubmit(e));
+  }
+
+  openNewProjectModal() {
+    this.tempProjectFiles = [];
+    document.getElementById('profileEditProjIndex').value = '-1';
+    document.getElementById('profileProjModalTitle').textContent = 'Publicar Nuevo Proyecto';
+    document.getElementById('profileProjInputTitle').value = '';
+    document.getElementById('profileProjInputPrice').value = '';
+    document.getElementById('profileProjInputMaterials').value = '';
+    document.getElementById('profileProjInputTimeSpent').value = '';
+    document.getElementById('profileProjInputDesc').value = '';
+    this.renderTempMediaPreviews();
+    openModal('profileProjectModal');
+  }
+
+  closeProjectModalEditor() {
+    closeModal('profileProjectModal');
+  }
+
+  editProjectFromProfile(idx) {
+    const proj = this.currentProjects[idx];
+    if (!proj) return;
+
+    this.tempProjectFiles = (proj.steps || []).map(s => ({
+      url: s.img,
+      name: s.title || 'Foto',
+      type: 'image'
+    }));
+
+    document.getElementById('profileEditProjIndex').value = String(idx);
+    document.getElementById('profileProjModalTitle').textContent = 'Editar Proyecto / Obra';
+    document.getElementById('profileProjInputTitle').value = proj.title || '';
+    document.getElementById('profileProjInputPrice').value = proj.price || '';
+    document.getElementById('profileProjInputMaterials').value = proj.materials || '';
+    document.getElementById('profileProjInputTimeSpent').value = proj.timeSpent || '';
+    document.getElementById('profileProjInputDesc').value = proj.desc || '';
+    this.renderTempMediaPreviews();
+    openModal('profileProjectModal');
+  }
+
+  async deleteProjectFromProfile(idx) {
+    if (!confirm('¿Estás seguro de que deseas eliminar este proyecto de tu catálogo?')) return;
+    const proj = this.currentProjects[idx];
+    if (!proj) return;
+
+    const artisanDocId = this.artisan.docId || this.artisan.id;
+    if (artisanDocId && proj.id) {
+      try {
+        await this.manageShopUseCases.deleteProject(artisanDocId, proj.id);
+      } catch (e) {
+        console.warn('Error eliminando proyecto en Firestore:', e);
+      }
+    }
+
+    this.currentProjects.splice(idx, 1);
+    this.artisan.projects = this.currentProjects;
+    this.renderProjectsGrid();
+    ToastComponent.show('🗑️ Proyecto eliminado de tu catálogo.');
+  }
+
+  async handleProjectFilesSelected(event) {
+    const files = Array.from(event.target.files);
+    if (files.length === 0) return;
+
+    const artisanUid = (this.currentLoggedUser && this.currentLoggedUser.uid) || this.artisan.ownerId || 'artisan';
+
+    for (const file of files) {
+      ToastComponent.show(`Subiendo imagen: ${file.name}...`);
+      try {
+        const fileUrl = await this.manageShopUseCases.uploadFile(file, artisanUid, `proj_${Date.now()}`);
+        this.tempProjectFiles.push({
+          url: fileUrl,
+          name: file.name,
+          type: 'image'
+        });
+      } catch (e) {
+        console.warn('Subida en Storage falló, usando previsualización local:', e);
+        const localUrl = URL.createObjectURL(file);
+        this.tempProjectFiles.push({
+          url: localUrl,
+          name: file.name,
+          type: 'image'
+        });
+      }
+    }
+
+    this.renderTempMediaPreviews();
+    event.target.value = '';
+  }
+
+  removeProjectMedia(idx) {
+    this.tempProjectFiles.splice(idx, 1);
+    this.renderTempMediaPreviews();
+  }
+
+  renderTempMediaPreviews() {
+    const container = document.getElementById('profileProjMediaPreviewList');
+    if (!container) return;
+
+    if (this.tempProjectFiles.length === 0) {
+      container.innerHTML = `<p style="grid-column: 1/-1; color: var(--text-muted); font-size: 0.8rem; text-align: center; margin: 0.5rem 0;">No has seleccionado ninguna imagen aún.</p>`;
+      return;
+    }
+
+    container.innerHTML = this.tempProjectFiles.map((m, idx) => `
+      <div style="position: relative; height: 90px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
+        <img src="${m.url}" alt="${escapeHtml(m.name)}" style="width: 100%; height: 100%; object-fit: cover;">
+        <button type="button" onclick="window.profileRemoveMedia(${idx})" style="position: absolute; top: 4px; right: 4px; background: rgba(211,47,47,0.9); color: #FFF; border: none; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.75rem;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+    `).join('');
+  }
+
+  async handleSaveProjectSubmit(e) {
+    e.preventDefault();
+    const title = document.getElementById('profileProjInputTitle')?.value.trim();
+    if (!title) {
+      ToastComponent.show('El título del proyecto es obligatorio.', 'error');
+      return;
+    }
+
+    if (this.tempProjectFiles.length === 0) {
+      ToastComponent.show('Debes subir al menos una fotografía de la obra.', 'error');
+      return;
+    }
+
+    const editIndex = parseInt(document.getElementById('profileEditProjIndex')?.value || '-1', 10);
+    const price = document.getElementById('profileProjInputPrice')?.value.trim() || '';
+    const materials = document.getElementById('profileProjInputMaterials')?.value.trim() || '';
+    const timeSpent = document.getElementById('profileProjInputTimeSpent')?.value.trim() || '';
+    const desc = document.getElementById('profileProjInputDesc')?.value.trim() || '';
+
+    const btnSubmit = document.getElementById('btnProfileSaveProject');
+    if (btnSubmit) { btnSubmit.disabled = true; btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...'; }
+
+    try {
+      const steps = this.tempProjectFiles.map((f, i) => ({
+        title: i === 0 ? 'Fotografía Principal' : `Detalle #${i + 1}`,
+        img: f.url,
+        desc: i === 0 ? desc : 'Fotografía del proceso y detalles del acabado.'
+      }));
+
+      const projectData = {
+        id: editIndex >= 0 && this.currentProjects[editIndex] ? this.currentProjects[editIndex].id : `proj_${Date.now()}`,
+        title,
+        price,
+        materials,
+        timeSpent,
+        desc,
+        category: this.artisan.categoryLabel || 'Artesanía',
+        date: formatDateEs(new Date().toISOString()),
+        mainImage: this.tempProjectFiles[0].url,
+        steps
+      };
+
+      const artisanDocId = this.artisan.docId || this.artisan.id;
+
+      if (editIndex >= 0) {
+        this.currentProjects[editIndex] = projectData;
+      } else {
+        this.currentProjects.unshift(projectData);
+      }
+
+      this.artisan.projects = this.currentProjects;
+
+      if (artisanDocId) {
+        await this.manageShopUseCases.saveProject(artisanDocId, projectData);
+      }
+
+      this.renderProjectsGrid();
+      this.closeProjectModalEditor();
+      ToastComponent.show(editIndex >= 0 ? '✅ Obra actualizada con éxito.' : '✨ ¡Nuevo proyecto publicado en tu perfil!');
+    } catch (err) {
+      ToastComponent.show(`Error al guardar: ${err.message}`, 'error');
+    } finally {
+      if (btnSubmit) { btnSubmit.disabled = false; btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Guardar Obra'; }
+    }
   }
 }
+

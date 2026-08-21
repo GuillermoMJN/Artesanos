@@ -52,36 +52,43 @@ export class HeaderController {
       const isArtisan = (user.profile && user.profile.role === 'artisan') || !!artisanProfile;
       const rawName = (user.profile && user.profile.displayName) || (artisanProfile && artisanProfile.name) || (user.email ? user.email.split('@')[0] : 'Usuario');
       const displayName = escapeHtml(rawName);
+      const shortName = escapeHtml(rawName.length > 12 ? rawName.slice(0, 12) + '…' : rawName);
       const artisanId = artisanProfile ? artisanProfile.id : null;
+      const profileHref = artisanId ? `perfil.html?id=${artisanId}` : null;
+
+      const nameChipDesktop = profileHref
+        ? `<a href="${profileHref}" title="${displayName} — Ver perfil público" style="font-size: 0.85rem; color: var(--primary-dark); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.5rem 0.9rem; border-radius: 20px; border: 1px solid var(--border-color); flex-shrink: 0; line-height: 1.2; text-decoration: none; transition: border-color 0.2s;">
+            <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta);"></i>
+            ${shortName} <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
+          </a>`
+        : `<span title="${displayName}" style="font-size: 0.85rem; color: var(--primary-dark); font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.5rem 0.9rem; border-radius: 20px; border: 1px solid var(--border-color); flex-shrink: 0; line-height: 1.2;">
+            <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta);"></i>
+            ${shortName} <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
+          </span>`;
 
       const desktopHtml = `
-        <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
-          <span style="font-size: 0.88rem; color: var(--primary-dark); font-weight: 600; display: flex; align-items: center; gap: 0.4rem; background: var(--bg-subtle); padding: 0.4rem 0.8rem; border-radius: 20px; border: 1px solid var(--border-color);" title="Cuenta de ${isArtisan ? 'Artesano / Comercio' : 'Usuario / Cliente'}">
-            <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta);"></i>
-            ${displayName} <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 500;">(${isArtisan ? 'Taller' : 'Cliente'})</span>
-          </span>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: nowrap; white-space: nowrap;">
+          ${nameChipDesktop}
           ${isArtisan ? `
-            ${artisanId ? `
-              <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
-                <i class="fa-solid fa-eye"></i> Mi Perfil
-              </a>
-            ` : ''}
-            <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <button class="btn btn-primary" onclick="window.appUI.openShopManageModal()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; flex-shrink: 0; white-space: nowrap; line-height: 1.2;">
               <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
             </button>
           ` : `
-            <button class="btn btn-primary" onclick="window.appUI.openUserAccountModal()" style="padding: 0.5rem 1rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <button class="btn btn-primary" onclick="window.appUI.openUserAccountModal()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; flex-shrink: 0; white-space: nowrap; line-height: 1.2;">
               <i class="fa-solid fa-user-gear"></i> Mi Cuenta
             </button>
           `}
-          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+          <button class="btn btn-secondary" onclick="window.appUI.handleLogout()" style="padding: 0.5rem 0.9rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; flex-shrink: 0; white-space: nowrap; line-height: 1.2;">
             <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
           </button>
         </div>
       `;
 
       const mobileHtml = `
-        <div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem;">
+        ${profileHref
+          ? `<a href="${profileHref}" onclick="window.appUI.toggleMobileMenu(false)" style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem; text-decoration: none;">`
+          : `<div style="display: flex; align-items: center; justify-content: space-between; background: var(--bg-subtle); padding: 0.75rem 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 0.4rem;">`
+        }
           <div style="display: flex; align-items: center; gap: 0.6rem;">
             <i class="fa-solid ${isArtisan ? 'fa-store' : 'fa-user'}" style="color: var(--terracotta); font-size: 1.1rem;"></i>
             <span style="font-weight: 700; color: var(--primary-dark); font-size: 0.95rem;">${displayName}</span>
@@ -89,13 +96,8 @@ export class HeaderController {
           <span style="font-size: 0.72rem; background: ${isArtisan ? 'var(--terracotta)' : 'var(--warm-gold)'}; color: #FFF; padding: 0.15rem 0.5rem; border-radius: 10px; font-weight: 600;">
             ${isArtisan ? 'Taller' : 'Cliente'}
           </span>
-        </div>
+        ${profileHref ? `</a>` : `</div>`}
         ${isArtisan ? `
-          ${artisanId ? `
-            <a href="perfil.html?id=${artisanId}" class="btn btn-secondary" style="width: 100%; justify-content: center;" onclick="window.appUI.toggleMobileMenu(false)">
-              <i class="fa-solid fa-eye"></i> Ver Mi Perfil Público
-            </a>
-          ` : ''}
           <button class="btn btn-primary" onclick="window.appUI.toggleMobileMenu(false); window.appUI.openShopManageModal();" style="width: 100%; justify-content: center;">
             <i class="fa-solid fa-sliders"></i> Gestionar mi tienda
           </button>

@@ -13,6 +13,7 @@ import { ShopManageController } from './presentation/controllers/ShopManageContr
 import { UserAccountController } from './presentation/controllers/UserAccountController.js';
 import { SupportController } from './presentation/controllers/SupportController.js';
 import { IntroAnimationComponent } from './presentation/components/IntroAnimationComponent.js';
+import { CookieBannerComponent } from './presentation/components/CookieBannerComponent.js';
 import { setupModalDismissListeners, closeModal } from './core/utils/domUtils.js';
 
 /**
@@ -82,6 +83,7 @@ class MainApp {
 
   async init() {
     IntroAnimationComponent.play();
+    CookieBannerComponent.init();
     setupModalDismissListeners();
 
     this.headerController.init();
@@ -104,8 +106,12 @@ class MainApp {
 
       if (urlParams.get('manage') === 'true' && user && isArtisan) {
         this.shopManageController.openShopManageModal();
+        // Limpiar ?manage=true de la barra de direcciones para evitar que se reabra al recargar (F5 / Ctrl+F5)
+        window.history.replaceState({}, document.title, window.location.pathname);
       } else if (urlParams.get('account') === 'true' && user && !isArtisan) {
         this.userAccountController.openUserAccountModal();
+        // Limpiar ?account=true de la barra de direcciones
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     });
   }
@@ -161,6 +167,15 @@ class MainApp {
 
   filterByCategory(catId) { this.directoryController.filterByCategory(catId); }
   filterByLocation(loc) { this.directoryController.filterByLocation(loc); }
+  triggerSearch() {
+    const input = document.getElementById('searchInput');
+    if (input) {
+      this.directoryController.searchQuery = input.value;
+      this.directoryController.renderArtisans();
+      const section = document.getElementById('directorio');
+      if (section) section.scrollIntoView({ behavior: 'smooth' });
+    }
+  }
 
   openShopManageModal() { this.shopManageController.openShopManageModal(); }
   switchShopTab(tabId) { this.shopManageController.switchShopTab(tabId); }

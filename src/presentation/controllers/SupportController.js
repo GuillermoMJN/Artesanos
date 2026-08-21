@@ -121,11 +121,12 @@ export class SupportController {
       catSelect.value = category;
     }
 
-    if (nameInput && this.currentUser && !nameInput.value) {
-      nameInput.value = (this.currentUser.profile && this.currentUser.profile.displayName) || '';
+    // Dejar campos limpios para respetar privacidad y anonimato
+    if (nameInput) {
+      nameInput.value = '';
     }
-    if (emailInput && this.currentUser && !emailInput.value) {
-      emailInput.value = this.currentUser.email || '';
+    if (emailInput) {
+      emailInput.value = '';
     }
 
     openModal('supportContactModal');

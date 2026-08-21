@@ -11,7 +11,7 @@ const artisanRepo = new FirebaseArtisanRepository();
 const crmUseCases = new CrmUseCases(crmRepo, artisanRepo);
 const getArtisansUseCase = new GetArtisansUseCase(artisanRepo);
 
-const crmController = new CrmPageController(crmUseCases, getArtisansUseCase);
+const crmController = new CrmPageController(crmUseCases, getArtisansUseCase, artisanRepo);
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => crmController.init());

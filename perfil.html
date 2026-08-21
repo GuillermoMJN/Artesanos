@@ -14,13 +14,16 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
+  <!-- Bloqueo Privado por PIN -->
+  <script src="src/siteLock.js"></script>
+
   <link rel="stylesheet" href="index.css">
   <style>
     .profile-hero {
       position: relative;
       background: var(--primary-dark);
       color: var(--white);
-      padding: 4rem 0 3rem;
+      padding: 6.2rem 0 2.2rem;
       overflow: hidden;
     }
     .profile-hero-bg {
@@ -30,24 +33,51 @@
       background-size: cover;
       background-position: center;
       filter: blur(8px);
+      transition: opacity 0.6s ease;
     }
     .profile-header-card {
       position: relative;
       z-index: 2;
       display: flex;
-      gap: 2rem;
+      gap: 2.2rem;
       align-items: center;
       flex-wrap: wrap;
     }
+    .profile-avatar-wrapper {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #FFFFFF;
+      border-radius: 50%;
+      border: 4px solid var(--warm-gold);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
+      box-sizing: border-box;
+      overflow: hidden;
+    }
     .profile-avatar {
-      width: 140px;
-      height: 140px;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       object-fit: cover;
-      border: 4px solid var(--warm-gold);
-      box-shadow: var(--shadow-lg);
-      flex-shrink: 0;
+      object-position: center;
+      display: block;
+      background-color: #FFFFFF;
+      opacity: 0;
+      transition: opacity 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
+    .profile-avatar.loaded {
+      opacity: 1;
+    }
+
+    .profile-info {
+      flex: 1;
+      min-width: 280px;
+    }
+
     .profile-info h1 {
       font-family: 'Playfair Display', serif;
       font-size: 2.3rem;
@@ -318,7 +348,9 @@
     <div class="profile-hero-bg" id="profileBg"></div>
     <div class="container">
       <div class="profile-header-card">
-        <img id="profileAvatar" src="" alt="Artesano" class="profile-avatar">
+        <div class="profile-avatar-wrapper">
+          <img id="profileAvatar" src="" alt="Artesano" class="profile-avatar">
+        </div>
         <div class="profile-info" style="flex: 1; padding-top: 0.8rem;">
           <h1 id="profileName" style="margin-bottom: 0.6rem;">Nombre del Artesano</h1>
           <div style="display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.2rem; margin-top: 0.4rem;">
@@ -337,6 +369,9 @@
           <a id="btnOwnerManage" href="index.html?manage=true" class="btn" style="display: none; text-align: center; background: var(--warm-gold); color: #FFF; font-weight: 700; border: none; box-shadow: var(--shadow-sm);">
             <i class="fa-solid fa-sliders"></i> Gestionar Mi Perfil & Tienda
           </a>
+          <button id="btnOwnerNewProject" type="button" class="btn btn-primary" onclick="window.profileOpenNewProjectModal()" style="display: none; text-align: center; font-weight: 700; border: none; box-shadow: var(--shadow-sm);">
+            <i class="fa-solid fa-plus"></i> Crear Nuevo Proyecto
+          </button>
           <a id="btnWhatsapp" href="#" target="_blank" class="btn btn-primary" style="text-align: center;">
             <i class="fa-brands fa-whatsapp"></i> Contactar por WhatsApp
           </a>
@@ -580,15 +615,300 @@
       <i class="fa-solid fa-xmark"></i>
     </button>
     <div style="max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
+          <div class="contact-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Teléfono / WhatsApp</div>
+              <strong id="contactPhone" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-envelope"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Email</div>
+              <strong id="contactEmail" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Dirección física</div>
+              <strong id="contactAddress" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+          <div class="contact-item">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Horario del taller</div>
+              <strong id="contactHours" style="color: var(--primary-dark);"></strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN DE RESEÑAS Y VALORACIONES GLOBALES DEL ARTESANO -->
+    <section id="reviewsSection" style="margin-bottom: 4rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <span class="section-tag"><i class="fa-solid fa-star"></i> Opiniones Reales</span>
+          <h2 style="font-family: 'Playfair Display', serif; font-size: 2.1rem; color: var(--primary-dark);">Reseñas y Valoración del Artesano</h2>
+          <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.3rem;">La puntuación media se calcula únicamente con las valoraciones directas a este artesano.</p>
+        </div>
+      </div>
+
+      <!-- Resumen Global de Puntuación -->
+      <div class="profile-rating-summary-grid">
+        <div class="profile-rating-score-side">
+          <div style="font-size: 3.5rem; font-family: 'Playfair Display', serif; font-weight: 700; color: var(--primary-dark); line-height: 1;" id="summaryScoreNum">5.0</div>
+          <div style="color: var(--warm-gold); font-size: 1.3rem; margin: 0.5rem 0;" id="summaryScoreStars">
+            <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+          </div>
+          <p style="color: var(--text-muted); font-size: 0.9rem;" id="summaryScoreCount">Basado en 0 opiniones</p>
+        </div>
+
+        <div>
+          <h4 style="color: var(--primary-dark); margin-bottom: 0.5rem; font-size: 1.15rem;">¿Has visitado este taller o comprado sus piezas?</h4>
+          <p style="color: var(--text-secondary); font-size: 0.92rem; line-height: 1.6; margin-bottom: 1rem;">
+            Comparte tu experiencia para ayudar a otros amantes de la artesanía a descubrir el trabajo de este creador.
+          </p>
+          <a href="#newReviewBox" class="btn btn-primary" style="display: inline-block;">
+            <i class="fa-solid fa-pen-nib"></i> Escribir una Reseña
+          </a>
+        </div>
+      </div>
+
+      <!-- Formulario para Añadir Nueva Reseña -->
+      <div id="newReviewBox" style="background: var(--bg-subtle); padding: 2rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 2.5rem;">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.2rem;">
+          <i class="fa-solid fa-comment-dots" style="color: var(--terracotta);"></i> Deja tu Valoración y Comentario
+        </h3>
+
+        <form id="artisanReviewForm">
+          <div style="margin-bottom: 1.2rem;">
+            <label class="form-label" style="margin-bottom: 0.4rem;">Tu Puntuación General *</label>
+            <div class="star-rating-select" id="starRatingSelect">
+              <i class="fa-solid fa-star active" data-value="1"></i>
+              <i class="fa-solid fa-star active" data-value="2"></i>
+              <i class="fa-solid fa-star active" data-value="3"></i>
+              <i class="fa-solid fa-star active" data-value="4"></i>
+              <i class="fa-solid fa-star active" data-value="5"></i>
+            </div>
+            <input type="hidden" id="reviewRatingInput" value="5">
+          </div>
+
+          <div id="guestReviewerFields" class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Tu Nombre o Alias *</label>
+              <input type="text" id="reviewAuthorName" class="form-input" placeholder="ej. Lucía Morales" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label class="form-label">Tu Opinión sobre el Artesano *</label>
+            <textarea id="reviewCommentText" class="form-textarea" rows="4" placeholder="Describe tu experiencia, calidad del trabajo, trato recibido, etc..." required></textarea>
+          </div>
+
+          <button type="submit" id="btnSubmitReview" class="btn btn-primary">
+            <i class="fa-solid fa-paper-plane"></i> Publicar Reseña
+          </button>
+        </form>
+      </div>
+
+      <!-- Listado de Reseñas Publicadas -->
+      <div id="reviewsListContainer" style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <!-- Se inyectan dinámicamente -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal Detalle de Proyecto Individual con Comentarios Independientes -->
+  <div class="modal-overlay" id="projectDetailModal">
+    <div class="modal-card" style="max-width: 850px;">
+      <button class="modal-close" onclick="closeProjectModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body" style="padding: 2rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+          <span class="hero-badge" id="modalProjCategory" style="margin: 0;"><i class="fa-solid fa-folder"></i> Proyecto</span>
+          <span id="modalProjPriceBadge" class="project-price-tag" style="display: none;"></span>
+        </div>
+
+        <h2 id="modalProjTitle" style="font-family: 'Playfair Display', serif; font-size: 2.2rem; color: var(--primary-dark); margin-bottom: 0.3rem;">Título del Proyecto</h2>
+        <p id="modalProjDate" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.2rem;"><i class="fa-regular fa-calendar-lines"></i> Fecha</p>
+
+        <!-- Ficha Técnica del Proyecto (Materiales, Tiempo, Precio) -->
+        <div id="modalProjTechSheet" class="project-tech-sheet" style="display: none; margin-bottom: 1.5rem;">
+          <div class="tech-sheet-grid">
+            <div id="techItemPrice" class="tech-item" style="display: none;">
+              <span class="tech-label"><i class="fa-solid fa-tag"></i> Precio Orientativo</span>
+              <strong id="modalProjPrice" class="tech-val"></strong>
+            </div>
+            <div id="techItemMaterials" class="tech-item" style="display: none;">
+              <span class="tech-label"><i class="fa-solid fa-layer-group"></i> Materiales Nobles</span>
+              <strong id="modalProjMaterials" class="tech-val"></strong>
+            </div>
+            <div id="techItemTime" class="tech-item" style="display: none;">
+              <span class="tech-label"><i class="fa-solid fa-clock"></i> Tiempo de Elaboración</span>
+              <strong id="modalProjTimeSpent" class="tech-val"></strong>
+            </div>
+          </div>
+        </div>
+
+        <p id="modalProjDesc" style="color: var(--text-secondary); line-height: 1.7; font-size: 1.05rem; margin-bottom: 1.8rem; background: var(--bg-subtle); padding: 1.2rem; border-radius: var(--radius-sm); border-left: 4px solid var(--terracotta);"></p>
+
+        <!-- Botón de consulta directa por WhatsApp para esta pieza -->
+        <div id="modalProjWhatsappContainer" style="margin-bottom: 2rem; display: none;">
+          <a id="modalProjWhatsappBtn" href="#" target="_blank" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; width: 100%; justify-content: center; font-size: 0.95rem; padding: 0.85rem 1.4rem;">
+            <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem;"></i> Preguntar o Pedir Presupuesto de esta Pieza por WhatsApp
+          </a>
+        </div>
+
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 1.4rem; color: var(--primary-dark); margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.6rem;">
+          <i class="fa-solid fa-camera-retro" style="color: var(--terracotta);"></i> Proceso de Desarrollo & Galería
+        </h3>
+
+        <div id="modalProjSteps" style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem;">
+          <!-- Fotos y pasos del proyecto -->
+        </div>
+
+        <!-- SECCIÓN DE COMENTARIOS DEL PROYECTO -->
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+
+        <div style="margin-bottom: 1.5rem;">
+          <h4 style="font-family: 'Playfair Display', serif; font-size: 1.3rem; color: var(--primary-dark); display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-comments" style="color: var(--terracotta);"></i> Preguntas y Comentarios sobre esta Pieza
+          </h4>
+          <p style="color: var(--text-secondary); font-size: 0.88rem;">Comentarios de la comunidad sobre este proyecto en particular (no alteran la media de estrellas del artesano).</p>
+        </div>
+
+        <!-- Lista de Comentarios del Proyecto -->
+        <div id="projectCommentsList" style="margin-bottom: 1.5rem; max-height: 250px; overflow-y: auto;">
+          <!-- Dinámico -->
+        </div>
+
+        <!-- Formulario para Comentar en el Proyecto -->
+        <form id="projectCommentForm" style="display: flex; flex-direction: column; gap: 0.8rem; background: var(--bg-subtle); padding: 1.2rem; border-radius: 12px; border: 1px solid var(--border-color);">
+          <div style="display: flex; gap: 0.8rem;">
+            <input type="text" id="projectCommentAuthor" class="form-input" placeholder="Tu Nombre o Alias *" required style="flex: 1;">
+          </div>
+          <div style="display: flex; gap: 0.8rem;">
+            <input type="text" id="projectCommentText" class="form-input" placeholder="Escribe tu comentario o consulta sobre esta obra..." required style="flex: 1;">
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap; padding: 0.7rem 1.4rem;">
+              <i class="fa-solid fa-paper-plane"></i> Enviar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
+  <div class="modal-overlay" id="lightboxModal" style="z-index: 4000; background: rgba(0, 0, 0, 0.9);">
+    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #FFF;">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div style="max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
       <div id="lightboxMediaContainer" style="width: 100%; height: 100%; display: flex; justify-content: center;"></div>
       <p id="lightboxCaption" style="color: #FFF; margin-top: 1rem; font-size: 1.1rem; text-align: center; font-weight: 500;"></p>
     </div>
   </div>
 
+  <!-- Modal para Crear / Editar Proyecto Directamente desde el Perfil -->
+  <div class="modal-overlay" id="profileProjectModal" style="z-index: 5000;">
+    <div class="modal-card" style="max-width: 680px; max-height: 90vh; overflow-y: auto;">
+      <button class="modal-close" onclick="window.profileCloseProjectModal()">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+      <div class="modal-body" style="padding: 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.5rem;">
+          <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--bg-subtle); color: var(--terracotta); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h3 id="profileProjModalTitle" style="font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--primary-dark); margin: 0;">
+              Publicar Nuevo Proyecto
+            </h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Sube fotos y detalles de tu trabajo artesanal a tu catálogo público.</span>
+          </div>
+        </div>
+
+        <form id="profileProjectForm">
+          <input type="hidden" id="profileEditProjIndex" value="-1">
+
+          <div class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0; flex: 2;">
+              <label class="form-label">Título de la Obra o Trabajo *</label>
+              <input type="text" id="profileProjInputTitle" class="form-input" placeholder="ej. Vajilla Esmaltada Albaicín" required>
+            </div>
+            <div class="form-group" style="margin-bottom: 0; flex: 1;">
+              <label class="form-label">Precio Orientativo (Opcional)</label>
+              <input type="text" id="profileProjInputPrice" class="form-input" placeholder="ej. Desde 45€">
+            </div>
+          </div>
+
+          <div class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Materiales Principales (Opcional)</label>
+              <input type="text" id="profileProjInputMaterials" class="form-input" placeholder="ej. Barro rojo, esmalte natural">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Tiempo de Elaboración (Opcional)</label>
+              <input type="text" id="profileProjInputTimeSpent" class="form-input" placeholder="ej. 8 días de trabajo manual">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">Descripción del Proceso o Historia de la Pieza (Opcional)</label>
+            <textarea id="profileProjInputDesc" class="form-textarea" rows="3" placeholder="Explica la técnica, inspiración o cómo elaboraste esta pieza..."></textarea>
+          </div>
+
+          <!-- Subida de Fotos / Medios -->
+          <div class="form-group" style="margin-bottom: 1rem;">
+            <label class="form-label">Fotografías de la Obra y Proceso *</label>
+            <div style="background: var(--bg-subtle); padding: 1.2rem; border-radius: 12px; border: 1.5px dashed var(--border-color); text-align: center;">
+              <label class="btn btn-secondary" style="cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; border-radius: 8px;">
+                <i class="fa-solid fa-camera"></i> Seleccionar Imágenes
+                <input type="file" id="profileProjFileInput" accept="image/*" multiple style="display: none;" onchange="window.profileHandleFilesSelected(event)">
+              </label>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0.6rem 0 0 0;">Formatos: JPG, PNG, WEBP. Puedes seleccionar varias imágenes.</p>
+            </div>
+          </div>
+
+          <!-- Previsualización de Fotos Seleccionadas -->
+          <div id="profileProjMediaPreviewList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; margin-bottom: 1.5rem;">
+            <!-- Renderizado dinámico -->
+          </div>
+
+          <div style="display: flex; gap: 0.8rem; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1.2rem;">
+            <button type="button" class="btn btn-secondary" onclick="window.profileCloseProjectModal()">
+              Cancelar
+            </button>
+            <button type="submit" id="btnProfileSaveProject" class="btn btn-primary" style="font-weight: 700; padding: 0.7rem 1.5rem;">
+              <i class="fa-solid fa-floppy-disk"></i> Guardar Obra
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
-  <footer class="footer">
-    <div class="container text-center">
-      <div>© 2026 Arte y Sanos. Todos los derechos reservados.</div>
+  <footer class="footer" style="padding: 3rem 0; border-top: 1px solid var(--border-color); background: #FAF7F2;">
+    <div class="container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; text-align: center;">
+      <div style="display: flex; justify-content: center; align-items: center; gap: 1.8rem; flex-wrap: wrap;">
+        <a href="aviso-legal.html" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-decoration: none;">Aviso Legal</a>
+        <span style="color: var(--border-color);">•</span>
+        <a href="privacidad.html" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-decoration: none;">Política de Privacidad</a>
+        <span style="color: var(--border-color);">•</span>
+        <a href="terminos.html" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-decoration: none;">Términos y Condiciones</a>
+        <span style="color: var(--border-color);">•</span>
+        <a href="cookies.html" style="color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; text-decoration: none;">Política de Cookies</a>
+      </div>
+      <div style="color: var(--text-muted); font-size: 0.85rem;">
+        © 2026 Arte y Sanos. Todos los derechos reservados.
+      </div>
     </div>
   </footer>
 

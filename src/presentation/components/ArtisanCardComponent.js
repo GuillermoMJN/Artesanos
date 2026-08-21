@@ -13,14 +13,15 @@ export class ArtisanCardComponent {
     const safeCategory = escapeHtml(artisan.categoryLabel);
     const safeDesc = escapeHtml(artisan.description);
     const safeLocation = escapeHtml(artisan.location || 'España');
-    const safeExperience = escapeHtml(artisan.experience || 'Artesano verificado');
+    const safeExperience = artisan.experience || '';
+    const isCertified = safeExperience.toLowerCase().includes('certificado');
     const imageSrc = artisan.image || DEFAULT_AVATAR_PATH;
     const ratingDisplay = Number(artisan.rating || 5.0).toFixed(1);
 
     return `
       <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${artisan.id}', '_blank')">
-        <div class="artisan-img-wrapper">
-          <img src="${imageSrc}" alt="${safeName}" class="artisan-img" loading="lazy">
+        <div class="artisan-img-wrapper" style="background: #FFFFFF;">
+          <img src="${imageSrc}" alt="${safeName}" class="artisan-img" loading="lazy" style="opacity: 0; transition: opacity 0.6s ease;" onload="this.style.opacity='1';">
           <span class="artisan-badge">${safeCategory}</span>
           <div class="artisan-rating">
             <i class="fa-solid fa-star"></i>
@@ -52,7 +53,7 @@ export class ArtisanCardComponent {
           <p class="artisan-desc">${safeDesc}</p>
           <div class="artisan-meta">
             <span><i class="fa-solid fa-location-dot"></i> ${safeLocation}</span>
-            <span><i class="fa-solid fa-certificate"></i> ${safeExperience}</span>
+            ${isCertified ? `<span><i class="fa-solid fa-certificate" style="color: var(--warm-gold);"></i> ${escapeHtml(safeExperience)}</span>` : ''}
           </div>
           <div class="artisan-footer">
             <a href="perfil.html?id=${artisan.id}" target="_blank" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; text-decoration: none; text-align: center; display: block;" onclick="event.stopPropagation();">

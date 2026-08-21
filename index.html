@@ -18,6 +18,9 @@
     href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
+  <!-- Bloqueo Privado por PIN -->
+  <script src="src/siteLock.js"></script>
+
   <!-- Módulo Principal de la Aplicación (Clean Architecture) -->
   <script type="module" src="src/main.js"></script>
 
@@ -98,8 +101,9 @@
           <i class="fa-solid fa-magnifying-glass"
             style="margin-left: 1.2rem; color: var(--terracotta); font-size: 1.2rem;"></i>
           <input type="text" id="searchInput" class="hero-search-input"
-            placeholder="Busca por oficio, nombre o ciudad (ej. Cerámica, Madrid, Toledo)...">
-          <button class="btn btn-gold" style="padding: 0.8rem 1.4rem;">
+            placeholder="Busca por oficio, nombre o ciudad (ej. Cerámica, Madrid, Toledo)..."
+            onkeydown="if(event.key==='Enter') window.appUI.triggerSearch()">
+          <button class="btn btn-gold" id="searchBtn" style="padding: 0.8rem 1.4rem;" onclick="window.appUI.triggerSearch()">
             Buscar
           </button>
         </div>
@@ -246,10 +250,17 @@
       </div>
 
       <div class="footer-bottom">
-        <div>© 2026 Arte y Sanos. Todos los derechos reservados.</div>
-        <div style="display: flex; gap: 1.5rem;">
-          <a href="#">Privacidad</a>
-          <a href="#">Términos de uso</a>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1.5rem; flex-wrap: wrap; text-align: center; width: 100%;">
+          <a href="aviso-legal.html" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: color 0.2s;">Aviso Legal</a>
+          <span style="color: rgba(255, 255, 255, 0.2);">•</span>
+          <a href="privacidad.html" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: color 0.2s;">Política de Privacidad</a>
+          <span style="color: rgba(255, 255, 255, 0.2);">•</span>
+          <a href="terminos.html" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: color 0.2s;">Términos y Condiciones</a>
+          <span style="color: rgba(255, 255, 255, 0.2);">•</span>
+          <a href="cookies.html" style="color: var(--text-muted); font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: color 0.2s;">Política de Cookies</a>
+        </div>
+        <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; width: 100%;">
+          © 2026 Arte y Sanos. Todos los derechos reservados.
         </div>
       </div>
     </div>
@@ -424,7 +435,15 @@
             </div>
           </div>
 
-          <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+          <!-- Casilla de Consentimiento RGPD / LOPDGDD Obligatoria -->
+          <div style="margin-top: 1.2rem; padding: 0.8rem; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border-color);">
+            <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+              <input type="checkbox" id="registerConsentCheckbox" required style="margin-top: 2px; width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0;">
+              <span>He leído y acepto la <a href="privacidad.html" target="_blank" style="color: var(--terracotta); font-weight: 600; text-decoration: underline;">Política de Privacidad</a> y los <a href="terminos.html" target="_blank" style="color: var(--terracotta); font-weight: 600; text-decoration: underline;">Términos y Condiciones de Uso</a>. *</span>
+            </label>
+          </div>
+
+          <div style="display: flex; gap: 1rem; margin-top: 1.3rem;">
             <button type="submit" id="btnSubmitRegister" class="btn btn-primary" style="flex: 1;">
               <i class="fa-solid fa-check"></i> Crear Cuenta de Usuario
             </button>
@@ -498,9 +517,6 @@
         <div class="shop-tabs-nav">
           <button class="tab-btn active" onclick="window.appUI.switchShopTab('tabGeneral')" id="btnTabGeneral">
             <i class="fa-solid fa-store"></i> Información & Foto
-          </button>
-          <button class="tab-btn" onclick="window.appUI.switchShopTab('tabGallery')" id="btnTabGallery">
-            <i class="fa-solid fa-images"></i> Mis Trabajos & Catálogo
           </button>
           <button class="tab-btn" onclick="window.appUI.switchShopTab('tabPromos')" id="btnTabPromos">
             <i class="fa-solid fa-tags"></i> Promociones & Ofertas
@@ -648,89 +664,7 @@
           </form>
         </div>
 
-        <!-- Tab 2: Proyectos & Catálogo -->
-        <div id="tabGallery" class="shop-tab-content" style="display: none;">
-          <div class="dashboard-card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <div>
-              <h3 style="font-size: 1.15rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.2rem;">
-                <i class="fa-solid fa-photo-film" style="color: var(--terracotta);"></i> Catálogo de Obras & Proyectos
-              </h3>
-              <p style="color: var(--text-secondary); font-size: 0.82rem; margin: 0;">Publica tus piezas terminadas con galerías fotográficas del proceso paso a paso.</p>
-            </div>
-            <button type="button" class="btn btn-primary" onclick="window.appUI.showNewProjectForm()" style="padding: 0.55rem 1.1rem; font-size: 0.85rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 600;">
-              <i class="fa-solid fa-plus"></i> Añadir Nuevo Trabajo
-            </button>
-          </div>
-
-          <!-- Formulario de Crear / Editar Trabajo (oculto por defecto) -->
-          <div id="projectFormContainer" style="display: none; background: #FFFFFF; padding: 1.5rem; border-radius: 16px; border: 1.5px solid #E6DDD0; box-shadow: 0 6px 25px rgba(62, 39, 35, 0.04); margin-bottom: 1.6rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.1rem; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
-              <h4 id="projectFormTitle" style="font-size: 1.1rem; color: var(--primary-dark); font-weight: 700; margin: 0;">Añadir Nuevo Trabajo</h4>
-              <button type="button" style="background: none; border: none; font-size: 1.1rem; cursor: pointer; color: var(--text-muted);" onclick="window.appUI.hideProjectForm()">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <form id="projectEditorForm">
-              <input type="hidden" id="editingProjectIdx" value="-1">
-
-              <div class="form-row" style="margin-bottom: 0.8rem;">
-                <div class="form-group" style="margin-bottom: 0; flex: 2;">
-                  <label class="form-label">Título del Trabajo o Colección *</label>
-                  <input type="text" id="projectInputTitle" class="form-input" placeholder="ej. Vajilla Completa Albaicín o Colección Otoño" required>
-                </div>
-                <div class="form-group" style="margin-bottom: 0; flex: 1;">
-                  <label class="form-label">Precio Orientativo (Opcional)</label>
-                  <input type="text" id="projectInputPrice" class="form-input" placeholder="ej. Desde 45€ / 120€">
-                </div>
-              </div>
-
-              <div class="form-row" style="margin-bottom: 0.8rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label">Materiales Principales (Opcional)</label>
-                  <input type="text" id="projectInputMaterials" class="form-input" placeholder="ej. Barro rojo autóctono, Esmalte natural">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label class="form-label">Tiempo de Elaboración (Opcional)</label>
-                  <input type="text" id="projectInputTimeSpent" class="form-input" placeholder="ej. 12 días de trabajo manual">
-                </div>
-              </div>
-
-              <div class="form-group" style="margin-bottom: 0.9rem;">
-                <label class="form-label">Descripción del Proyecto o Proceso (Opcional)</label>
-                <textarea id="projectInputDesc" class="form-textarea" rows="2" placeholder="Explica las técnicas, inspiración y el proceso de elaboración de esta pieza..."></textarea>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Subir Fotografías y/o Vídeos del Proceso *</label>
-                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: var(--bg-subtle); padding: 0.9rem; border-radius: 10px; border: 1px dashed var(--border-color);">
-                  <label class="btn btn-secondary" style="cursor: pointer; margin: 0; display: inline-flex; align-items: center; gap: 0.4rem; border-radius: 7px; padding: 0.45rem 0.9rem; font-size: 0.82rem;">
-                    <i class="fa-solid fa-paperclip"></i> Seleccionar Archivos
-                    <input type="file" id="projectFileInput" accept="image/*,video/*" multiple style="display: none;" onchange="window.appUI.handleProjectFilesSelected(event)">
-                  </label>
-                  <span id="fileUploadStatus" style="font-size: 0.78rem; color: var(--text-muted);">Formatos aceptados: JPG, PNG, WEBP, MP4, MOV...</span>
-                </div>
-              </div>
-
-              <!-- Lista / Previsualización de archivos cargados -->
-              <div id="projectMediaPreviewList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.7rem; margin: 1rem 0;"></div>
-
-              <div style="display: flex; gap: 0.8rem; justify-content: flex-end; margin-top: 1.3rem;">
-                <button type="button" class="btn btn-secondary" onclick="window.appUI.hideProjectForm()" style="font-size: 0.82rem; padding: 0.5rem 1rem;">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="btnSaveProject" style="font-size: 0.85rem; font-weight: 700; padding: 0.55rem 1.2rem;">
-                  <i class="fa-solid fa-check"></i> Guardar Trabajo
-                </button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Lista de Proyectos Existentes (Grid Amplio) -->
-          <div id="projectsManagerGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.2rem;">
-            <!-- Renderizado dinámico desde JS -->
-          </div>
-        </div>
-
-        <!-- Tab 3: Promociones -->
+        <!-- Tab 2: Promociones -->
         <div id="tabPromos" class="shop-tab-content" style="display: none;">
           <div class="dashboard-card">
             <h4 class="dashboard-card-title">
@@ -1059,9 +993,17 @@
             </div>
           </div>
 
-          <div class="form-group" style="margin-bottom: 1.5rem;">
+          <div class="form-group" style="margin-bottom: 1.2rem;">
             <label class="form-label">Detalles adicionales o trayectoria artesanal (Opcional)</label>
             <textarea id="verifNotes" class="form-textarea" rows="3" placeholder="Cuéntanos brevemente sobre tus años de oficio, técnicas tradicionales que empleas, certificados o enlaces adicionales..."></textarea>
+          </div>
+
+          <!-- Consentimiento RGPD Verificación -->
+          <div style="margin-bottom: 1.2rem; padding: 0.8rem; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border-color);">
+            <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+              <input type="checkbox" id="verifConsentCheckbox" required style="margin-top: 2px; width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0;">
+              <span>Acepto el tratamiento de mis datos de contacto para la gestión de la solicitud conforme a la <a href="privacidad.html" target="_blank" style="color: var(--terracotta); font-weight: 600; text-decoration: underline;">Política de Privacidad</a>. *</span>
+            </label>
           </div>
 
           <div style="display: flex; gap: 0.8rem; justify-content: flex-end;">
@@ -1139,9 +1081,17 @@
             <input type="text" id="supportSubject" class="form-input" placeholder="ej. Problema al subir fotos de un trabajo" required>
           </div>
 
-          <div class="form-group" style="margin-bottom: 1.5rem;">
+          <div class="form-group" style="margin-bottom: 1.2rem;">
             <label class="form-label">Describe tu mensaje o incidencia *</label>
             <textarea id="supportMessage" class="form-textarea" rows="4" placeholder="Explica detalladamente lo que ocurre para poder ayudarte lo antes posible..." required></textarea>
+          </div>
+
+          <!-- Consentimiento RGPD Soporte -->
+          <div style="margin-bottom: 1.2rem; padding: 0.8rem; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border-color);">
+            <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
+              <input type="checkbox" id="supportConsentCheckbox" required style="margin-top: 2px; width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0;">
+              <span>He leído y acepto la <a href="privacidad.html" target="_blank" style="color: var(--terracotta); font-weight: 600; text-decoration: underline;">Política de Privacidad</a> para la gestión y respuesta de mi consulta. *</span>
+            </label>
           </div>
 
           <div style="display: flex; gap: 0.8rem; justify-content: flex-end;">
