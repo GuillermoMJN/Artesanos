@@ -23,8 +23,15 @@ export function renderStarRatingHtml(rating = 5.0) {
 export function formatDateEs(isoDateOrTimestamp) {
   if (!isoDateOrTimestamp) return 'Reciente';
   try {
-    const d = new Date(isoDateOrTimestamp);
-    if (isNaN(d.getTime())) return String(isoDateOrTimestamp);
+    let d;
+    if (isoDateOrTimestamp.toDate && typeof isoDateOrTimestamp.toDate === 'function') {
+      d = isoDateOrTimestamp.toDate();
+    } else if (isoDateOrTimestamp.seconds) {
+      d = new Date(isoDateOrTimestamp.seconds * 1000);
+    } else {
+      d = new Date(isoDateOrTimestamp);
+    }
+    if (isNaN(d.getTime())) return 'Reciente';
     return d.toLocaleDateString('es-ES', {
       day: 'numeric',
       month: 'short',

@@ -140,13 +140,7 @@ export class FirebaseCrmRepository extends ICrmRepository {
 
     if (db) {
       try {
-        let q;
-        try {
-          q = query(collection(db, "support_tickets"), orderBy("createdAt", "desc"));
-        } catch {
-          q = collection(db, "support_tickets");
-        }
-        const snap = await getDocs(q);
+        const snap = await getDocs(collection(db, "support_tickets"));
         snap.docs.forEach(d => {
           tickets.push(new SupportTicket({ id: d.id, ...d.data() }));
         });
@@ -157,6 +151,17 @@ export class FirebaseCrmRepository extends ICrmRepository {
     } else {
       tickets = this._getLocalTickets();
     }
+
+    // Ordenar siempre por fecha descendente de forma segura (los más nuevos arriba)
+    tickets.sort((a, b) => {
+      const getTime = (val) => {
+        if (!val) return 0;
+        if (val.toMillis && typeof val.toMillis === 'function') return val.toMillis();
+        if (val.seconds) return val.seconds * 1000;
+        return new Date(val).getTime() || 0;
+      };
+      return getTime(b.createdAt) - getTime(a.createdAt);
+    });
 
     return tickets;
   }
