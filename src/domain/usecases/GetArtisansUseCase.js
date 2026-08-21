@@ -14,7 +14,7 @@ export class GetArtisansUseCase {
     return await this.artisanRepository.getArtisanById(id);
   }
 
-  filterAndSort(artisans, { category = 'all', location = 'all', query = '', sortBy = 'featured' }) {
+  filterAndSort(artisans, { category = 'all', location = 'all', query = '', sortBy = 'featured', onlyNew = false }) {
     const cleanQuery = (query || '').trim().toLowerCase();
     const cleanLocation = (location || 'all').trim().toLowerCase();
     const cleanCategory = (category || 'all').toLowerCase();
@@ -33,8 +33,9 @@ export class GetArtisansUseCase {
         itemTrade.includes(cleanQuery) ||
         itemLocation.includes(cleanQuery) ||
         itemDesc.includes(cleanQuery);
+      const matchesOnlyNew = !onlyNew || (typeof item.isNew === 'function' && item.isNew());
 
-      return matchesCategory && matchesLocation && matchesSearch;
+      return matchesCategory && matchesLocation && matchesSearch && matchesOnlyNew;
     });
 
     if (sortBy === 'rating') {

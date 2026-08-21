@@ -359,9 +359,10 @@ export class ProfileController {
     if (proj.steps && proj.steps.length > 0) {
       stepsContainer.innerHTML = proj.steps.map(step => ProjectCardComponent.renderStepCard(step)).join('');
     } else {
+      const fallbackDesc = (proj.desc || '').replace(/'/g, "\\'");
       stepsContainer.innerHTML = `
-        <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="window.openLightboxModal('${proj.mainImage}', '${safeTitle.replace(/'/g, "\\'")}')">
-          <img src="${proj.mainImage}" alt="${safeTitle}" style="width: 100%; height: 200px; object-fit: cover;">
+        <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; cursor: pointer;" onclick="window.openLightboxModal('${proj.mainImage}', '${safeTitle.replace(/'/g, "\\'")}', '${fallbackDesc}')">
+          <img src="${proj.mainImage}" alt="${safeTitle}" style="width: 100%; height: 220px; object-fit: cover;">
         </div>
       `;
     }
@@ -651,7 +652,7 @@ export class ProfileController {
   bindGlobalWindowMethods() {
     window.openProjectModal = (idx) => this.openProjectModal(idx);
     window.closeProjectModal = () => this.closeProjectModal();
-    window.openLightboxModal = (url, cap) => LightboxComponent.open(url, cap);
+    window.openLightboxModal = (url, title, desc) => LightboxComponent.open(url, title, desc);
     window.closeLightboxModal = () => LightboxComponent.close();
     window.profileOpenNewProjectModal = () => this.openNewProjectModal();
     window.profileCloseProjectModal = () => this.closeProjectModalEditor();

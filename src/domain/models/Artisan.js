@@ -31,11 +31,13 @@ export class Artisan {
     projects = [],
     allowWhatsapp = true,
     acceptsCustomOrders = true,
-    isVisitable = false
+    isVisitable = false,
+    createdAt = null
   }) {
     this.id = id;
     this.docId = docId;
     this.ownerId = ownerId;
+    this.createdAt = createdAt;
     this.name = name || 'Taller Artesanal';
     this.trade = trade || 'Oficio Artesano';
     this.category = category || 'ceramica';
@@ -75,5 +77,34 @@ export class Artisan {
 
   getCleanPhone() {
     return (this.phone || '').replace(/[^0-9]/g, '');
+  }
+
+  isNew() {
+    if (!this.createdAt) {
+      // Si el id es numérico tradicional (ej: 1, 2, 3...) son los artesanos base fundadores
+      // Si es un timestamp numérico largo o string reciente, comprobar
+      if (typeof this.id === 'number' && this.id < 100) return false;
+      if (typeof this.id === 'string' && /^\d+$/.test(this.id) && Number(this.id) < 100) return false;
+      return false;
+    }
+
+    try {
+      let createdTime = 0;
+      if (this.createdAt && typeof this.createdAt.toDate === 'function') {
+        createdTime = this.createdAt.toDate().getTime();
+      } else if (this.createdAt && this.createdAt.seconds) {
+        createdTime = this.createdAt.seconds * 1000;
+      } else if (typeof this.createdAt === 'string' || typeof this.createdAt === 'number') {
+        createdTime = new Date(this.createdAt).getTime();
+      }
+
+      if (!createdTime || isNaN(createdTime)) return false;
+
+      const TWO_WEEKS_MS = 14 * 24 * 60 * 60 * 1000; // 14 días en milisegundos
+      const now = Date.now();
+      return (now - createdTime) >= 0 && (now - createdTime) <= TWO_WEEKS_MS;
+    } catch (e) {
+      return false;
+    }
   }
 }

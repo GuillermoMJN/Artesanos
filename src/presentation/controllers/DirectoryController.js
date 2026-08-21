@@ -12,6 +12,7 @@ export class DirectoryController {
     this.selectedLocation = 'all';
     this.searchQuery = '';
     this.sortBy = 'featured';
+    this.onlyNew = false;
   }
 
   async init() {
@@ -48,6 +49,14 @@ export class DirectoryController {
     if (locationSelect) {
       locationSelect.addEventListener('change', (e) => {
         this.filterByLocation(e.target.value);
+      });
+    }
+
+    const onlyNewCheckbox = document.getElementById('onlyNewCheckbox');
+    if (onlyNewCheckbox) {
+      onlyNewCheckbox.addEventListener('change', (e) => {
+        this.onlyNew = e.target.checked;
+        this.renderArtisans();
       });
     }
   }
@@ -127,7 +136,8 @@ export class DirectoryController {
       category: this.activeCategory,
       location: this.selectedLocation,
       query: this.searchQuery,
-      sortBy: this.sortBy
+      sortBy: this.sortBy,
+      onlyNew: this.onlyNew
     });
 
     if (resultsCounter) {

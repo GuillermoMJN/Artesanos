@@ -1,23 +1,43 @@
-import { openModal, closeModal } from '../../core/utils/domUtils.js';
+import { openModal, closeModal, escapeHtml } from '../../core/utils/domUtils.js';
 
 /**
  * Componente / Controlador del Visor Lightbox para fotos y vídeos
  */
 export class LightboxComponent {
-  static open(mediaUrl, caption = '') {
+  static open(mediaUrl, title = '', description = '') {
     const container = document.getElementById('lightboxMediaContainer');
-    const captionEl = document.getElementById('lightboxCaption');
+    const overlayEl = document.getElementById('lightboxCaptionOverlay');
+    const titleEl = document.getElementById('lightboxTitle');
+    const descEl = document.getElementById('lightboxDescription');
     if (!container) return;
 
-    const isVideo = mediaUrl.endsWith('.mp4') || mediaUrl.endsWith('.webm') || mediaUrl.endsWith('.mov');
+    const isVideo = (mediaUrl || '').endsWith('.mp4') || (mediaUrl || '').endsWith('.webm') || (mediaUrl || '').endsWith('.mov');
 
     if (isVideo) {
-      container.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 90vw; max-height: 80vh; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);"></video>`;
+      container.innerHTML = `<video src="${mediaUrl}" controls autoplay style="max-width: 90vw; max-height: 82vh; border-radius: 12px; display: block;"></video>`;
     } else {
-      container.innerHTML = `<img src="${mediaUrl}" alt="${caption}" style="max-width: 90vw; max-height: 80vh; object-fit: contain; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">`;
+      container.innerHTML = `<img src="${mediaUrl}" alt="${escapeHtml(title || 'Foto')}" style="max-width: 90vw; max-height: 82vh; object-fit: contain; border-radius: 12px; display: block;">`;
     }
 
-    if (captionEl) captionEl.textContent = caption;
+    const hasTitle = Boolean(title && title.trim().length > 0);
+    const hasDesc = Boolean(description && description.trim().length > 0);
+
+    if (overlayEl) {
+      if (hasTitle || hasDesc) {
+        overlayEl.style.display = 'block';
+        if (titleEl) {
+          titleEl.textContent = title || '';
+          titleEl.style.display = hasTitle ? 'block' : 'none';
+        }
+        if (descEl) {
+          descEl.textContent = description || '';
+          descEl.style.display = hasDesc ? 'block' : 'none';
+        }
+      } else {
+        overlayEl.style.display = 'none';
+      }
+    }
+
     openModal('lightboxModal');
   }
 
@@ -27,3 +47,4 @@ export class LightboxComponent {
     if (container) container.innerHTML = '';
   }
 }
+

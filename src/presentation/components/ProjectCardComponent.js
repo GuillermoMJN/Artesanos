@@ -56,20 +56,25 @@ export class ProjectCardComponent {
   }
 
   static renderStepCard(step) {
-    const safeTitle = escapeHtml(step.title || 'Paso');
+    const safeTitle = escapeHtml(step.title || '');
     const safeDesc = escapeHtml(step.desc || '');
     const cleanImg = escapeHtml(step.img);
 
+    const jsTitle = (step.title || '').replace(/'/g, "\\'");
+    const jsDesc = (step.desc || '').replace(/'/g, "\\'");
+
     return `
-      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="window.openLightboxModal('${cleanImg}', '${safeTitle.replace(/'/g, "\\'")}')">
-        <div style="position: relative; height: 160px; overflow: hidden;">
-          <img src="${cleanImg}" alt="${safeTitle}" style="width: 100%; height: 100%; object-fit: cover;">
-          <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
+      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.04); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.2s ease;" onclick="window.openLightboxModal('${cleanImg}', '${jsTitle}', '${jsDesc}')">
+        <div style="position: relative; height: 180px; overflow: hidden; background: #FAF7F2;">
+          <img src="${cleanImg}" alt="${safeTitle || 'Foto'}" style="width: 100%; height: 100%; object-fit: cover;">
+          <span style="position: absolute; bottom: 0.5rem; right: 0.5rem; background: rgba(0,0,0,0.65); color: #FFF; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.75rem;"><i class="fa-solid fa-magnifying-glass-plus"></i> Ampliar</span>
         </div>
-        <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-          <h4 style="font-size: 0.95rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.4rem; line-height: 1.3;">${safeTitle}</h4>
-          <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin: 0;">${safeDesc}</p>
-        </div>
+        ${(step.title || step.desc) ? `
+          <div style="padding: 1rem; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+            ${step.title ? `<h4 style="font-size: 0.95rem; color: var(--primary-dark); font-weight: 700; margin-bottom: 0.35rem; line-height: 1.3;">${safeTitle}</h4>` : ''}
+            ${step.desc ? `<p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin: 0;">${safeDesc}</p>` : ''}
+          </div>
+        ` : ''}
       </div>
     `;
   }

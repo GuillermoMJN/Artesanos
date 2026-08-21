@@ -724,12 +724,12 @@
   </main>
 
   <!-- Modal Detalle de Proyecto Individual con Comentarios Independientes -->
-  <div class="modal-overlay" id="projectDetailModal">
-    <div class="modal-card" style="max-width: 850px;">
+  <div class="modal-overlay" id="projectDetailModal" style="z-index: 3500;">
+    <div class="modal-card" style="max-width: 1100px; width: 95%; max-height: 92vh; overflow-y: auto;">
       <button class="modal-close" onclick="closeProjectModal()">
         <i class="fa-solid fa-xmark"></i>
       </button>
-      <div class="modal-body" style="padding: 2rem;">
+      <div class="modal-body" style="padding: 2.5rem 2.8rem;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
           <span class="hero-badge" id="modalProjCategory" style="margin: 0;"><i class="fa-solid fa-folder"></i> Proyecto</span>
           <span id="modalProjPriceBadge" class="project-price-tag" style="display: none;"></span>
@@ -805,13 +805,21 @@
   </div>
 
   <!-- Modal Lightbox Visor para Ampliar Fotos/Vídeos -->
-  <div class="modal-overlay" id="lightboxModal" style="z-index: 4000; background: rgba(0, 0, 0, 0.9);">
-    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.2); color: #FFF;">
+  <div class="modal-overlay" id="lightboxModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 999999 !important; background: rgba(0, 0, 0, 0.95); backdrop-filter: blur(10px); padding: 1.5rem; display: flex; align-items: center; justify-content: center;" onclick="closeLightboxModal()">
+    <button class="modal-close" onclick="closeLightboxModal()" style="top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.25); color: #FFF; border: none; font-size: 1.3rem; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; z-index: 1000000;" onmouseover="this.style.background='rgba(255,255,255,0.4)'" onmouseout="this.style.background='rgba(255,255,255,0.25)'">
       <i class="fa-solid fa-xmark"></i>
     </button>
-    <div style="max-width: 90vw; max-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative;">
-      <div id="lightboxMediaContainer" style="width: 100%; height: 100%; display: flex; justify-content: center;"></div>
-      <p id="lightboxCaption" style="color: #FFF; margin-top: 1rem; font-size: 1.1rem; text-align: center; font-weight: 500;"></p>
+    
+    <div id="lightboxWrapper" style="position: relative; max-width: 92vw; max-height: 90vh; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.8); z-index: 1000000;" onclick="event.stopPropagation();">
+      
+      <div id="lightboxMediaContainer" style="max-width: 100%; max-height: 85vh; display: flex; justify-content: center; align-items: center; background: #000;"></div>
+      
+      <!-- Overlay superpuesto en la parte inferior de la foto con título y descripción legibles -->
+      <div id="lightboxCaptionOverlay" style="display: none; position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0.65) 70%, transparent 100%); padding: 2rem 1.8rem 1.4rem; color: #FFFFFF; text-align: left; pointer-events: none;">
+        <h4 id="lightboxTitle" style="color: #FFF; font-size: 1.25rem; font-weight: 700; margin: 0 0 0.35rem 0; font-family: 'Playfair Display', serif; text-shadow: 0 2px 4px rgba(0,0,0,0.6);"></h4>
+        <p id="lightboxDescription" style="color: rgba(255, 255, 255, 0.9); font-size: 0.95rem; line-height: 1.5; margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.6); max-width: 900px;"></p>
+      </div>
+
     </div>
   </div>
 

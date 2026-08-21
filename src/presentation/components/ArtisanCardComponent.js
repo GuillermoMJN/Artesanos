@@ -17,12 +17,18 @@ export class ArtisanCardComponent {
     const isCertified = safeExperience.toLowerCase().includes('certificado');
     const imageSrc = artisan.image || DEFAULT_AVATAR_PATH;
     const ratingDisplay = Number(artisan.rating || 5.0).toFixed(1);
+    const isNew = typeof artisan.isNew === 'function' ? artisan.isNew() : false;
 
     return `
       <div class="artisan-card" style="cursor: pointer;" onclick="window.open('perfil.html?id=${artisan.id}', '_blank')">
         <div class="artisan-img-wrapper" style="background: #FFFFFF;">
           <img src="${imageSrc}" alt="${safeName}" class="artisan-img" loading="lazy" style="opacity: 0; transition: opacity 0.6s ease;" onload="this.style.opacity='1';">
           <span class="artisan-badge">${safeCategory}</span>
+          ${isNew ? `
+            <span class="artisan-new-badge" title="Artesano incorporado en las últimas 2 semanas">
+              <i class="fa-solid fa-sparkles"></i> Nuevo
+            </span>
+          ` : ''}
           <div class="artisan-rating">
             <i class="fa-solid fa-star"></i>
             <span>${ratingDisplay}</span>
