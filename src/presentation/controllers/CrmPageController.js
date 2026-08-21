@@ -518,20 +518,12 @@ export class CrmPageController {
     if (modal) modal.style.display = 'none';
   }
 
-  // URLs de webhooks en fragmentos codificados (producción y test)
+  // URLs de webhooks de n8n para envío de correos / respuestas (producción y test)
   _getWh(isTest = false) {
     if (isTest) {
-      const t = [
-        'aHR0cHM6Ly9uOG4uc3J2MTMwNDcwOC5oc3Rnci5jbG91ZC93ZWJob29rLXRlc3QvOWU=',
-        'ZWNjNjlmLTcxOTktNGZjYS04ZTIwLTk5MTI0NWI4YjE0ZQ=='
-      ];
-      return atob(t[0]) + atob(t[1]);
+      return 'https://n8n.srv1304708.hstgr.cloud/webhook-test/54e8d229-62ae-4a31-aa4f-faf09f90f00e';
     }
-    const p = [
-      'aHR0cHM6Ly9uOG4uc3J2MTMwNDcwOC5oc3Rnci5jbG91ZC93ZWJob29rLzll',
-      'ZWNjNjlmLTcxOTktNGZjYS04ZTIwLTk5MTI0NWI4YjE0ZQ=='
-    ];
-    return atob(p[0]) + atob(p[1]);
+    return 'https://n8n.srv1304708.hstgr.cloud/webhook/54e8d229-62ae-4a31-aa4f-faf09f90f00e';
   }
 
   async sendEmailViaMailto(isTest = false) {
