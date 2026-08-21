@@ -318,10 +318,75 @@
         padding: 0.75rem 0.9rem;
       }
     }
+
+    /* ──── Pantalla de Carga ──── */
+    #profileLoadingOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--beige-light, #FAF7F2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.4rem;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    #profileLoadingOverlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .profile-spinner {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 4px solid rgba(192, 108, 76, 0.18);
+      border-top-color: #C06C4C;
+      animation: profileSpin 0.85s linear infinite;
+    }
+    @keyframes profileSpin {
+      to { transform: rotate(360deg); }
+    }
+    .profile-loader-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.35rem;
+      color: var(--primary-dark, #3E2723);
+      letter-spacing: 0.02em;
+    }
+    .profile-loader-sub {
+      font-size: 0.82rem;
+      color: var(--text-muted, #9E8C81);
+      margin-top: -0.6rem;
+    }
+
+    /* ──── Fade-in del contenido ──── */
+    body.profile-loading > *:not(#profileLoadingOverlay):not(.toast-container) {
+      opacity: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+    body.profile-ready > *:not(#profileLoadingOverlay):not(.toast-container) {
+      opacity: 1;
+      transition: opacity 0.55s ease;
+      pointer-events: auto;
+    }
   </style>
 </head>
 
-<body style="background: var(--beige-light);">
+<body class="profile-loading" style="background: var(--beige-light);">
+
+  <!-- Pantalla de Carga del Perfil -->
+  <div id="profileLoadingOverlay">
+    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;">
+      <div style="width:64px;height:64px;border-radius:50%;background:rgba(192,108,76,0.1);display:flex;align-items:center;justify-content:center;">
+        <i class="fa-solid fa-hands-holding" style="font-size:1.8rem;color:#C06C4C;"></i>
+      </div>
+      <div class="profile-spinner"></div>
+      <span class="profile-loader-logo">Arte y Sanos</span>
+      <span class="profile-loader-sub">Cargando perfil del artesano...</span>
+    </div>
+  </div>
 
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toastContainer"></div>

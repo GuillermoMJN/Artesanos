@@ -30,7 +30,7 @@ export class ProfileController {
     const artisanId = urlParams.get('id');
 
     if (!artisanId) {
-      this.renderDiagnostic('Sin ID en la URL', 'No se encontró ?id=... en la URL. Vuelve al directorio y pulsa en un artesano.', null);
+      this._showError('Sin ID en la URL', 'No se encontró ?id=... en la URL. Vuelve al directorio y pulsa en un artesano.');
       return;
     }
 
@@ -43,10 +43,9 @@ export class ProfileController {
     }
 
     if (!artisan) {
-      this.renderDiagnostic(
+      this._showError(
         'Artesano no encontrado',
-        `ID buscado: "${artisanId}"${errorMsg ? `\nError: ${errorMsg}` : '\nFirestore no devolvió ningún resultado para este ID.'}`,
-        artisanId
+        `No pudimos cargar el perfil con el ID: "${artisanId}"${errorMsg ? `\n\nError: ${errorMsg}` : ''}`
       );
       return;
     }
@@ -58,17 +57,42 @@ export class ProfileController {
     this.renderProjectsGrid();
     this.renderContactInfo();
     this.setupProjectCommentForm();
+
+    // Ocultar pantalla de carga y hacer fade-in del contenido
+    this._showContent();
   }
 
-  renderDiagnostic(title, detail, artisanId) {
+  _showContent() {
+    const overlay = document.getElementById('profileLoadingOverlay');
+    const body = document.body;
+    // Primero animar la salida del overlay
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
+    // Activar fade-in del contenido de la página
+    body.classList.remove('profile-loading');
+    body.classList.add('profile-ready');
+  }
+
+  _showError(title, detail) {
+    const overlay = document.getElementById('profileLoadingOverlay');
+    if (overlay) overlay.remove();
+    document.body.classList.remove('profile-loading');
+    document.body.classList.add('profile-ready');
     document.body.innerHTML = `
-      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif; text-align: center; padding: 2rem; background: #FAF7F2;">
-        <h2 style="color: #3E2723; margin-bottom: 0.5rem;">${title}</h2>
-        <pre style="background: #FFF3E0; border: 1px solid #E6DDD0; border-radius: 8px; padding: 1rem 1.5rem; max-width: 600px; text-align: left; white-space: pre-wrap; word-break: break-all; color: #5D4037; font-size: 0.85rem; margin-bottom: 1.5rem;">${detail}</pre>
-        ${artisanId ? `<p style="color:#888;font-size:0.8rem;margin-bottom:1rem;">Si ves este mensaje, cópialo y compártelo para depurar.</p>` : ''}
-        <a href="index.html" style="text-decoration: none; padding: 0.8rem 1.6rem; background: #C06C4C; color: #FFF; border-radius: 8px; font-weight: 700;">← Volver al Directorio</a>
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Plus Jakarta Sans', sans-serif; text-align: center; padding: 2rem; background: #FAF7F2;">
+        <div style="width:72px;height:72px;border-radius:50%;background:rgba(192,108,76,0.1);display:flex;align-items:center;justify-content:center;margin-bottom:1.2rem;">
+          <i class="fa-solid fa-triangle-exclamation" style="font-size:1.8rem;color:#C06C4C;"></i>
+        </div>
+        <h2 style="color:#3E2723;margin-bottom:0.5rem;font-family:'Playfair Display',serif;">${title}</h2>
+        <p style="color:#6D4C41;max-width:480px;line-height:1.6;margin-bottom:1.8rem;white-space:pre-line;">${detail}</p>
+        <a href="index.html" style="text-decoration:none;padding:0.8rem 1.8rem;background:#C06C4C;color:#FFF;border-radius:8px;font-weight:700;">← Volver al Directorio</a>
       </div>
     `;
+  }
+
+  renderDiagnostic(title, detail) {
+    this._showError(title, detail);
   }
 
   renderNotFound() {
