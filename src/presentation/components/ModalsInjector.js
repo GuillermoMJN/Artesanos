@@ -834,7 +834,7 @@ export function injectAllModals() {
             <button type="button" class="btn btn-secondary" onclick="window.appUI.closeModal('supportContactModal')">
               Cancelar
             </button>
-            <button type="submit" id="btnSubmitSupport" class="btn btn-primary" style="font-weight: 700; padding: 0.7rem 1.4rem;">
+            <button type="button" id="btnSubmitSupport" class="btn btn-primary" style="font-weight: 700; padding: 0.7rem 1.4rem;" onclick="window.appUI.supportController.handleSupportSubmit(event)">
               <i class="fa-solid fa-paper-plane"></i> Enviar Mensaje
             </button>
           </div>

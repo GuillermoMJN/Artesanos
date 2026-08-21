@@ -134,7 +134,7 @@ export class SupportController {
 
   async handleSupportSubmit(e) {
     e.preventDefault();
-    const form = e.target || document.getElementById('supportContactForm');
+    const form = e.target ? (e.target.closest ? e.target.closest('form') : e.target) : document.getElementById('supportContactForm');
     if (!form) return;
 
     const senderName = (form.querySelector('#supportSenderName') || document.getElementById('supportSenderName'))?.value.trim() || '';
@@ -174,7 +174,9 @@ export class SupportController {
       });
 
       closeModal('supportContactModal', true);
-      form.reset();
+      if (form && typeof form.reset === 'function') {
+        form.reset();
+      }
 
       ToastComponent.show('📨 ¡Mensaje de asistencia recibido! Nuestro equipo te responderá a la brevedad.');
     } catch (err) {
