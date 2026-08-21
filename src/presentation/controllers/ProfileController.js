@@ -63,15 +63,18 @@ export class ProfileController {
   }
 
   _showContent() {
+    // Fade-out del overlay de carga
     const overlay = document.getElementById('profileLoadingOverlay');
-    const body = document.body;
-    // Primero animar la salida del overlay
     if (overlay) {
       overlay.classList.add('hidden');
+      // Eliminar del DOM después de la animación para no bloquear clicks
+      setTimeout(() => overlay.remove(), 500);
     }
-    // Activar fade-in del contenido de la página
-    body.classList.remove('profile-loading');
-    body.classList.add('profile-ready');
+    // Fade-in del contenido real de la página
+    const content = document.getElementById('profilePageContent');
+    if (content) {
+      requestAnimationFrame(() => content.classList.add('loaded'));
+    }
   }
 
   _showError(title, detail) {
