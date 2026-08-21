@@ -794,17 +794,17 @@ export function injectAllModals() {
           <div class="form-row" style="margin-bottom: 1rem;">
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label">Tu Nombre *</label>
-              <input type="text" id="supportSenderName" class="form-input" placeholder="ej. David García" required>
+              <input type="text" id="supportSenderName" class="form-input" placeholder="ej. David García">
             </div>
             <div class="form-group" style="margin-bottom: 0;">
               <label class="form-label">Tu Correo Electrónico *</label>
-              <input type="email" id="supportSenderEmail" class="form-input" placeholder="tu@correo.com" required>
+              <input type="email" id="supportSenderEmail" class="form-input" placeholder="tu@correo.com">
             </div>
           </div>
 
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label">Tipo de Consulta / Asistencia *</label>
-            <select id="supportCategorySelect" class="form-select" required>
+            <select id="supportCategorySelect" class="form-select">
               <option value="incidencia">⚠️ Incidencia Técnica o Problema en la Web</option>
               <option value="consulta">💬 Consulta General sobre la Plataforma</option>
               <option value="verificacion">🏅 Duda sobre Verificación de Artesano</option>
@@ -814,18 +814,18 @@ export function injectAllModals() {
 
           <div class="form-group" style="margin-bottom: 1rem;">
             <label class="form-label">Asunto *</label>
-            <input type="text" id="supportSubject" class="form-input" placeholder="ej. Problema al subir fotos de un trabajo" required>
+            <input type="text" id="supportSubject" class="form-input" placeholder="ej. Problema al subir fotos de un trabajo">
           </div>
 
           <div class="form-group" style="margin-bottom: 1.2rem;">
             <label class="form-label">Describe tu mensaje o incidencia *</label>
-            <textarea id="supportMessage" class="form-textarea" rows="4" placeholder="Explica detalladamente lo que ocurre para poder ayudarte lo antes posible..." required></textarea>
+            <textarea id="supportMessage" class="form-textarea" rows="4" placeholder="Explica detalladamente lo que ocurre para poder ayudarte lo antes posible..."></textarea>
           </div>
 
           <!-- Consentimiento RGPD Soporte -->
           <div style="margin-bottom: 1.2rem; padding: 0.8rem; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border-color);">
             <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
-              <input type="checkbox" id="supportConsentCheckbox" required style="margin-top: 2px; width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0;">
+              <input type="checkbox" id="supportConsentCheckbox" style="margin-top: 2px; width: 16px; height: 16px; accent-color: var(--terracotta); cursor: pointer; flex-shrink: 0;">
               <span>He leído y acepto la <a href="privacidad.html" target="_blank" style="color: var(--terracotta); font-weight: 600; text-decoration: underline;">Política de Privacidad</a> para la gestión y respuesta de mi consulta. *</span>
             </label>
           </div>

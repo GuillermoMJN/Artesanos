@@ -148,6 +148,12 @@ export class SupportController {
       return;
     }
 
+    const consentCheckbox = form.querySelector('#supportConsentCheckbox') || document.getElementById('supportConsentCheckbox');
+    if (consentCheckbox && !consentCheckbox.checked) {
+      ToastComponent.show('Debes aceptar la Política de Privacidad para continuar.', 'error');
+      return;
+    }
+
     const role = (this.currentUser && this.currentUser.profile && this.currentUser.profile.role) || (this.currentArtisan ? 'artisan' : (this.currentUser ? 'client' : 'guest'));
 
     const btnSubmit = form.querySelector('#btnSubmitSupport') || document.getElementById('btnSubmitSupport');
