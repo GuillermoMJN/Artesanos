@@ -86,7 +86,7 @@ export class ShopManageController {
     this.currentArtisanProfile = artisanProfile;
   }
 
-  openShopManageModal() {
+  async openShopManageModal() {
     if (!this.currentUser) {
       openModal('loginModal');
       return;
@@ -96,6 +96,16 @@ export class ShopManageController {
     if (!isArtisan) {
       ToastComponent.show('ℹ️ Tu cuenta está registrada como Usuario / Cliente. El panel de gestión está reservado para Comercios y Artesanos.');
       return;
+    }
+
+    // Si aún no ha cargado el perfil de artesano, lo forzamos (puede pasar si el usuario hace clic muy rápido)
+    if (!this.currentArtisanProfile) {
+      ToastComponent.show('⏳ Cargando los datos de tu taller, por favor espera...');
+      try {
+        this.currentArtisanProfile = await this.manageShopUseCases.artisanRepository.getArtisanByOwnerId(this.currentUser.uid);
+      } catch (err) {
+        console.error("Error al cargar perfil de artesano:", err);
+      }
     }
 
     if (this.currentArtisanProfile) {

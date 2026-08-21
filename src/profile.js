@@ -63,6 +63,27 @@ window.appUI = {
 
 const profileController = new ProfileController(getArtisansUseCase, authUseCases, reviewUseCases, manageShopUseCases, chatWidget);
 
+// Mantener los controladores de modales sincronizados con la sesión
+authUseCases.onAuthStateChanged(async (user) => {
+  if (userAccountController.setCurrentUser) {
+    userAccountController.setCurrentUser(user);
+  }
+  if (user) {
+    // Asignar el usuario inmediatamente para que openShopManageModal sepa que estamos logueados
+    if (shopManageController.setCurrentState) {
+      shopManageController.setCurrentState(user, null);
+    }
+    const artisanProfile = await artisanRepo.getArtisanByOwnerId(user.uid);
+    if (shopManageController.setCurrentState) {
+      shopManageController.setCurrentState(user, artisanProfile);
+    }
+  } else {
+    if (shopManageController.setCurrentState) {
+      shopManageController.setCurrentState(null, null);
+    }
+  }
+});
+
 const startProfile = () => {
   CookieBannerComponent.init();
   setupModalDismissListeners();
